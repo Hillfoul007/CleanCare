@@ -270,10 +270,11 @@ const EnhancedRiderPortal = () => {
     if (!riderProfile) return;
 
     try {
-      await providerLocationService.updateRiderLocation(riderProfile.id, {
+      await providerLocationService.updateRiderLocation(
+        riderProfile.id,
         coordinates,
         address,
-      });
+      );
 
       // Update local state
       setRiderProfile((prev) =>
