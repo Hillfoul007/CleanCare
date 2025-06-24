@@ -110,6 +110,30 @@
     display: none;
   }
 
+  /* Mobile touch improvements */
+  .mobile-touch {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+
+  /* Prevent zoom on form inputs on iOS */
+  .mobile-input {
+    font-size: 16px;
+  }
+
+  /* Better button touch areas */
+  .mobile-button {
+    min-height: 44px;
+    min-width: 44px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
   /* Safe area support for modern mobile devices */
   .safe-top {
     padding-top: env(safe-area-inset-top);
