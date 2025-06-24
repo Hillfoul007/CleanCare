@@ -11,6 +11,8 @@ declare global {
     data?: any;
     error?: string;
     message?: string;
+    callId?: string;
+    user?: any;
   }
 
   interface User {
