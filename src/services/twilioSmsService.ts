@@ -136,6 +136,7 @@ export class TwilioSmsService {
       return {
         success: false,
         message: "Invalid OTP",
+        error: "Invalid OTP",
       };
     }
   }
