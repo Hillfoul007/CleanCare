@@ -259,9 +259,10 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   onClick={handleLogin}
                   variant="ghost"
                   size="sm"
-                  className="text-white hover:bg-white/10 p-2"
+                  className="text-white hover:bg-white/10 px-3 py-2 min-h-[44px] min-w-[44px] touch-manipulation"
                 >
-                  <User className="h-4 w-4" />
+                  <User className="h-4 w-4 mr-1" />
+                  <span className="text-sm">Sign In</span>
                 </Button>
               )}
             </div>
