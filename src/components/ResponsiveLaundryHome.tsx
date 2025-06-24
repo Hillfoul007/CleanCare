@@ -252,7 +252,6 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                       <NotificationPanel />
                     </div>
                   </>
-                }
                 )}
                 {window.location.hostname === "localhost" && (
                   <>
