@@ -264,10 +264,16 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                 />
               ) : (
                 <Button
-                  onClick={handleLogin}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Mobile signin button clicked");
+                    handleLogin();
+                  }}
                   variant="ghost"
                   size="sm"
-                  className="text-white hover:bg-white/10 px-3 py-2 min-h-[44px] min-w-[44px] touch-manipulation"
+                  className="text-white hover:bg-white/10 px-3 py-2 min-h-[44px] min-w-[44px] touch-manipulation cursor-pointer"
+                  type="button"
                 >
                   <User className="h-4 w-4 mr-1" />
                   <span className="text-sm">Sign In</span>
