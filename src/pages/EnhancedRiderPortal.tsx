@@ -84,7 +84,7 @@ const EnhancedRiderPortal = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [riderProfile, setRiderProfile] = useState<RiderProfile | null>(null);
   const [authStep, setAuthStep] = useState<
-    "login" | "register" | "location" | "ready"
+    "login" | "register" | "location" | "ready" | "auth"
   >("login");
   const [showRegistration, setShowRegistration] = useState(false);
 
