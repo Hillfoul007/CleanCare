@@ -63,29 +63,30 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  // Detect screen size
+  // Simplified mobile detection
   useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth;
-      const height = window.innerHeight;
       const userAgent = navigator.userAgent;
 
-      // More comprehensive mobile detection
+      // Simplified and more reliable mobile detection
       const isMobileUserAgent =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(
           userAgent,
         );
-      const isMobileViewport =
-        width <= 768 || (width <= 1024 && height <= 1366); // Include tablets in portrait
+      const isMobileViewport = width <= 768;
       const isTouchDevice =
         "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
+      // Use OR logic - any one of these conditions makes it mobile
       const isMobileDevice =
-        isMobileUserAgent || (isMobileViewport && isTouchDevice);
+        isMobileUserAgent ||
+        isMobileViewport ||
+        (isTouchDevice && width <= 1024);
 
       setIsMobile(isMobileDevice);
       console.log(
-        `Mobile detection: width=${width}, height=${height}, userAgent=${isMobileUserAgent}, viewport=${isMobileViewport}, touch=${isTouchDevice}, final=${isMobileDevice}`,
+        `Mobile detection: width=${width}, userAgent=${isMobileUserAgent}, viewport=${isMobileViewport}, touch=${isTouchDevice}, final=${isMobileDevice}`,
       );
     };
 
@@ -234,7 +235,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-400 via-green-500 to-green-600">
         {/* Mobile Header */}
-        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white sticky top-0 z-50">
+        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white sticky top-0 z-50 mobile-header safe-top">
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
@@ -275,40 +276,25 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   onUpdateProfile={handleUpdateProfile}
                 />
               ) : (
-                <div className="flex gap-1">
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log("Mobile signin button clicked");
-                      handleLogin();
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:bg-white/10 px-3 py-2 min-h-[44px] min-w-[44px] touch-manipulation cursor-pointer"
-                    type="button"
-                  >
-                    <User className="h-4 w-4 mr-1" />
-                    <span className="text-sm">Sign In</span>
-                  </Button>
-                  {/* Debug button to test click handling */}
-                  {window.location.hostname === "localhost" && (
-                    <Button
-                      onClick={() => {
-                        alert("Test click works! Modal issue detected.");
-                        console.log(
-                          "Test button clicked - basic click handling works",
-                        );
-                      }}
-                      variant="ghost"
-                      size="sm"
-                      className="text-white hover:bg-white/10 px-2 py-2"
-                      title="Test Click"
-                    >
-                      🧪
-                    </Button>
-                  )}
-                </div>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Mobile signin button clicked");
+                    handleLogin();
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20 active:bg-white/30 px-4 py-2 min-h-[48px] min-w-[80px] touch-manipulation cursor-pointer rounded-lg transition-all duration-200 font-medium"
+                  type="button"
+                  style={{
+                    WebkitTapHighlightColor: "transparent",
+                    touchAction: "manipulation",
+                  }}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  <span className="text-sm">Sign In</span>
+                </Button>
               )}
             </div>
           </div>
@@ -346,7 +332,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
         </div>
 
         {/* Mobile Content */}
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-4 mobile-content">
           {/* Delivery Time & Location */}
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-white">
             <div className="flex items-center justify-between mb-2">
@@ -508,7 +494,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
 
         {/* Floating Cart Button - Mobile */}
         {getCartItemCount() > 0 && (
-          <div className="fixed bottom-4 left-4 right-4 z-50">
+          <div className="fixed bottom-4 left-4 right-4 z-50 safe-bottom">
             <Button
               onClick={onViewCart}
               className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl py-3 flex items-center justify-between shadow-lg"

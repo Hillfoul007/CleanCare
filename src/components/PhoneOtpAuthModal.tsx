@@ -155,8 +155,11 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
   if (isMobile) {
     // Mobile-specific modal implementation
     return (
-      <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div
+        className="fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center p-4 safe-bottom safe-top"
+        style={{ zIndex: 1000 }}
+      >
+        <div className="bg-white rounded-lg w-full max-w-md max-h-[85vh] overflow-y-auto shadow-2xl border">
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               {currentStep === "otp" && (
@@ -336,7 +339,10 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] max-w-md mx-auto my-8 z-[9999] max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="w-[95vw] max-w-md mx-auto my-8 max-h-[90vh] overflow-y-auto"
+        style={{ zIndex: 1000 }}
+      >
         <DialogHeader>
           <div className="flex items-center justify-between">
             {currentStep === "otp" && (
