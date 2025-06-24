@@ -430,16 +430,8 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
               <div className="text-center">
                 <p className="text-xs text-gray-500">
                   By continuing, you agree to receive SMS messages from
-                  LaundryFlash
+                  CleanCare Pro
                 </p>
-                {window.location.hostname === "localhost" && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
-                    <p className="text-xs text-blue-700">
-                      🧪 <strong>Demo Mode:</strong> Use OTP{" "}
-                      <strong>123456</strong> to test login
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -476,14 +468,6 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
                 <p className="text-xs text-gray-500">
                   Enter the 6-digit code from SMS
                 </p>
-                {window.location.hostname === "localhost" && (
-                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
-                    <p className="text-xs text-blue-700">
-                      🧪 <strong>Demo Mode:</strong> Enter{" "}
-                      <strong>123456</strong>
-                    </p>
-                  </div>
-                )}
               </div>
 
               {error && (
