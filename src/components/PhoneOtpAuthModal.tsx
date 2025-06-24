@@ -78,7 +78,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     try {
       const result = await twilioService.sendSmsOTP(
         formData.phone,
-        formData.name || "User",
+        formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
       );
 
       if (result.success) {
@@ -112,7 +112,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
       const result = await twilioService.verifySmsOTP(
         formData.phone,
         formData.otp,
-        formData.name || "User",
+        formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
       );
 
       if (result.success && result.user) {
