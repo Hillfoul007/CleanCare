@@ -285,12 +285,8 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   }}
                   variant="ghost"
                   size="sm"
-                  className="text-white hover:bg-white/20 active:bg-white/30 px-4 py-2 min-h-[48px] min-w-[80px] touch-manipulation cursor-pointer rounded-lg transition-all duration-200 font-medium"
+                  className="text-white hover:bg-white/20 active:bg-white/30 px-4 py-2 min-h-[48px] min-w-[80px] mobile-button mobile-touch rounded-lg transition-all duration-200 font-medium"
                   type="button"
-                  style={{
-                    WebkitTapHighlightColor: "transparent",
-                    touchAction: "manipulation",
-                  }}
                 >
                   <User className="h-4 w-4 mr-2" />
                   <span className="text-sm">Sign In</span>
