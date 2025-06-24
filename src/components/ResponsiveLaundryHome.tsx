@@ -66,18 +66,35 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth;
-      const isMobileDevice =
-        width < 768 ||
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent,
+      const height = window.innerHeight;
+      const userAgent = navigator.userAgent;
+
+      // More comprehensive mobile detection
+      const isMobileUserAgent =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(
+          userAgent,
         );
+      const isMobileViewport =
+        width <= 768 || (width <= 1024 && height <= 1366); // Include tablets in portrait
+      const isTouchDevice =
+        "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+      const isMobileDevice =
+        isMobileUserAgent || (isMobileViewport && isTouchDevice);
+
       setIsMobile(isMobileDevice);
-      console.log(`Screen width: ${width}, isMobile: ${isMobileDevice}`);
+      console.log(
+        `Mobile detection: width=${width}, height=${height}, userAgent=${isMobileUserAgent}, viewport=${isMobileViewport}, touch=${isTouchDevice}, final=${isMobileDevice}`,
+      );
     };
 
     checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
+    window.addEventListener("orientationchange", checkScreenSize);
+    return () => {
+      window.removeEventListener("resize", checkScreenSize);
+      window.removeEventListener("orientationchange", checkScreenSize);
+    };
   }, []);
 
   // Load cart from localStorage
