@@ -238,9 +238,9 @@ const EnhancedRiderPortal = () => {
 
     const trackLocation = async () => {
       try {
-        const coordinates = await getCurrentLocation();
-        if (coordinates) {
-          await updateRiderLocation(coordinates);
+        await getCurrentLocation();
+        if (currentLocation) {
+          await updateRiderLocation(currentLocation);
         }
       } catch (error) {
         console.error("Location tracking error:", error);
