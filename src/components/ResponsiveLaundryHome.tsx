@@ -65,7 +65,14 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   // Detect screen size
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
+      const width = window.innerWidth;
+      const isMobileDevice =
+        width < 768 ||
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent,
+        );
+      setIsMobile(isMobileDevice);
+      console.log(`Screen width: ${width}, isMobile: ${isMobileDevice}`);
     };
 
     checkScreenSize();
