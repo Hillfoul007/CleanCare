@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { riderHelpers } from "@/integrations/mongodb/riderHelpers";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -866,7 +867,7 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
             </label>
             {riderData.insurance_certificate && (
               <p className="text-green-600 mt-2">
-                �� {riderData.insurance_certificate.name}
+                ✓ {riderData.insurance_certificate.name}
               </p>
             )}
           </div>
