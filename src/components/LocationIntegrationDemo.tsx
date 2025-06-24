@@ -239,7 +239,7 @@ const LocationIntegrationDemo: React.FC = () => {
         <div className="lg:col-span-1">
           <LocationManager
             onLocationChange={handleLocationChange}
-            enableSaveToSupabase={true}
+            enableSaveToDatabase={true}
             showFavorites={true}
             showHistory={true}
           />
