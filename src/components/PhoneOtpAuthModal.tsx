@@ -105,10 +105,9 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setError("");
 
     try {
-      const result = await twilioService.verifySmsOTP(
+      const result = await twilioService.verifyOTP(
         formData.phone,
         formData.otp,
-        formData.name || "User",
       );
 
       if (result.success && result.user) {
