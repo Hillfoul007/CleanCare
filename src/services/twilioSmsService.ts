@@ -88,8 +88,49 @@ export class TwilioSmsService {
         return false;
       }
     } catch (error) {
-      console.error("❌ OTP verification error:", error);
+      console.error("��� OTP verification error:", error);
       return false;
+    }
+  }
+
+  async sendSmsOTP(
+    phoneNumber: string,
+    name?: string,
+  ): Promise<{ success: boolean; message?: string }> {
+    const success = await this.sendOTP(phoneNumber);
+    return {
+      success,
+      message: success ? "OTP sent successfully" : "Failed to send OTP",
+    };
+  }
+
+  async verifySmsOTP(
+    phoneNumber: string,
+    otp: string,
+    name?: string,
+  ): Promise<{ success: boolean; user?: any; message?: string }> {
+    const isValid = await this.verifyOTP(phoneNumber, otp);
+
+    if (isValid) {
+      const user = {
+        id: Date.now().toString(),
+        phone: phoneNumber,
+        full_name: name || "User",
+        user_type: "customer",
+      };
+
+      this.login(user);
+
+      return {
+        success: true,
+        user,
+        message: "Login successful",
+      };
+    } else {
+      return {
+        success: false,
+        message: "Invalid OTP",
+      };
     }
   }
 
