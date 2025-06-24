@@ -63,29 +63,30 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  // Detect screen size
+  // Simplified mobile detection
   useEffect(() => {
     const checkScreenSize = () => {
       const width = window.innerWidth;
-      const height = window.innerHeight;
       const userAgent = navigator.userAgent;
 
-      // More comprehensive mobile detection
+      // Simplified and more reliable mobile detection
       const isMobileUserAgent =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(
           userAgent,
         );
-      const isMobileViewport =
-        width <= 768 || (width <= 1024 && height <= 1366); // Include tablets in portrait
+      const isMobileViewport = width <= 768;
       const isTouchDevice =
         "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
+      // Use OR logic - any one of these conditions makes it mobile
       const isMobileDevice =
-        isMobileUserAgent || (isMobileViewport && isTouchDevice);
+        isMobileUserAgent ||
+        isMobileViewport ||
+        (isTouchDevice && width <= 1024);
 
       setIsMobile(isMobileDevice);
       console.log(
-        `Mobile detection: width=${width}, height=${height}, userAgent=${isMobileUserAgent}, viewport=${isMobileViewport}, touch=${isTouchDevice}, final=${isMobileDevice}`,
+        `Mobile detection: width=${width}, userAgent=${isMobileUserAgent}, viewport=${isMobileViewport}, touch=${isTouchDevice}, final=${isMobileDevice}`,
       );
     };
 
@@ -275,40 +276,21 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   onUpdateProfile={handleUpdateProfile}
                 />
               ) : (
-                <div className="flex gap-1">
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log("Mobile signin button clicked");
-                      handleLogin();
-                    }}
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:bg-white/10 px-3 py-2 min-h-[44px] min-w-[44px] touch-manipulation cursor-pointer"
-                    type="button"
-                  >
-                    <User className="h-4 w-4 mr-1" />
-                    <span className="text-sm">Sign In</span>
-                  </Button>
-                  {/* Debug button to test click handling */}
-                  {window.location.hostname === "localhost" && (
-                    <Button
-                      onClick={() => {
-                        alert("Test click works! Modal issue detected.");
-                        console.log(
-                          "Test button clicked - basic click handling works",
-                        );
-                      }}
-                      variant="ghost"
-                      size="sm"
-                      className="text-white hover:bg-white/10 px-2 py-2"
-                      title="Test Click"
-                    >
-                      🧪
-                    </Button>
-                  )}
-                </div>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Mobile signin button clicked");
+                    handleLogin();
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/20 active:bg-white/30 px-4 py-2 min-h-[48px] min-w-[80px] mobile-button mobile-touch rounded-lg transition-all duration-200 font-medium"
+                  type="button"
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  <span className="text-sm">Sign In</span>
+                </Button>
               )}
             </div>
           </div>
@@ -528,7 +510,15 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
           </div>
         )}
 
-        {/* WhatsApp Auth is handled at parent level */}
+        {/* Authentication Modal - Mobile */}
+        <PhoneOtpAuthModal
+          isOpen={showAuthModal}
+          onClose={() => {
+            console.log("PhoneOtpAuthModal onClose called (mobile)");
+            setShowAuthModal(false);
+          }}
+          onSuccess={handleAuthSuccess}
+        />
       </div>
     );
   }
