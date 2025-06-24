@@ -510,7 +510,15 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
           </div>
         )}
 
-        {/* WhatsApp Auth is handled at parent level */}
+        {/* Authentication Modal - Mobile */}
+        <PhoneOtpAuthModal
+          isOpen={showAuthModal}
+          onClose={() => {
+            console.log("PhoneOtpAuthModal onClose called (mobile)");
+            setShowAuthModal(false);
+          }}
+          onSuccess={handleAuthSuccess}
+        />
       </div>
     );
   }
