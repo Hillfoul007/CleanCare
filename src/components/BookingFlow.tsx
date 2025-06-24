@@ -11,7 +11,7 @@ import {
   MapPin,
   Clock,
   DollarSign,
-  User,
+  User as UserIcon,
   Phone,
 } from "lucide-react";
 import DateTimePicker from "./DateTimePicker";
