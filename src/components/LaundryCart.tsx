@@ -371,67 +371,79 @@ Confirm this booking?`;
             {cartItems.map(({ service, quantity }) => (
               <div
                 key={service!.id}
-                className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg"
+                className="p-3 bg-gray-50 rounded-lg space-y-3"
               >
-                <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center">
-                  <span className="text-lg">
-                    {service!.category.includes("Men")
-                      ? "👔"
-                      : service!.category.includes("Women")
-                        ? "👗"
-                        : service!.category.includes("Woolen")
-                          ? "🧥"
-                          : service!.category.includes("Steam")
-                            ? "🔥"
-                            : service!.category.includes("Iron")
-                              ? "🏷️"
-                              : "👕"}
-                  </span>
-                </div>
+                {/* Top row: Icon, Details, and Remove button */}
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-lg">
+                      {service!.category.includes("Men")
+                        ? "👔"
+                        : service!.category.includes("Women")
+                          ? "👗"
+                          : service!.category.includes("Woolen")
+                            ? "🧥"
+                            : service!.category.includes("Steam")
+                              ? "🔥"
+                              : service!.category.includes("Iron")
+                                ? "🏷️"
+                                : "👕"}
+                    </span>
+                  </div>
 
-                <div className="flex-1">
-                  <h4 className="font-medium text-sm">{service!.name}</h4>
-                  <p className="text-xs text-gray-600">{service!.category}</p>
-                  <p className="text-sm font-semibold text-green-600">
-                    ₹{service!.price} {service!.unit}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => updateQuantity(service!.id, -1)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </Button>
-
-                  <span className="w-8 text-center font-medium">
-                    {quantity}
-                  </span>
-
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => updateQuantity(service!.id, 1)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </Button>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-sm truncate">
+                      {service!.name}
+                    </h4>
+                    <p className="text-xs text-gray-600 truncate">
+                      {service!.category}
+                    </p>
+                    <p className="text-sm font-semibold text-green-600">
+                      ₹{service!.price} {service!.unit}
+                    </p>
+                  </div>
 
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => removeItem(service!.id)}
-                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
 
-                <div className="text-right">
-                  <p className="font-semibold">₹{service!.price * quantity}</p>
+                {/* Bottom row: Quantity controls and total price */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateQuantity(service!.id, -1)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
+
+                    <span className="w-8 text-center font-medium">
+                      {quantity}
+                    </span>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => updateQuantity(service!.id, 1)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="font-semibold">
+                      ₹{service!.price * quantity}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
