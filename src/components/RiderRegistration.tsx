@@ -107,7 +107,7 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
   const { currentLocation, currentAddress, saveLocation, favoriteLocations } =
     useLocation({
       autoGeocoding: true,
-      saveToSupabase: true,
+      saveToDatabase: true,
     });
 
   const vehicleTypes = [
@@ -866,7 +866,7 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
             </label>
             {riderData.insurance_certificate && (
               <p className="text-green-600 mt-2">
-                ✓ {riderData.insurance_certificate.name}
+                �� {riderData.insurance_certificate.name}
               </p>
             )}
           </div>
