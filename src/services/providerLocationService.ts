@@ -143,8 +143,13 @@ class ProviderLocationService {
   async getBookingsInArea(
     coordinates: Coordinates,
     radiusKm: number = 5,
+    statusFilter?: string[],
   ): Promise<Booking[]> {
-    console.log("Mock: Getting bookings in area", { coordinates, radiusKm });
+    console.log("Mock: Getting bookings in area", {
+      coordinates,
+      radiusKm,
+      statusFilter,
+    });
     return [];
   }
 
