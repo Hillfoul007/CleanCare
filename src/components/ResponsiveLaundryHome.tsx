@@ -276,6 +276,16 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                 <div className="flex items-center gap-1 text-xs text-green-100">
                   <Smartphone className="h-3 w-3" />
                   <span>Mobile</span>
+                  {/* Always show mobile toggle for debugging */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs px-1 py-0 h-4 ml-1"
+                    onClick={() => setIsMobile(false)}
+                    title="Switch to Desktop"
+                  >
+                    →🖥️
+                  </Button>
                 </div>
               </div>
             </div>
