@@ -628,7 +628,7 @@ const MobileBookingFlow: React.FC<MobileBookingFlowProps> = ({
         <PhoneOtpAuthModal
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}
-          onLoginSuccess={handleLoginSuccess}
+          onSuccess={handleLoginSuccess}
         />
       )}
     </div>
