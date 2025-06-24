@@ -1,4 +1,9 @@
 import React from "react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useNotifications } from "@/contexts/NotificationContext";
+import { createInfoNotification } from "@/utils/notificationUtils";
+import { User } from "lucide-react";
 import { User, History, LogOut, ChevronDown, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
