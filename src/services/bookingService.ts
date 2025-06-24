@@ -31,6 +31,7 @@ export interface BookingDetails {
   };
   contactDetails: {
     phone: string;
+    name: string;
     instructions?: string;
   };
   paymentStatus: "pending" | "paid" | "failed";
