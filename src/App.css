@@ -238,23 +238,7 @@
 
 /* Mobile-specific optimizations */
 @media (max-width: 768px) {
-  /* Prevent horizontal scroll and ensure full viewport usage */
-  body {
-    overflow-x: hidden;
-    position: relative;
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-  }
-
-  html {
-    height: -webkit-fill-available;
-  }
-
-  #root {
-    min-height: 100vh;
-    min-height: -webkit-fill-available;
-  }
-
+  /* Prevent horizontal scroll */
   .container {
     overflow-x: hidden;
   }
@@ -262,8 +246,6 @@
   /* Better modal sizing on mobile */
   .modal-content {
     @apply w-full max-w-lg mx-4;
-    max-height: calc(100vh - 2rem);
-    max-height: calc(100dvh - 2rem);
   }
 
   /* Larger tap targets on mobile */
@@ -284,21 +266,6 @@
   /* Show mobile-only elements */
   .mobile-only {
     @apply block;
-  }
-
-  /* Fix for content being hidden behind mobile UI */
-  .mobile-header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    padding-top: env(safe-area-inset-top);
-  }
-
-  .mobile-content {
-    padding-bottom: env(safe-area-inset-bottom);
-    min-height: calc(
-      100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)
-    );
   }
 }
 
