@@ -153,13 +153,28 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     );
 
   if (isMobile) {
-    // Mobile-specific modal implementation
+    // Mobile-specific modal implementation with portal for better rendering
     return (
       <div
-        className="fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center p-4 safe-bottom safe-top"
-        style={{ zIndex: 1000 }}
+        className="fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center p-4"
+        style={{
+          zIndex: 1000,
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
-        <div className="bg-white rounded-lg w-full max-w-md max-h-[85vh] overflow-y-auto shadow-2xl border">
+        <div
+          className="bg-white rounded-lg w-full max-w-md max-h-[85vh] overflow-y-auto shadow-2xl border mx-auto"
+          style={{
+            maxHeight: "calc(100vh - 4rem)",
+            maxHeight: "calc(100dvh - 4rem)",
+          }}
+        >
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               {currentStep === "otp" && (
