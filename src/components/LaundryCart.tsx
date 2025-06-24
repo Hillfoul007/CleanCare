@@ -5,6 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { useNotifications } from "@/contexts/NotificationContext";
+import {
+  createSuccessNotification,
+  createErrorNotification,
+  createWarningNotification,
+} from "@/utils/notificationUtils";
 import {
   ArrowLeft,
   Plus,
@@ -34,6 +40,7 @@ const LaundryCart: React.FC<LaundryCartProps> = ({
   onLoginRequired,
   currentUser,
 }) => {
+  const { addNotification } = useNotifications();
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [addressData, setAddressData] = useState<any>(null);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -116,9 +123,19 @@ const LaundryCart: React.FC<LaundryCartProps> = ({
         code: couponCode.toUpperCase(),
         discount: coupon.discount,
       });
-      alert(`Coupon applied! ${coupon.discount}% discount`);
+      addNotification(
+        createSuccessNotification(
+          "Coupon Applied",
+          `${coupon.discount}% discount applied successfully!`,
+        ),
+      );
     } else {
-      alert("Invalid coupon code");
+      addNotification(
+        createErrorNotification(
+          "Invalid Coupon",
+          "The coupon code you entered is not valid.",
+        ),
+      );
     }
   };
 
@@ -163,28 +180,47 @@ const LaundryCart: React.FC<LaundryCartProps> = ({
         onLoginRequired();
         return;
       } else {
-        alert("Please login to confirm your booking");
+        addNotification(
+          createWarningNotification(
+            "Login Required",
+            "Please login to confirm your booking",
+          ),
+        );
         return;
       }
     }
 
     if (!addressData) {
-      alert("Please enter pickup address");
+      addNotification(
+        createWarningNotification(
+          "Address Required",
+          "Please enter pickup address",
+        ),
+      );
       return;
     }
 
     if (!phoneNumber.trim()) {
-      alert("Please enter phone number");
+      addNotification(
+        createWarningNotification(
+          "Phone Required",
+          "Please enter phone number",
+        ),
+      );
       return;
     }
 
     if (!selectedDate) {
-      alert("Please select pickup date");
+      addNotification(
+        createWarningNotification("Date Required", "Please select pickup date"),
+      );
       return;
     }
 
     if (!selectedTime) {
-      alert("Please select pickup time");
+      addNotification(
+        createWarningNotification("Time Required", "Please select pickup time"),
+      );
       return;
     }
 
