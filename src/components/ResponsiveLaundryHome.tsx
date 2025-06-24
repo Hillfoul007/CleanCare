@@ -786,9 +786,16 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
         )}
 
         {/* Authentication Modal */}
+        {console.log(
+          "Rendering PhoneOtpAuthModal, showAuthModal:",
+          showAuthModal,
+        )}
         <PhoneOtpAuthModal
           isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
+          onClose={() => {
+            console.log("PhoneOtpAuthModal onClose called");
+            setShowAuthModal(false);
+          }}
           onSuccess={handleAuthSuccess}
         />
 
