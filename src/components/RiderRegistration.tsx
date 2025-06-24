@@ -368,7 +368,7 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
         emergency_contact_phone: riderData.emergency_contact_phone,
         availability_hours: riderData.availability_hours,
         documents: documentUrls,
-        status: "pending",
+        status: "pending" as const,
         is_online: false,
         rating: 0,
         completed_deliveries: 0,
