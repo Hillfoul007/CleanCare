@@ -5,6 +5,11 @@ import MobileBookingHistory from "../components/MobileBookingHistory";
 import WhatsAppAuth from "../components/WhatsAppAuth";
 import { WhatsAppOTPService } from "../services/whatsappOtpService";
 import PushNotificationService from "../services/pushNotificationService";
+import { useNotifications } from "@/contexts/NotificationContext";
+import {
+  createSuccessNotification,
+  createErrorNotification,
+} from "@/utils/notificationUtils";
 
 const LaundryIndex = () => {
   const [currentView, setCurrentView] = useState("home");
