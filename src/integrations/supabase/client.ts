@@ -22,10 +22,13 @@ export const supabase = {
     }),
   }),
   storage: {
-    from: () => ({
-      upload: async () => ({ data: { path: "mock-path" }, error: null }),
-      getPublicUrl: () => ({
-        data: { publicUrl: "https://mock-url.com/file" },
+    from: (bucket: string) => ({
+      upload: async (path: string, file: File) => ({
+        data: { path },
+        error: null,
+      }),
+      getPublicUrl: (path: string) => ({
+        data: { publicUrl: `https://mock-url.com/${path}` },
       }),
     }),
   },
