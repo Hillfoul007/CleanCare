@@ -145,12 +145,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Detect mobile for custom modal
-  const isMobile =
-    window.innerWidth <= 768 ||
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent,
-    );
+  // Use the mobile state that's already being managed
 
   if (isMobile) {
     // Mobile-specific modal implementation with portal for better rendering
