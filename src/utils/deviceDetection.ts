@@ -73,6 +73,8 @@ export class DeviceDetectionService {
       userAgent,
       screenWidth,
       screenHeight,
+      hasGoodKeyboardSupport: this.hasGoodKeyboardSupport(),
+      supportsPhoneCalls: this.supportsPhoneCalls(),
     };
   }
 
