@@ -196,7 +196,12 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       );
 
       if (error) {
-        alert(`Failed to update booking: ${error.message}`);
+        addNotification(
+          createErrorNotification(
+            "Update Failed",
+            `Failed to update booking: ${error.message}`,
+          ),
+        );
         return;
       }
 
@@ -208,10 +213,20 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       setBookings(updatedBookings);
       setShowEditModal(false);
       setEditingBooking(null);
-      alert("Booking updated successfully!");
+      addNotification(
+        createSuccessNotification(
+          "Booking Updated",
+          "Your booking has been updated successfully!",
+        ),
+      );
     } catch (error) {
       console.error("Error updating booking:", error);
-      alert("Failed to update booking. Please try again.");
+      addNotification(
+        createErrorNotification(
+          "Update Failed",
+          "Failed to update booking. Please try again.",
+        ),
+      );
     }
   };
 
