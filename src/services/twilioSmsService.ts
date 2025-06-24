@@ -147,7 +147,8 @@ export class TwilioSmsService {
       const user = {
         id: Date.now().toString(),
         phone: phoneNumber,
-        full_name: name || "User",
+        full_name:
+          name && name.trim() ? name.trim() : `User ${phoneNumber.slice(-4)}`,
         user_type: "customer",
       };
 
