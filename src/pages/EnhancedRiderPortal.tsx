@@ -777,7 +777,7 @@ const EnhancedRiderPortal = () => {
             <CardContent>
               <LocationManager
                 onLocationChange={handleLocationSetup}
-                enableSaveToSupabase={true}
+                enableSaveToDatabase={true}
                 showFavorites={false}
                 showHistory={false}
               />
