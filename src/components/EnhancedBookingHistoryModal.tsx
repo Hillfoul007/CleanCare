@@ -18,7 +18,7 @@ interface EnhancedBookingHistoryModalProps {
 // Simplified component to prevent build errors
 const EnhancedBookingHistoryModal: React.FC<
   EnhancedBookingHistoryModalProps
-> = ({ isOpen, onClose, bookings }) => {
+> = ({ isOpen, onClose, bookings = [] }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
