@@ -26,7 +26,7 @@ interface BookingFlowProps {
   provider?: any;
   services?: any[];
   isMultipleServices?: boolean;
-  currentUser?: any;
+  currentUser?: User;
   userLocation?: string;
   locationCoordinates?: { lat: number; lng: number } | null;
   onBookingComplete: () => void;
