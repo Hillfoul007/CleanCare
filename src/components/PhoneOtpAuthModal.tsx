@@ -137,13 +137,16 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
   };
 
   const handleClose = () => {
-    onClose();
+    console.log("PhoneOtpAuthModal: handleClose called");
     resetForm();
+    onClose();
   };
 
   console.log("PhoneOtpAuthModal render:", { isOpen, currentStep });
 
   if (!isOpen) return null;
+
+  console.log("PhoneOtpAuthModal: isOpen=", isOpen, "isMobile=", isMobile);
 
   // Use the mobile state that's already being managed
 
