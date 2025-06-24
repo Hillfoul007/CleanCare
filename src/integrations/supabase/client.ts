@@ -21,6 +21,14 @@ export const supabase = {
       delete: () => ({ data: null, error: null }),
     }),
   }),
+  storage: {
+    from: () => ({
+      upload: async () => ({ data: { path: "mock-path" }, error: null }),
+      getPublicUrl: () => ({
+        data: { publicUrl: "https://mock-url.com/file" },
+      }),
+    }),
+  },
 };
 
 export default supabase;
