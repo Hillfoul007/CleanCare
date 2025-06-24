@@ -323,6 +323,7 @@ const LaundryIndex = () => {
         address: cartData.address,
         contactDetails: {
           phone: cartData.phone || currentUser.phone,
+          name: currentUser.full_name || currentUser.name || "User",
           instructions: cartData.instructions,
         },
         paymentStatus: "pending" as const,
