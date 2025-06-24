@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { TwilioSmsService } from "@/services/twilioSmsService";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PhoneOtpAuthModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const isMobile = useIsMobile();
 
   const [formData, setFormData] = useState({
     phone: "",
