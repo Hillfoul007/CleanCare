@@ -12,6 +12,7 @@ import {
 } from "@/utils/notificationUtils";
 
 const LaundryIndex = () => {
+  const { addNotification } = useNotifications();
   const [currentView, setCurrentView] = useState("home");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
