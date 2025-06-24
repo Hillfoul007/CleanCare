@@ -15,6 +15,7 @@ import {
   User,
   Shield,
   MessageSquare,
+  X,
 } from "lucide-react";
 import { TwilioSmsService } from "@/services/twilioSmsService";
 
