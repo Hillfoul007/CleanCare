@@ -239,14 +239,20 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
                 {currentUser && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:bg-white/20"
-                    onClick={handleViewBookings}
-                  >
-                    <Package className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                      onClick={handleViewBookings}
+                    >
+                      <Package className="h-4 w-4" />
+                    </Button>
+                    <div className="text-white">
+                      <NotificationPanel />
+                    </div>
+                  </>
+                }
                 )}
                 {window.location.hostname === "localhost" && (
                   <>
