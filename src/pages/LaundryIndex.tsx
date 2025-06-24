@@ -372,12 +372,7 @@ const LaundryIndex = () => {
         />
       )}
 
-      {currentView === "auth" && (
-        <WhatsAppAuth
-          onLoginSuccess={handleLoginSuccess}
-          onBack={() => setCurrentView("home")}
-        />
-      )}
+      {/* Authentication is now handled directly in ResponsiveLaundryHome via PhoneOtpAuthModal */}
 
       {currentView === "bookings" && (
         <MobileBookingHistory
