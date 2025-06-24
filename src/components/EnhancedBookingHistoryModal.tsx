@@ -10,7 +10,8 @@ import {
 interface EnhancedBookingHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  bookings: any[];
+  bookings?: any[];
+  currentUser?: any;
   onBookingUpdate?: (booking: any) => void;
 }
 
