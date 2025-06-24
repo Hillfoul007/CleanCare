@@ -337,7 +337,7 @@ const EnhancedRiderPortal = () => {
           riderProfile.service_radius_km,
           ["pending"],
         );
-        setPendingBookings(nearbyBookings);
+        setPendingBookings(nearbyBookings as BookingWithLocation[]);
       }
 
       // Get rider's active and completed bookings
