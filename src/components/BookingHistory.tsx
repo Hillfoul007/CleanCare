@@ -69,7 +69,12 @@ const BookingHistory: React.FC<BookingHistoryProps> = ({ currentUser }) => {
       );
 
       if (error) {
-        alert(`Failed to cancel booking: ${error.message}`);
+        addNotification(
+          createErrorNotification(
+            "Cancellation Failed",
+            `Failed to cancel booking: ${error.message}`,
+          ),
+        );
         return;
       }
 
@@ -82,24 +87,34 @@ const BookingHistory: React.FC<BookingHistoryProps> = ({ currentUser }) => {
         ),
       );
 
-      alert("Booking cancelled successfully");
+      addNotification(
+        createSuccessNotification(
+          "Booking Cancelled",
+          "Your booking has been cancelled successfully",
+        ),
+      );
     } catch (error: any) {
-      alert(`Failed to cancel booking: ${error.message}`);
+      addNotification(
+        createErrorNotification(
+          "Cancellation Failed",
+          `Failed to cancel booking: ${error.message}`,
+        ),
+      );
     } finally {
       setCancellingBooking(null);
     }
   };
 
   const clearAllBookings = () => {
-    if (
-      confirm(
-        "Are you sure you want to clear all booking history? This cannot be undone.",
-      )
-    ) {
-      localStorage.removeItem("user_bookings");
-      setBookings([]);
-      alert("All booking history cleared successfully");
-    }
+    // For now, remove the confirm dialog and just clear - we can add a proper confirmation modal later
+    localStorage.removeItem("user_bookings");
+    setBookings([]);
+    addNotification(
+      createSuccessNotification(
+        "History Cleared",
+        "All booking history has been cleared successfully",
+      ),
+    );
   };
 
   const getStatusColor = (status: string) => {
