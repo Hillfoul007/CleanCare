@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useNotifications } from "@/contexts/NotificationContext";
+import {
+  createSuccessNotification,
+  createErrorNotification,
+} from "@/utils/notificationUtils";
 import {
   Calendar,
   Clock,
