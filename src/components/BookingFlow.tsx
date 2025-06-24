@@ -285,7 +285,7 @@ const BookingFlow: React.FC<BookingFlowProps> = ({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <User className="h-5 w-5" />
+                <UserIcon className="h-5 w-5" />
                 Selected Services
               </CardTitle>
             </CardHeader>
