@@ -133,7 +133,7 @@ const EnhancedRiderPortal = () => {
     stopWatching,
   } = useLocation({
     autoGeocoding: true,
-    saveToSupabase: true,
+    saveToDatabase: true,
     watchPosition: false,
   });
 
