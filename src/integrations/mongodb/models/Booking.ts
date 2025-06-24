@@ -6,7 +6,13 @@ export interface Booking extends Document {
   rider_id?: string;
   service: string;
   service_type: string;
-  services: string[];
+  services: Array<{
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+    quantity: number;
+  }>;
   scheduled_date: string;
   scheduled_time: string;
   provider_name: string;
@@ -14,6 +20,11 @@ export interface Booking extends Document {
   coordinates?: {
     lat: number;
     lng: number;
+  };
+  contactDetails: {
+    phone: string;
+    name: string;
+    instructions?: string;
   };
   additional_details?: string;
   total_price: number;
