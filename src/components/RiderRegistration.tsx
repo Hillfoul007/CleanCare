@@ -706,7 +706,7 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
         <div className="mt-2">
           <LocationManager
             onLocationChange={handleLocationChange}
-            enableSaveToSupabase={false}
+            enableSaveToDatabase={false}
             showFavorites={false}
             showHistory={false}
           />
