@@ -113,6 +113,20 @@ const bookingSchema = new Schema<Booking>({
       default: null,
     },
   },
+  contactDetails: {
+    phone: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    instructions: {
+      type: String,
+      default: "",
+    },
+  },
   additional_details: {
     type: String,
     default: "",
