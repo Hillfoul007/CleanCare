@@ -2,17 +2,22 @@ import React, { useState, useEffect } from "react";
 import ResponsiveLaundryHome from "../components/ResponsiveLaundryHome";
 import LaundryCart from "../components/LaundryCart";
 import MobileBookingHistory from "../components/MobileBookingHistory";
-import WhatsAppAuth from "../components/WhatsAppAuth";
-import { WhatsAppOTPService } from "../services/whatsappOtpService";
+import { TwilioSmsService } from "../services/twilioSmsService";
 import PushNotificationService from "../services/pushNotificationService";
+import { useNotifications } from "@/contexts/NotificationContext";
+import {
+  createSuccessNotification,
+  createErrorNotification,
+} from "@/utils/notificationUtils";
 
 const LaundryIndex = () => {
+  const { addNotification } = useNotifications();
   const [currentView, setCurrentView] = useState("home");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentLocation, setCurrentLocation] = useState("");
 
-  const whatsappAuthService = WhatsAppOTPService.getInstance();
+  const authService = TwilioSmsService.getInstance();
   const pushService = PushNotificationService.getInstance();
 
   // Initialize PWA and check auth state
@@ -45,23 +50,23 @@ const LaundryIndex = () => {
 
   const checkAuthState = async () => {
     try {
-      // Check if user is logged in via WhatsApp
-      if (whatsappAuthService.isLoggedIn()) {
-        const user = whatsappAuthService.getCurrentUser();
+      // Check if user is logged in via Twilio SMS
+      if (authService.isAuthenticated()) {
+        const user = authService.getCurrentUser();
         if (user) {
           setCurrentUser(user);
           setIsLoggedIn(true);
-          console.log("✅ WhatsApp user already logged in:", user.name);
+          console.log("✅ User already logged in:", user.full_name);
         } else {
           setIsLoggedIn(false);
-          console.log("ℹ️ No WhatsApp user logged in");
+          console.log("ℹ️ No authenticated user found");
         }
       } else {
         setIsLoggedIn(false);
         console.log("ℹ️ No user authentication found");
       }
     } catch (error) {
-      console.error("Error checking WhatsApp auth state:", error);
+      console.error("Error checking auth state:", error);
       setIsLoggedIn(false);
     }
   };
@@ -256,13 +261,30 @@ const LaundryIndex = () => {
     setCurrentUser(user);
     setIsLoggedIn(true);
     setCurrentView("home");
-  };
+    console.log("✅ User logged in successfully:", user.full_name);
 
+    // Add success notification
+    addNotification(
+      createSuccessNotification(
+        "Welcome!",
+        `Hello ${user.full_name}, you're now logged in.`,
+      ),
+    );
+  };
   const handleLogout = () => {
-    whatsappAuthService.logout();
-    setCurrentUser(null);
+    authService.logout();
     setIsLoggedIn(false);
+    setCurrentUser(null);
     setCurrentView("home");
+    console.log("✅ User logged out");
+
+    // Add logout notification
+    addNotification(
+      createSuccessNotification(
+        "Goodbye!",
+        "You have been logged out successfully.",
+      ),
+    );
   };
 
   const handleViewCart = () => {
@@ -301,6 +323,7 @@ const LaundryIndex = () => {
         address: cartData.address,
         contactDetails: {
           phone: cartData.phone || currentUser.phone,
+          name: currentUser.full_name || currentUser.name || "User",
           instructions: cartData.instructions,
         },
         paymentStatus: "pending" as const,
@@ -311,8 +334,11 @@ const LaundryIndex = () => {
 
       if (result.success) {
         // Show success message
-        alert(
-          "Order placed successfully! You will receive a confirmation shortly.",
+        addNotification(
+          createSuccessNotification(
+            "Order Confirmed!",
+            "Your order has been placed successfully! You will receive a confirmation shortly.",
+          ),
         );
 
         // Clear cart
@@ -325,7 +351,12 @@ const LaundryIndex = () => {
       }
     } catch (error) {
       console.error("Checkout failed:", error);
-      alert("Failed to place order. Please try again.");
+      addNotification(
+        createErrorNotification(
+          "Order Failed",
+          "Failed to place order. Please try again.",
+        ),
+      );
     }
   };
 
@@ -342,12 +373,7 @@ const LaundryIndex = () => {
         />
       )}
 
-      {currentView === "auth" && (
-        <WhatsAppAuth
-          onLoginSuccess={handleLoginSuccess}
-          onBack={() => setCurrentView("home")}
-        />
-      )}
+      {/* Authentication is now handled directly in ResponsiveLaundryHome via PhoneOtpAuthModal */}
 
       {currentView === "bookings" && (
         <MobileBookingHistory

@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { useNotifications } from "@/contexts/NotificationContext";
+import {
+  createSuccessNotification,
+  createErrorNotification,
+} from "@/utils/notificationUtils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +47,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
   currentUser,
   onBack,
 }) => {
+  const { addNotification } = useNotifications();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -119,7 +126,12 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       );
 
       if (error) {
-        alert(`Failed to cancel booking: ${error.message}`);
+        addNotification(
+          createErrorNotification(
+            "Cancellation Failed",
+            `Failed to cancel booking: ${error.message}`,
+          ),
+        );
         return;
       }
 
@@ -134,10 +146,20 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       );
 
       setBookings(updatedBookings);
-      alert("Booking cancelled successfully!");
+      addNotification(
+        createSuccessNotification(
+          "Booking Cancelled",
+          "Your booking has been cancelled successfully!",
+        ),
+      );
     } catch (error) {
       console.error("Error cancelling booking:", error);
-      alert("Network error. Please check your connection and try again.");
+      addNotification(
+        createErrorNotification(
+          "Network Error",
+          "Please check your connection and try again.",
+        ),
+      );
     }
   };
 
@@ -180,7 +202,12 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       );
 
       if (error) {
-        alert(`Failed to update booking: ${error.message}`);
+        addNotification(
+          createErrorNotification(
+            "Update Failed",
+            `Failed to update booking: ${error.message}`,
+          ),
+        );
         return;
       }
 
@@ -192,10 +219,20 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       setBookings(updatedBookings);
       setShowEditModal(false);
       setEditingBooking(null);
-      alert("Booking updated successfully!");
+      addNotification(
+        createSuccessNotification(
+          "Booking Updated",
+          "Your booking has been updated successfully!",
+        ),
+      );
     } catch (error) {
       console.error("Error updating booking:", error);
-      alert("Failed to update booking. Please try again.");
+      addNotification(
+        createErrorNotification(
+          "Update Failed",
+          "Failed to update booking. Please try again.",
+        ),
+      );
     }
   };
 

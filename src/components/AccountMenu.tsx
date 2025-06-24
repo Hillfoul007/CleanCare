@@ -1,4 +1,9 @@
 import React from "react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { User } from "lucide-react";
+import { useNotifications } from "@/contexts/NotificationContext";
+import { createInfoNotification } from "@/utils/notificationUtils";
 import { User, History, LogOut, ChevronDown, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,9 +33,14 @@ const AccountMenu: React.FC<AccountMenuProps> = ({
   onViewBookings,
   className = "",
 }) => {
+  const { addNotification } = useNotifications();
+
   const handleAccountSettings = () => {
-    alert(
-      "Account Settings\n\n• Change Password\n• Update Profile\n• Notification Preferences\n• Privacy Settings\n• Payment Methods\n\nComing soon!",
+    addNotification(
+      createInfoNotification(
+        "Account Settings",
+        "Change Password, Update Profile, Notification Preferences, Privacy Settings, and Payment Methods - Coming soon!",
+      ),
     );
   };
 

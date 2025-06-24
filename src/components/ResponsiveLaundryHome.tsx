@@ -32,6 +32,7 @@ import EnhancedBookingHistoryModal from "./EnhancedBookingHistoryModal";
 import UserMenuDropdown from "./UserMenuDropdown";
 import DebugPanel from "./DebugPanel";
 import ConnectionStatus from "./ConnectionStatus";
+import NotificationPanel from "./NotificationPanel";
 import { TwilioSmsService } from "@/services/twilioSmsService";
 
 interface ResponsiveLaundryHomeProps {
@@ -238,35 +239,18 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1">
                 {currentUser && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:bg-white/20"
-                    onClick={handleViewBookings}
-                  >
-                    <Package className="h-4 w-4" />
-                  </Button>
-                )}
-                {window.location.hostname === "localhost" && (
                   <>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="text-white hover:bg-white/20"
-                      onClick={() => setShowDebugPanel(true)}
-                      title="Debug WhatsApp OTP"
+                      onClick={handleViewBookings}
                     >
-                      🐛
+                      <Package className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-white hover:bg-white/20"
-                      onClick={() => setIsMobile(!isMobile)}
-                      title="Toggle Mobile View"
-                    >
-                      📱
-                    </Button>
+                    <div className="text-white">
+                      <NotificationPanel />
+                    </div>
                   </>
                 )}
               </div>
@@ -276,16 +260,6 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                 <div className="flex items-center gap-1 text-xs text-green-100">
                   <Smartphone className="h-3 w-3" />
                   <span>Mobile</span>
-                  {/* Always show mobile toggle for debugging */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs px-1 py-0 h-4 ml-1"
-                    onClick={() => setIsMobile(false)}
-                    title="Switch to Desktop"
-                  >
-                    →🖥️
-                  </Button>
                 </div>
               </div>
             </div>
@@ -578,16 +552,6 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   <div className="flex items-center gap-1 text-xs text-gray-500">
                     <Monitor className="h-3 w-3" />
                     <span>Desktop</span>
-                    {/* Mobile toggle for testing */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs px-1 py-0 h-4 ml-1"
-                      onClick={() => setIsMobile(true)}
-                      title="Switch to Mobile"
-                    >
-                      →📱
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -612,6 +576,8 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   Bookings
                 </Button>
               )}
+
+              {currentUser && <NotificationPanel />}
 
               {currentUser ? (
                 <UserMenuDropdown

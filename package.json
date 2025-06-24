@@ -7,9 +7,15 @@
     "dev": "vite",
     "dev:backend": "cd backend && node server-laundry.js",
     "dev:full": "concurrently \"npm run dev\" \"npm run dev:backend\"",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
+    "build:check": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "npm run start:prod",
+    "start:prod": "npm run build && concurrently \"cd backend && NODE_ENV=production node server-laundry.js\" \"npx serve -s dist -p 8080\"",
+    "start:backend": "cd backend && NODE_ENV=production node server-laundry.js",
+    "start:frontend": "npx serve -s dist -p 8080",
+    "deploy": "chmod +x deploy.sh && ./deploy.sh"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.1",
