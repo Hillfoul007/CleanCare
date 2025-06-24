@@ -5,6 +5,10 @@ export interface Coordinates {
   lat: number;
   lng: number;
   accuracy?: number;
+  center?: {
+    lat: number;
+    lng: number;
+  };
 }
 
 export interface Booking {
