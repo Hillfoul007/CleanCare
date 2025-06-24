@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { TwilioSmsService } from "@/services/twilioSmsService";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PhoneOtpAuthModalProps {
   isOpen: boolean;
