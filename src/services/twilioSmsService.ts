@@ -12,13 +12,9 @@ export class TwilioSmsService {
     this.phoneNumber = import.meta.env.VITE_TWILIO_PHONE_NUMBER || "";
 
     if (!this.accountSid || !this.authToken || !this.phoneNumber) {
-      if (import.meta.env.DEV || window.location.hostname === "localhost") {
-        console.info(
-          "ℹ️ Twilio credentials not configured - development mode enabled",
-        );
-      } else {
-        console.error("❌ Twilio credentials not configured");
-      }
+      console.error("❌ Twilio credentials not configured");
+    } else {
+      console.log("✅ Twilio SMS service initialized");
     }
   }
 
@@ -31,28 +27,8 @@ export class TwilioSmsService {
 
   async sendOTP(phoneNumber: string): Promise<boolean> {
     try {
-      // Development mode fallback when Twilio credentials are not configured
       if (!this.accountSid || !this.authToken || !this.phoneNumber) {
-        console.warn(
-          "⚠️ Twilio credentials not configured - using development mode",
-        );
-
-        // In development mode, simulate OTP sending
-        if (import.meta.env.DEV || window.location.hostname === "localhost") {
-          // Generate and store a development OTP
-          const otp = "123456"; // Fixed OTP for development
-          this.storedOTP = otp;
-          this.currentPhone = phoneNumber;
-
-          console.log(`🧪 Development Mode: OTP for ${phoneNumber} is: ${otp}`);
-
-          // Simulate network delay
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          return true;
-        } else {
-          throw new Error("Twilio credentials not configured");
-        }
+        throw new Error("Twilio credentials not configured");
       }
 
       // Generate 6-digit OTP
