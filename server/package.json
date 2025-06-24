@@ -1,0 +1,24 @@
+{
+  "name": "home-services-backend",
+  "version": "1.0.0",
+  "description": "MongoDB backend for Home Services app",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "express": "*",
+    "mongoose": "*",
+    "mongodb": "*",
+    "bcryptjs": "*",
+    "jsonwebtoken": "*",
+    "cors": "*",
+    "helmet": "*",
+    "compression": "*",
+    "morgan": "*",
+    "express-rate-limit": "*",
+    "dotenv": "*"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "cleancare-backend",
+  "version": "1.0.0",
+  "description": "CleanCare Laundry App Backend API",
+  "main": "production-server.js",
+  "scripts": {
+    "start": "node production-server.js",
+    "dev": "nodemon production-server.js",
+    "test": "echo 'No tests yet' && exit 0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongodb": "^6.0.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "compression": "^1.7.4",
+    "express-rate-limit": "^6.8.1",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": ["laundry", "api", "mongodb", "express"],
+  "author": "CleanCare Team",
+  "license": "MIT"
+}

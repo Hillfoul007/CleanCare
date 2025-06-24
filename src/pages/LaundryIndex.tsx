@@ -1,0 +1,370 @@
+import React, { useState, useEffect } from "react";
+import ResponsiveLaundryHome from "../components/ResponsiveLaundryHome";
+import LaundryCart from "../components/LaundryCart";
+import MobileBookingHistory from "../components/MobileBookingHistory";
+import { WhatsAppOTPService } from "../services/whatsappOtpService";
+import PushNotificationService from "../services/pushNotificationService";
+
+const LaundryIndex = () => {
+  const [currentView, setCurrentView] = useState("home");
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState("");
+
+  const whatsappAuthService = WhatsAppOTPService.getInstance();
+  const pushService = PushNotificationService.getInstance();
+
+  // Initialize PWA and check auth state
+  useEffect(() => {
+    initializeApp();
+    checkAuthState();
+    getUserLocation();
+  }, []);
+
+  const initializeApp = async () => {
+    // Initialize PWA features
+    await pushService.initializePWA();
+
+    // Add manifest link to head if not present
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const manifestLink = document.createElement("link");
+      manifestLink.rel = "manifest";
+      manifestLink.href = "/manifest.json";
+      document.head.appendChild(manifestLink);
+    }
+
+    // Add theme color meta tag
+    if (!document.querySelector('meta[name="theme-color"]')) {
+      const themeColorMeta = document.createElement("meta");
+      themeColorMeta.name = "theme-color";
+      themeColorMeta.content = "#22c55e";
+      document.head.appendChild(themeColorMeta);
+    }
+  };
+
+  const checkAuthState = async () => {
+    try {
+      // Check if user is logged in via WhatsApp
+      if (whatsappAuthService.isLoggedIn()) {
+        const user = whatsappAuthService.getCurrentUser();
+        if (user) {
+          setCurrentUser(user);
+          setIsLoggedIn(true);
+          console.log("✅ WhatsApp user already logged in:", user.name);
+        } else {
+          setIsLoggedIn(false);
+          console.log("ℹ️ No WhatsApp user logged in");
+        }
+      } else {
+        setIsLoggedIn(false);
+        console.log("ℹ️ No user authentication found");
+      }
+    } catch (error) {
+      console.error("Error checking WhatsApp auth state:", error);
+      setIsLoggedIn(false);
+    }
+  };
+
+  const getUserLocation = async () => {
+    setCurrentLocation("Detecting location...");
+
+    if (!navigator.geolocation) {
+      setCurrentLocation("India");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+
+          // Store coordinates for later use
+          console.log(`📍 Location coordinates: ${latitude}, ${longitude}`);
+
+          // Try to get readable address with multiple fallbacks
+          let displayLocation = await getReverseGeocodedLocation(
+            latitude,
+            longitude,
+          );
+
+          setCurrentLocation(displayLocation);
+        } catch (error) {
+          console.error("Geocoding error:", error);
+          // Fallback to a generic location
+          setCurrentLocation("India");
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setCurrentLocation("Enable location access");
+      },
+      {
+        enableHighAccuracy: false, // Less accurate but faster
+        timeout: 10000, // Reduced timeout
+        maximumAge: 600000, // Cache for 10 minutes
+      },
+    );
+  };
+
+  // Helper function for reverse geocoding with multiple fallbacks
+  const getReverseGeocodedLocation = async (
+    latitude: number,
+    longitude: number,
+  ): Promise<string> => {
+    // Method 1: Try Google Maps API if available
+    const googleApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (googleApiKey) {
+      try {
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googleApiKey}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          },
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.results && data.results.length > 0) {
+            const result = data.results[0];
+
+            // Extract city from address components
+            const cityComponent = result.address_components?.find(
+              (component: any) =>
+                component.types.includes("locality") ||
+                component.types.includes("administrative_area_level_2"),
+            );
+
+            const stateComponent = result.address_components?.find(
+              (component: any) =>
+                component.types.includes("administrative_area_level_1"),
+            );
+
+            if (cityComponent) {
+              return stateComponent &&
+                cityComponent.long_name !== stateComponent.long_name
+                ? `${cityComponent.long_name}, ${stateComponent.long_name}`
+                : cityComponent.long_name;
+            }
+          }
+        }
+      } catch (error) {
+        console.log("Google Maps geocoding failed:", error);
+      }
+    }
+
+    // Method 2: Try OpenStreetMap with better error handling
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=12&addressdetails=1`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "CleanCare-App",
+          },
+          signal: controller.signal,
+        },
+      );
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data.address) {
+          const city =
+            data.address.city ||
+            data.address.town ||
+            data.address.village ||
+            data.address.suburb;
+
+          const state = data.address.state;
+
+          if (city) {
+            return state && city !== state ? `${city}, ${state}` : city;
+          } else if (state) {
+            return state;
+          }
+        }
+      }
+    } catch (error) {
+      console.log("OpenStreetMap geocoding failed:", error);
+    }
+
+    // Method 3: Fallback based on approximate coordinates (India regions)
+    if (latitude >= 8 && latitude <= 37 && longitude >= 68 && longitude <= 97) {
+      // Rough approximations for major Indian cities
+      if (
+        latitude >= 28.4 &&
+        latitude <= 28.8 &&
+        longitude >= 76.8 &&
+        longitude <= 77.3
+      ) {
+        return "Delhi";
+      } else if (
+        latitude >= 18.8 &&
+        latitude <= 19.3 &&
+        longitude >= 72.7 &&
+        longitude <= 73.0
+      ) {
+        return "Mumbai";
+      } else if (
+        latitude >= 12.8 &&
+        latitude <= 13.1 &&
+        longitude >= 77.4 &&
+        longitude <= 77.8
+      ) {
+        return "Bangalore";
+      } else if (
+        latitude >= 22.4 &&
+        latitude <= 22.7 &&
+        longitude >= 88.2 &&
+        longitude <= 88.5
+      ) {
+        return "Kolkata";
+      } else if (
+        latitude >= 17.2 &&
+        latitude <= 17.6 &&
+        longitude >= 78.2 &&
+        longitude <= 78.7
+      ) {
+        return "Hyderabad";
+      } else if (
+        latitude >= 13.0 &&
+        latitude <= 13.2 &&
+        longitude >= 80.1 &&
+        longitude <= 80.3
+      ) {
+        return "Chennai";
+      } else {
+        return "India"; // Generic fallback for India
+      }
+    }
+
+    // Final fallback
+    return "Location detected";
+  };
+
+  const handleLoginSuccess = (user: any) => {
+    setCurrentUser(user);
+    setIsLoggedIn(true);
+    setCurrentView("home");
+  };
+
+  const handleLogout = () => {
+    whatsappAuthService.logout();
+    setCurrentUser(null);
+    setIsLoggedIn(false);
+    setCurrentView("home");
+  };
+
+  const handleViewCart = () => {
+    // Allow cart access without authentication
+    setCurrentView("cart");
+  };
+
+  const handleViewBookings = () => {
+    if (!isLoggedIn) {
+      // Show auth modal for bookings access
+      setCurrentView("auth");
+      return;
+    }
+    setCurrentView("bookings");
+  };
+
+  const handleProceedToCheckout = async (cartData: any) => {
+    // User is authenticated at this point (checked in LaundryCart)
+    console.log("Processing checkout for authenticated user:", cartData);
+
+    try {
+      // Import booking service
+      const { BookingService } = await import("../services/bookingService");
+      const bookingService = BookingService.getInstance();
+
+      // Create booking with proper structure
+      const bookingData = {
+        userId: currentUser.id || currentUser.phone,
+        services: cartData.services,
+        totalAmount: cartData.totalAmount,
+        status: "pending" as const,
+        pickupDate: cartData.pickupDate,
+        deliveryDate: cartData.deliveryDate,
+        pickupTime: cartData.pickupTime,
+        deliveryTime: cartData.deliveryTime,
+        address: cartData.address,
+        contactDetails: {
+          phone: cartData.phone || currentUser.phone,
+          instructions: cartData.instructions,
+        },
+        paymentStatus: "pending" as const,
+      };
+
+      // Save booking to database/localStorage
+      const result = await bookingService.createBooking(bookingData);
+
+      if (result.success) {
+        // Show success message
+        alert(
+          "Order placed successfully! You will receive a confirmation shortly.",
+        );
+
+        // Clear cart
+        localStorage.removeItem("laundry_cart");
+
+        // Stay on home page instead of auto-redirecting to bookings
+        setCurrentView("home");
+      } else {
+        throw new Error(result.error || "Failed to create booking");
+      }
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      alert("Failed to place order. Please try again.");
+    }
+  };
+
+  return (
+    <div className="min-h-screen">
+      {currentView === "home" && (
+        <ResponsiveLaundryHome
+          currentUser={currentUser}
+          userLocation={currentLocation}
+          onLoginSuccess={handleLoginSuccess}
+          onViewCart={handleViewCart}
+          onViewBookings={handleViewBookings}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {currentView === "auth" && (
+        <WhatsAppAuth
+          onLoginSuccess={handleLoginSuccess}
+          onBack={() => setCurrentView("home")}
+        />
+      )}
+
+      {currentView === "bookings" && (
+        <MobileBookingHistory
+          currentUser={currentUser}
+          onBack={() => setCurrentView("home")}
+        />
+      )}
+
+      {currentView === "cart" && (
+        <LaundryCart
+          onBack={() => setCurrentView("home")}
+          onProceedToCheckout={handleProceedToCheckout}
+          onLoginRequired={() => setCurrentView("auth")}
+          currentUser={currentUser}
+        />
+      )}
+    </div>
+  );
+};
+
+export default LaundryIndex;
