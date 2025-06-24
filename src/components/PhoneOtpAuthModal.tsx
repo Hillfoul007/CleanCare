@@ -140,11 +140,13 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     resetForm();
   };
 
+  console.log("PhoneOtpAuthModal render:", { isOpen, currentStep });
+
   if (!isOpen) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md z-[9999] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         <DialogHeader>
           <div className="flex items-center justify-between">
             {currentStep === "otp" && (
