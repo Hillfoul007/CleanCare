@@ -549,8 +549,14 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                 />
               ) : (
                 <Button
-                  onClick={handleLogin}
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Desktop signin button clicked");
+                    handleLogin();
+                  }}
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 cursor-pointer"
+                  type="button"
                 >
                   <User className="h-4 w-4 mr-2" />
                   Sign In
