@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ResponsiveLaundryHome from "../components/ResponsiveLaundryHome";
 import LaundryCart from "../components/LaundryCart";
 import MobileBookingHistory from "../components/MobileBookingHistory";
+import WhatsAppAuth from "../components/WhatsAppAuth";
 import { WhatsAppOTPService } from "../services/whatsappOtpService";
 import PushNotificationService from "../services/pushNotificationService";
 
