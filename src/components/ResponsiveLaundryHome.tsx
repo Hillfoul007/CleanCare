@@ -274,21 +274,40 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   onUpdateProfile={handleUpdateProfile}
                 />
               ) : (
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log("Mobile signin button clicked");
-                    handleLogin();
-                  }}
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/10 px-3 py-2 min-h-[44px] min-w-[44px] touch-manipulation cursor-pointer"
-                  type="button"
-                >
-                  <User className="h-4 w-4 mr-1" />
-                  <span className="text-sm">Sign In</span>
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log("Mobile signin button clicked");
+                      handleLogin();
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-white/10 px-3 py-2 min-h-[44px] min-w-[44px] touch-manipulation cursor-pointer"
+                    type="button"
+                  >
+                    <User className="h-4 w-4 mr-1" />
+                    <span className="text-sm">Sign In</span>
+                  </Button>
+                  {/* Debug button to test click handling */}
+                  {window.location.hostname === "localhost" && (
+                    <Button
+                      onClick={() => {
+                        alert("Test click works! Modal issue detected.");
+                        console.log(
+                          "Test button clicked - basic click handling works",
+                        );
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/10 px-2 py-2"
+                      title="Test Click"
+                    >
+                      🧪
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           </div>
