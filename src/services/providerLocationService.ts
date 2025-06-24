@@ -5,6 +5,10 @@ export interface Coordinates {
   lat: number;
   lng: number;
   accuracy?: number;
+  center?: {
+    lat: number;
+    lng: number;
+  };
 }
 
 export interface Booking {
@@ -34,6 +38,9 @@ export interface Provider {
   hourly_rate: number;
   coordinates?: Coordinates;
 }
+
+export type NearbyProvider = Provider;
+export type NearbyRider = Rider;
 
 class ProviderLocationService {
   /**
@@ -91,6 +98,59 @@ class ProviderLocationService {
     // Mock implementation
     console.log("Mock: Creating delivery request", requestData);
     return { id: `delivery_${Date.now()}` };
+  }
+
+  /**
+   * Create booking with location
+   */
+  async createBookingWithLocation(
+    bookingData: any,
+    coordinates: Coordinates,
+  ): Promise<{ id: string } | null> {
+    console.log("Mock: Creating booking with location", {
+      bookingData,
+      coordinates,
+    });
+    return { id: `booking_${Date.now()}` };
+  }
+
+  /**
+   * Assign optimal rider
+   */
+  async assignOptimalRider(
+    bookingId: string,
+    coordinates: Coordinates,
+  ): Promise<Rider | null> {
+    console.log("Mock: Assigning optimal rider", { bookingId, coordinates });
+    return null;
+  }
+
+  /**
+   * Get location analytics
+   */
+  async getLocationAnalytics(coordinates: Coordinates): Promise<any> {
+    console.log("Mock: Getting location analytics", coordinates);
+    return {
+      nearbyProviders: 0,
+      averageResponseTime: "15 min",
+      demandLevel: "medium",
+    };
+  }
+
+  /**
+   * Get bookings in area
+   */
+  async getBookingsInArea(
+    coordinates: Coordinates,
+    radiusKm: number = 5,
+    statusFilter?: string[],
+  ): Promise<Booking[]> {
+    console.log("Mock: Getting bookings in area", {
+      coordinates,
+      radiusKm,
+      statusFilter,
+    });
+    return [];
   }
 
   /**

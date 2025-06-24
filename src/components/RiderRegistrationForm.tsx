@@ -472,7 +472,7 @@ const RiderRegistrationForm: React.FC<RiderRegistrationFormProps> = ({
           onLocationChange={handleLocationChange}
           showInTopBar={false}
           className="border rounded-xl p-4"
-          enableSaveToSupabase={false}
+          enableSaveToDatabase={false}
           showFavorites={false}
           showHistory={false}
         />

@@ -7,6 +7,8 @@ export interface DeviceInfo {
   userAgent: string;
   screenWidth: number;
   screenHeight: number;
+  hasGoodKeyboardSupport: boolean;
+  supportsPhoneCalls: boolean;
 }
 
 export class DeviceDetectionService {
@@ -71,6 +73,8 @@ export class DeviceDetectionService {
       userAgent,
       screenWidth,
       screenHeight,
+      hasGoodKeyboardSupport: this.hasGoodKeyboardSupport(),
+      supportsPhoneCalls: this.supportsPhoneCalls(),
     };
   }
 

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import type { User } from "@/integrations/mongodb/models/User";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +11,7 @@ import {
   MapPin,
   Clock,
   DollarSign,
-  User,
+  User as UserIcon,
   Phone,
 } from "lucide-react";
 import DateTimePicker from "./DateTimePicker";
@@ -25,7 +26,7 @@ interface BookingFlowProps {
   provider?: any;
   services?: any[];
   isMultipleServices?: boolean;
-  currentUser?: any;
+  currentUser?: User;
   userLocation?: string;
   locationCoordinates?: { lat: number; lng: number } | null;
   onBookingComplete: () => void;
@@ -284,7 +285,7 @@ const BookingFlow: React.FC<BookingFlowProps> = ({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <User className="h-5 w-5" />
+                <UserIcon className="h-5 w-5" />
                 Selected Services
               </CardTitle>
             </CardHeader>

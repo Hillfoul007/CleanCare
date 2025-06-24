@@ -356,4 +356,34 @@ export const riderHelpers = {
       };
     }
   },
+
+  // Get rider bookings
+  async getRiderBookings(riderId: string) {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/riders/${riderId}/bookings`,
+        {
+          method: "GET",
+          headers: getAuthHeaders(),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return {
+          data: [],
+          error: { message: data.error || "Failed to fetch rider bookings" },
+        };
+      }
+
+      return { data: data.bookings || [], error: null };
+    } catch (error: any) {
+      console.error("Rider bookings fetch error:", error);
+      return {
+        data: [],
+        error: { message: "Network error. Please check your connection." },
+      };
+    }
+  },
 };

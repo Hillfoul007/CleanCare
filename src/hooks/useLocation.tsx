@@ -30,6 +30,7 @@ export interface LocationState {
 
 export interface UseLocationReturn extends LocationState {
   detectLocation: () => Promise<void>;
+  getCurrentLocation: () => Promise<void>;
   clearLocation: () => void;
   clearError: () => void;
   updateAddress: (address: string, coordinates?: Coordinates) => void;
@@ -512,6 +513,7 @@ export const useLocation = (
   return {
     ...state,
     detectLocation,
+    getCurrentLocation: detectLocation,
     clearLocation,
     clearError,
     updateAddress,

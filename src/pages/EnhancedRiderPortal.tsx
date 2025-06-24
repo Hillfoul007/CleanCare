@@ -84,7 +84,7 @@ const EnhancedRiderPortal = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [riderProfile, setRiderProfile] = useState<RiderProfile | null>(null);
   const [authStep, setAuthStep] = useState<
-    "login" | "register" | "location" | "ready"
+    "login" | "register" | "location" | "ready" | "auth"
   >("login");
   const [showRegistration, setShowRegistration] = useState(false);
 
@@ -133,7 +133,7 @@ const EnhancedRiderPortal = () => {
     stopWatching,
   } = useLocation({
     autoGeocoding: true,
-    saveToSupabase: true,
+    saveToDatabase: true,
     watchPosition: false,
   });
 
@@ -238,9 +238,9 @@ const EnhancedRiderPortal = () => {
 
     const trackLocation = async () => {
       try {
-        const coordinates = await getCurrentLocation();
-        if (coordinates) {
-          await updateRiderLocation(coordinates);
+        await getCurrentLocation();
+        if (currentLocation) {
+          await updateRiderLocation(currentLocation);
         }
       } catch (error) {
         console.error("Location tracking error:", error);
@@ -270,10 +270,11 @@ const EnhancedRiderPortal = () => {
     if (!riderProfile) return;
 
     try {
-      await providerLocationService.updateRiderLocation(riderProfile.id, {
+      await providerLocationService.updateRiderLocation(
+        riderProfile.id,
         coordinates,
         address,
-      });
+      );
 
       // Update local state
       setRiderProfile((prev) =>
@@ -336,7 +337,7 @@ const EnhancedRiderPortal = () => {
           riderProfile.service_radius_km,
           ["pending"],
         );
-        setPendingBookings(nearbyBookings);
+        setPendingBookings(nearbyBookings as BookingWithLocation[]);
       }
 
       // Get rider's active and completed bookings
@@ -777,7 +778,7 @@ const EnhancedRiderPortal = () => {
             <CardContent>
               <LocationManager
                 onLocationChange={handleLocationSetup}
-                enableSaveToSupabase={true}
+                enableSaveToDatabase={true}
                 showFavorites={false}
                 showHistory={false}
               />

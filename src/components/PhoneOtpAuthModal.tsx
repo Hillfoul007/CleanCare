@@ -15,6 +15,7 @@ import {
   User,
   Shield,
   MessageSquare,
+  X,
 } from "lucide-react";
 import { TwilioSmsService } from "@/services/twilioSmsService";
 
@@ -140,11 +141,202 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     resetForm();
   };
 
+  console.log("PhoneOtpAuthModal render:", { isOpen, currentStep });
+
   if (!isOpen) return null;
+
+  // Detect mobile for custom modal
+  const isMobile =
+    window.innerWidth <= 768 ||
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent,
+    );
+
+  if (isMobile) {
+    // Mobile-specific modal implementation
+    return (
+      <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              {currentStep === "otp" && (
+                <Button variant="ghost" size="sm" onClick={handleBack}>
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              )}
+              <h2 className="text-lg font-semibold text-center flex-1">
+                <div className="flex items-center justify-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-green-600" />
+                  {currentStep === "phone"
+                    ? "Sign In with Phone"
+                    : "Verify OTP"}
+                </div>
+              </h2>
+              <Button variant="ghost" size="sm" onClick={handleClose}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Mobile content will be added here */}
+            <div className="space-y-4">
+              {/* Phone Step */}
+              {currentStep === "phone" && (
+                <form onSubmit={handleSendOTP} className="space-y-4">
+                  <div>
+                    <Label htmlFor="name" className="text-sm font-medium">
+                      Full Name
+                    </Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      className="mt-1"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="phone" className="text-sm font-medium">
+                      Phone Number
+                    </Label>
+                    <div className="mt-1 relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="+91 9876543210"
+                        value={formData.phone}
+                        onChange={(e) =>
+                          setFormData({ ...formData, phone: e.target.value })
+                        }
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                      <div className="flex">
+                        <AlertCircle className="h-4 w-4 text-red-400 mt-0.5" />
+                        <p className="ml-2 text-sm text-red-600">{error}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                      <p className="text-sm text-green-600">{success}</p>
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Sending OTP...
+                      </div>
+                    ) : (
+                      <>
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Send OTP
+                      </>
+                    )}
+                  </Button>
+                </form>
+              )}
+
+              {/* OTP Step */}
+              {currentStep === "otp" && (
+                <form onSubmit={handleVerifyOTP} className="space-y-4">
+                  <div className="text-center">
+                    <Shield className="h-12 w-12 text-green-600 mx-auto mb-2" />
+                    <p className="text-sm text-gray-600">
+                      Enter the 6-digit code sent to
+                    </p>
+                    <p className="font-medium">{formData.phone}</p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="otp" className="text-sm font-medium">
+                      Verification Code
+                    </Label>
+                    <Input
+                      id="otp"
+                      type="text"
+                      placeholder="123456"
+                      value={formData.otp}
+                      onChange={(e) =>
+                        setFormData({ ...formData, otp: e.target.value })
+                      }
+                      maxLength={6}
+                      className="mt-1 text-center text-lg tracking-wider"
+                      required
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                      <div className="flex">
+                        <AlertCircle className="h-4 w-4 text-red-400 mt-0.5" />
+                        <p className="ml-2 text-sm text-red-600">{error}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                      <p className="text-sm text-green-600">{success}</p>
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        Verifying...
+                      </div>
+                    ) : (
+                      <>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Verify & Sign In
+                      </>
+                    )}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={handleSendOTP}
+                    disabled={isLoading}
+                    className="w-full"
+                  >
+                    Resend OTP
+                  </Button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[95vw] max-w-md mx-auto my-8 z-[9999] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
             {currentStep === "otp" && (

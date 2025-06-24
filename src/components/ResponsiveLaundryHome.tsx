@@ -65,12 +65,36 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   // Detect screen size
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsMobile(window.innerWidth < 768);
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const userAgent = navigator.userAgent;
+
+      // More comprehensive mobile detection
+      const isMobileUserAgent =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(
+          userAgent,
+        );
+      const isMobileViewport =
+        width <= 768 || (width <= 1024 && height <= 1366); // Include tablets in portrait
+      const isTouchDevice =
+        "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+      const isMobileDevice =
+        isMobileUserAgent || (isMobileViewport && isTouchDevice);
+
+      setIsMobile(isMobileDevice);
+      console.log(
+        `Mobile detection: width=${width}, height=${height}, userAgent=${isMobileUserAgent}, viewport=${isMobileViewport}, touch=${isTouchDevice}, final=${isMobileDevice}`,
+      );
     };
 
     checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
-    return () => window.removeEventListener("resize", checkScreenSize);
+    window.addEventListener("orientationchange", checkScreenSize);
+    return () => {
+      window.removeEventListener("resize", checkScreenSize);
+      window.removeEventListener("orientationchange", checkScreenSize);
+    };
   }, []);
 
   // Load cart from localStorage
@@ -138,6 +162,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   };
 
   const handleLogin = () => {
+    console.log("handleLogin clicked, setting showAuthModal to true");
     setShowAuthModal(true);
   };
 
@@ -223,15 +248,26 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   </Button>
                 )}
                 {window.location.hostname === "localhost" && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-white hover:bg-white/20"
-                    onClick={() => setShowDebugPanel(true)}
-                    title="Debug WhatsApp OTP"
-                  >
-                    🐛
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                      onClick={() => setShowDebugPanel(true)}
+                      title="Debug WhatsApp OTP"
+                    >
+                      🐛
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                      onClick={() => setIsMobile(!isMobile)}
+                      title="Toggle Mobile View"
+                    >
+                      📱
+                    </Button>
+                  </>
                 )}
               </div>
 
@@ -240,6 +276,16 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                 <div className="flex items-center gap-1 text-xs text-green-100">
                   <Smartphone className="h-3 w-3" />
                   <span>Mobile</span>
+                  {/* Always show mobile toggle for debugging */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs px-1 py-0 h-4 ml-1"
+                    onClick={() => setIsMobile(false)}
+                    title="Switch to Desktop"
+                  >
+                    →🖥️
+                  </Button>
                 </div>
               </div>
             </div>
@@ -255,14 +301,40 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   onUpdateProfile={handleUpdateProfile}
                 />
               ) : (
-                <Button
-                  onClick={handleLogin}
-                  variant="ghost"
-                  size="sm"
-                  className="text-white hover:bg-white/10 p-2"
-                >
-                  <User className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log("Mobile signin button clicked");
+                      handleLogin();
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white hover:bg-white/10 px-3 py-2 min-h-[44px] min-w-[44px] touch-manipulation cursor-pointer"
+                    type="button"
+                  >
+                    <User className="h-4 w-4 mr-1" />
+                    <span className="text-sm">Sign In</span>
+                  </Button>
+                  {/* Debug button to test click handling */}
+                  {window.location.hostname === "localhost" && (
+                    <Button
+                      onClick={() => {
+                        alert("Test click works! Modal issue detected.");
+                        console.log(
+                          "Test button clicked - basic click handling works",
+                        );
+                      }}
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/10 px-2 py-2"
+                      title="Test Click"
+                    >
+                      🧪
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -503,9 +575,19 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   <h1 className="text-2xl font-bold text-gray-900">
                     CleanCare Pro
                   </h1>
-                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                  <div className="flex items-center gap-1 text-xs text-gray-500">
                     <Monitor className="h-3 w-3" />
                     <span>Desktop</span>
+                    {/* Mobile toggle for testing */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs px-1 py-0 h-4 ml-1"
+                      onClick={() => setIsMobile(true)}
+                      title="Switch to Mobile"
+                    >
+                      →📱
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -540,8 +622,14 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                 />
               ) : (
                 <Button
-                  onClick={handleLogin}
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log("Desktop signin button clicked");
+                    handleLogin();
+                  }}
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 cursor-pointer"
+                  type="button"
                 >
                   <User className="h-4 w-4 mr-2" />
                   Sign In
@@ -765,9 +853,16 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
         )}
 
         {/* Authentication Modal */}
+        {console.log(
+          "Rendering PhoneOtpAuthModal, showAuthModal:",
+          showAuthModal,
+        )}
         <PhoneOtpAuthModal
           isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
+          onClose={() => {
+            console.log("PhoneOtpAuthModal onClose called");
+            setShowAuthModal(false);
+          }}
           onSuccess={handleAuthSuccess}
         />
 

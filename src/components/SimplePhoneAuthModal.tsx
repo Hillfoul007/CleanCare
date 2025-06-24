@@ -119,7 +119,9 @@ const SimplePhoneAuthModal: React.FC<SimplePhoneAuthModalProps> = ({
 
   const createUserInMongoDB = async (userData: any) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register-phone`, {
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
+      const response = await fetch(`${apiBaseUrl}/auth/register-phone`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),

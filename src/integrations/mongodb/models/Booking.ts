@@ -6,7 +6,13 @@ export interface Booking extends Document {
   rider_id?: string;
   service: string;
   service_type: string;
-  services: string[];
+  services: Array<{
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+    quantity: number;
+  }>;
   scheduled_date: string;
   scheduled_time: string;
   provider_name: string;
@@ -14,6 +20,11 @@ export interface Booking extends Document {
   coordinates?: {
     lat: number;
     lng: number;
+  };
+  contactDetails: {
+    phone: string;
+    name: string;
+    instructions?: string;
   };
   additional_details?: string;
   total_price: number;
@@ -54,8 +65,26 @@ const bookingSchema = new Schema<Booking>({
   },
   services: [
     {
-      type: String,
-      required: true,
+      id: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      category: {
+        type: String,
+        required: true,
+      },
+      price: {
+        type: Number,
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
     },
   ],
   scheduled_date: {
@@ -82,6 +111,20 @@ const bookingSchema = new Schema<Booking>({
     lng: {
       type: Number,
       default: null,
+    },
+  },
+  contactDetails: {
+    phone: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    instructions: {
+      type: String,
+      default: "",
     },
   },
   additional_details: {

@@ -31,6 +31,7 @@ export interface BookingDetails {
   };
   contactDetails: {
     phone: string;
+    name: string;
     instructions?: string;
   };
   paymentStatus: "pending" | "paid" | "failed";
@@ -138,9 +139,14 @@ export class BookingService {
       const mongoBookings = await this.mongoService.getUserBookings(userId);
       if (mongoBookings && mongoBookings.length > 0) {
         console.log("✅ Bookings loaded from MongoDB:", mongoBookings.length);
+        // Map mongoBookings to include paymentStatus
+        const mappedBookings = mongoBookings.map((booking) => ({
+          ...booking,
+          paymentStatus: booking.payment_status || "pending",
+        }));
         return {
           success: true,
-          bookings: mongoBookings,
+          bookings: mappedBookings,
         };
       }
     } catch (error) {

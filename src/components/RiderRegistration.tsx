@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { riderHelpers } from "@/integrations/mongodb/riderHelpers";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -107,7 +109,7 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
   const { currentLocation, currentAddress, saveLocation, favoriteLocations } =
     useLocation({
       autoGeocoding: true,
-      saveToSupabase: true,
+      saveToDatabase: true,
     });
 
   const vehicleTypes = [
@@ -341,13 +343,11 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
 
       // 3. Save base location
       if (riderData.base_coordinates) {
-        await saveLocation({
-          address: riderData.base_location,
-          coordinates: riderData.base_coordinates,
-          location_type: "work",
-          name: "Base Location",
-          is_favorite: true,
-        });
+        await saveLocation(
+          riderData.base_location,
+          riderData.base_coordinates,
+          { name: "Base Location", isFavorite: true },
+        );
       }
 
       // 4. Create rider profile
@@ -368,7 +368,7 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
         emergency_contact_phone: riderData.emergency_contact_phone,
         availability_hours: riderData.availability_hours,
         documents: documentUrls,
-        status: "pending",
+        status: "pending" as const,
         is_online: false,
         rating: 0,
         completed_deliveries: 0,
@@ -706,7 +706,7 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
         <div className="mt-2">
           <LocationManager
             onLocationChange={handleLocationChange}
-            enableSaveToSupabase={false}
+            enableSaveToDatabase={false}
             showFavorites={false}
             showHistory={false}
           />
