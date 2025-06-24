@@ -513,6 +513,7 @@ export const useLocation = (
   return {
     ...state,
     detectLocation,
+    getCurrentLocation: detectLocation,
     clearLocation,
     clearError,
     updateAddress,
