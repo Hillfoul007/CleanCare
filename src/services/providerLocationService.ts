@@ -35,6 +35,9 @@ export interface Provider {
   coordinates?: Coordinates;
 }
 
+export type NearbyProvider = Provider;
+export type NearbyRider = Rider;
+
 class ProviderLocationService {
   /**
    * Find nearby providers within a radius
