@@ -253,28 +253,6 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                     </div>
                   </>
                 )}
-                {window.location.hostname === "localhost" && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-white hover:bg-white/20"
-                      onClick={() => setShowDebugPanel(true)}
-                      title="Debug WhatsApp OTP"
-                    >
-                      🐛
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-white hover:bg-white/20"
-                      onClick={() => setIsMobile(!isMobile)}
-                      title="Toggle Mobile View"
-                    >
-                      📱
-                    </Button>
-                  </>
-                )}
               </div>
 
               <div>
@@ -282,16 +260,6 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                 <div className="flex items-center gap-1 text-xs text-green-100">
                   <Smartphone className="h-3 w-3" />
                   <span>Mobile</span>
-                  {/* Always show mobile toggle for debugging */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs px-1 py-0 h-4 ml-1"
-                    onClick={() => setIsMobile(false)}
-                    title="Switch to Desktop"
-                  >
-                    →🖥️
-                  </Button>
                 </div>
               </div>
             </div>
