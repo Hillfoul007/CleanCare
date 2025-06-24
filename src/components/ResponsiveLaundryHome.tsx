@@ -32,6 +32,7 @@ import EnhancedBookingHistoryModal from "./EnhancedBookingHistoryModal";
 import UserMenuDropdown from "./UserMenuDropdown";
 import DebugPanel from "./DebugPanel";
 import ConnectionStatus from "./ConnectionStatus";
+import NotificationPanel from "./NotificationPanel";
 import { TwilioSmsService } from "@/services/twilioSmsService";
 
 interface ResponsiveLaundryHomeProps {
@@ -612,6 +613,8 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   Bookings
                 </Button>
               )}
+
+              {currentUser && <NotificationPanel />}
 
               {currentUser ? (
                 <UserMenuDropdown
