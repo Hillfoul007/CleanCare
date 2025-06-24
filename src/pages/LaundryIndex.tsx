@@ -317,8 +317,11 @@ const LaundryIndex = () => {
 
       if (result.success) {
         // Show success message
-        alert(
-          "Order placed successfully! You will receive a confirmation shortly.",
+        addNotification(
+          createSuccessNotification(
+            "Order Confirmed!",
+            "Your order has been placed successfully! You will receive a confirmation shortly.",
+          ),
         );
 
         // Clear cart
@@ -331,7 +334,12 @@ const LaundryIndex = () => {
       }
     } catch (error) {
       console.error("Checkout failed:", error);
-      alert("Failed to place order. Please try again.");
+      addNotification(
+        createErrorNotification(
+          "Order Failed",
+          "Failed to place order. Please try again.",
+        ),
+      );
     }
   };
 
