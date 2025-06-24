@@ -346,10 +346,8 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
         await saveLocation(
           riderData.base_location,
           riderData.base_coordinates,
-          { name: "Work Location", isFavorite: true }
-          name: "Base Location",
-          is_favorite: true,
-        });
+          { name: "Base Location", isFavorite: true },
+        );
       }
 
       // 4. Create rider profile
