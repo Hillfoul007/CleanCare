@@ -75,10 +75,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setError("");
 
     try {
-      const result = await twilioService.sendSmsOTP(
-        formData.phone,
-        formData.name || "User",
-      );
+      const result = await twilioService.sendOTP(formData.phone);
 
       if (result.success) {
         setSuccess(result.message || "OTP sent to your phone!");
