@@ -41,6 +41,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
   currentUser,
   onBack,
 }) => {
+  const { addNotification } = useNotifications();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -119,7 +120,12 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       );
 
       if (error) {
-        alert(`Failed to cancel booking: ${error.message}`);
+        addNotification(
+          createErrorNotification(
+            "Cancellation Failed",
+            `Failed to cancel booking: ${error.message}`,
+          ),
+        );
         return;
       }
 
@@ -134,10 +140,20 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       );
 
       setBookings(updatedBookings);
-      alert("Booking cancelled successfully!");
+      addNotification(
+        createSuccessNotification(
+          "Booking Cancelled",
+          "Your booking has been cancelled successfully!",
+        ),
+      );
     } catch (error) {
       console.error("Error cancelling booking:", error);
-      alert("Network error. Please check your connection and try again.");
+      addNotification(
+        createErrorNotification(
+          "Network Error",
+          "Please check your connection and try again.",
+        ),
+      );
     }
   };
 
