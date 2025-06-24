@@ -343,10 +343,10 @@ const RiderRegistration: React.FC<RiderRegistrationProps> = ({
 
       // 3. Save base location
       if (riderData.base_coordinates) {
-        await saveLocation({
-          address: riderData.base_location,
-          coordinates: riderData.base_coordinates,
-          location_type: "work",
+        await saveLocation(
+          riderData.base_location,
+          riderData.base_coordinates,
+          { name: "Work Location", isFavorite: true }
           name: "Base Location",
           is_favorite: true,
         });
