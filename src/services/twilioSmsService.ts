@@ -12,7 +12,13 @@ export class TwilioSmsService {
     this.phoneNumber = import.meta.env.VITE_TWILIO_PHONE_NUMBER || "";
 
     if (!this.accountSid || !this.authToken || !this.phoneNumber) {
-      console.error("❌ Twilio credentials not configured");
+      if (import.meta.env.DEV || window.location.hostname === "localhost") {
+        console.info(
+          "ℹ️ Twilio credentials not configured - development mode enabled",
+        );
+      } else {
+        console.error("❌ Twilio credentials not configured");
+      }
     }
   }
 
