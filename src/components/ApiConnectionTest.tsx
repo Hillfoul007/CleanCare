@@ -235,3 +235,6 @@ const ApiConnectionTest: React.FC = () => {
 
           <div className="bg-gray-50 p-3 rounded text-xs text-gray-600">
             <p>🔧 Backend: {import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}</p>
+            <p>📊 Health: /health</p>
+            <p>🧪 API Test: /api/test</p>
+          </div>
