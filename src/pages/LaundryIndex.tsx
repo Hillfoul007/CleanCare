@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ResponsiveLaundryHome from "../components/ResponsiveLaundryHome";
 import LaundryCart from "../components/LaundryCart";
-import MobileBookingHistory from "../components/MobileBookingHistory";
+import EnhancedBookingHistory from "@/components/EnhancedBookingHistory";
 import { DVHostingSmsService } from "../services/dvhostingSmsService";
 import PushNotificationService from "../services/pushNotificationService";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -324,7 +324,13 @@ const LaundryIndex = () => {
   };
 
   const handleProceedToCheckout = async (cartData: any) => {
-    // User is authenticated at this point (checked in LaundryCart)
+    // Check if user is authenticated first
+    if (!currentUser) {
+      console.log("User not authenticated, switching to auth view");
+      setCurrentView("auth");
+      return;
+    }
+
     console.log("Processing checkout for authenticated user:", cartData);
 
     try {
@@ -398,9 +404,10 @@ const LaundryIndex = () => {
       {/* Authentication is now handled directly in ResponsiveLaundryHome via PhoneOtpAuthModal */}
 
       {currentView === "bookings" && (
-        <MobileBookingHistory
+        <EnhancedBookingHistory
           currentUser={currentUser}
           onBack={() => setCurrentView("home")}
+          onLoginRequired={() => setCurrentView("auth")}
         />
       )}
 

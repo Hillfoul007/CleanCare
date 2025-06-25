@@ -73,28 +73,40 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     setIsLoading(true);
 
     try {
-      // Calculate delivery charge (same logic as BookingFlow)
-      const deliveryCharge = 5;
-      const finalAmount = totalPrice + deliveryCharge;
+      // Calculate delivery charge if needed
+      const deliveryCharge = 0; // No delivery charge for updates
+      const finalAmount = totalPrice;
 
       const updatedBooking = {
         ...booking,
         scheduled_date: formData.scheduled_date,
+        pickupDate: formData.scheduled_date, // Also update pickupDate
         scheduled_time: formData.scheduled_time,
+        pickupTime: formData.scheduled_time, // Also update pickupTime
         address: formData.address,
         additional_details: formData.additional_details,
-        services: selectedServices,
+        services: selectedServices.map((service) => ({
+          name: typeof service === "string" ? service : service.name || service,
+          quantity: 1,
+          price: Math.round(totalPrice / selectedServices.length),
+        })),
         service:
           selectedServices.length === 1
-            ? selectedServices[0]
-            : selectedServices.join(", "),
+            ? typeof selectedServices[0] === "string"
+              ? selectedServices[0]
+              : selectedServices[0].name
+            : selectedServices
+                .map((s) => (typeof s === "string" ? s : s.name))
+                .join(", "),
+        totalAmount: totalPrice,
         total_price: totalPrice,
         final_amount: finalAmount,
         updated_at: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
 
+      console.log("Saving updated booking:", updatedBooking);
       await onSave(updatedBooking);
-      onClose();
     } catch (error) {
       console.error("Error updating booking:", error);
     } finally {

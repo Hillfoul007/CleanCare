@@ -32,6 +32,7 @@ import PhoneOtpAuthModal from "./PhoneOtpAuthModal";
 import EnhancedBookingHistoryModal from "./EnhancedBookingHistoryModal";
 import UserMenuDropdown from "./UserMenuDropdown";
 import DebugPanel from "./DebugPanel";
+import BookingDebugPanel from "./BookingDebugPanel";
 import ConnectionStatus from "./ConnectionStatus";
 import NotificationPanel from "./NotificationPanel";
 import { DVHostingSmsService } from "@/services/dvhostingSmsService";
@@ -57,7 +58,29 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [showBookingDebugPanel, setShowBookingDebugPanel] = useState(false);
   const dvhostingSmsService = DVHostingSmsService.getInstance();
+
+  // Add keyboard shortcut for booking debug panel
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl+Shift+B to open booking debug panel
+      if (event.ctrlKey && event.shiftKey && event.key === "B") {
+        event.preventDefault();
+        setShowBookingDebugPanel(true);
+      }
+      // Ctrl+Shift+D to open debug panel
+      if (event.ctrlKey && event.shiftKey && event.key === "D") {
+        event.preventDefault();
+        setShowDebugPanel(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cart, setCart] = useState<{ [key: string]: number }>(() => {
     // Load cart from localStorage on initialization
@@ -863,6 +886,13 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
         <DebugPanel
           isOpen={showDebugPanel}
           onClose={() => setShowDebugPanel(false)}
+        />
+
+        {/* Booking Debug Panel */}
+        <BookingDebugPanel
+          currentUser={currentUser}
+          isOpen={showBookingDebugPanel}
+          onClose={() => setShowBookingDebugPanel(false)}
         />
 
         {/* Connection Status */}
