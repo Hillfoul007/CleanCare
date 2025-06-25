@@ -337,8 +337,11 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 </Select>
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="auto-rebook">
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="auto-rebook"
+                  className="text-sm font-medium leading-tight"
+                >
                   Auto-rebook regular services
                 </Label>
                 <Switch
