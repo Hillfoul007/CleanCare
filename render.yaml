@@ -1,5 +1,5 @@
 services:
-  # ✅ Backend API Service (Express + MongoDB)
+  # ✅ Backend API Service
   - type: web
     name: cleancare-pro-api
     env: node
@@ -26,11 +26,12 @@ services:
       - key: JWT_SECRET
         fromGroup: cleancare-secrets
       - key: ALLOWED_ORIGINS
-        value: https://cleancare-pro.onrender.com
+        value: https://cleancare-pro-frontend.onrender.com
 
   # ✅ Frontend Static Site (Vite)
-  - type: static
+  - type: web
     name: cleancare-pro-frontend
+    env: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     pullRequestPreviewsEnabled: false
@@ -44,9 +45,8 @@ services:
       - key: VITE_APP_NAME
         value: CleanCare Pro
       - key: VITE_APP_URL
-        value: https://cleancare-pro.onrender.com
+        value: https://cleancare-pro-frontend.onrender.com
 
-# 🔐 Shared Secrets Group
 envVarGroups:
   - name: cleancare-secrets
     envVars:
