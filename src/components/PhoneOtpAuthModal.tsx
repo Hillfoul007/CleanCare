@@ -102,7 +102,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     name: "",
   });
 
-  const fast2smsService = Fast2SmsService.getInstance();
+  const dvhostingSmsService = DVHostingSmsService.getInstance();
 
   const resetForm = () => {
     setFormData({
