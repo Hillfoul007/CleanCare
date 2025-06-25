@@ -174,8 +174,8 @@ const sendSMS = async (phone, otp) => {
     const message = `Your CleanCare Pro OTP is ${otp}. Valid for 5 minutes. Do not share this code.`;
     const encodedMessage = encodeURIComponent(message);
 
-    // Fast2SMS API endpoint
-    const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&sender_id=FSTSMS&message=${encodedMessage}&language=english&flash=0&numbers=${phone}`;
+    // Fast2SMS API endpoint for OTP
+    const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${otp}&flash=0&numbers=${phone}`;
 
     const response = await fetch(url, {
       method: "GET",
