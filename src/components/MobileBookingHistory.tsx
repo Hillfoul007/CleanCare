@@ -147,7 +147,6 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
           ? {
               ...booking,
               status: "cancelled",
-              updated_at: new Date(),
             }
           : booking,
       );
@@ -163,11 +162,16 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       console.error("Error cancelling booking:", error);
       addNotification(
         createErrorNotification(
-          "Network Error",
-          "Please check your connection and try again.",
+          "Cancellation Failed",
+          "Failed to cancel booking. Please try again.",
         ),
       );
     }
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    await cancelBooking(bookingId);
+  };
   };
 
   const canCancelBooking = (booking: any) => {
@@ -348,15 +352,11 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
             // Safety wrapper to prevent any object rendering
             const SafeText = ({ children }: { children: any }) => {
               if (children === null || children === undefined) return null;
-              if (
-                typeof children === "string" ||
-                typeof children === "number" ||
-                typeof children === "boolean"
-              ) {
+              if (typeof children === 'string' || typeof children === 'number' || typeof children === 'boolean') {
                 return <>{children}</>;
               }
-              if (typeof children === "object") {
-                console.warn("Prevented object rendering:", children);
+              if (typeof children === 'object') {
+                console.warn('Prevented object rendering:', children);
                 return <>Object (prevented)</>;
               }
               return <>{String(children)}</>;
@@ -364,109 +364,55 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
             try {
               // Comprehensive data sanitization to prevent object rendering
-              const sanitizeValue = (value: any, fallback: any = "") => {
+              const sanitizeValue = (value: any, fallback: any = '') => {
                 if (value === null || value === undefined) return fallback;
-                if (
-                  typeof value === "string" ||
-                  typeof value === "number" ||
-                  typeof value === "boolean"
-                )
-                  return value;
-                if (typeof value === "object" && value.name) return value.name;
-                if (typeof value === "object" && value.fullAddress)
-                  return value.fullAddress;
-                if (typeof value === "object") return JSON.stringify(value);
+                if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+                if (typeof value === 'object' && value.name) return value.name;
+                if (typeof value === 'object' && value.fullAddress) return value.fullAddress;
+                if (typeof value === 'object') return JSON.stringify(value);
                 return fallback;
               };
 
               const sanitizeServices = (services: any) => {
                 if (!Array.isArray(services)) return [];
                 return services.map((service, index) => {
-                  if (typeof service === "string") {
+                  if (typeof service === 'string') {
+                    return { name: service, quantity: 1, price: 0, id: `service_${index}` };
+                  }
+                  if (typeof service === 'object' && service) {
                     return {
-                      name: service,
-                      quantity: 1,
-                      price: 0,
-                      id: `service_${index}`,
+                      name: sanitizeValue(service.name || service.service, 'Unknown Service'),
+                      quantity: typeof service.quantity === 'number' ? service.quantity : 1,
+                      price: typeof service.price === 'number' ? service.price : (typeof service.amount === 'number' ? service.amount : 0),
+                      id: service.id || `service_${index}`
                     };
                   }
-                  if (typeof service === "object" && service) {
-                    return {
-                      name: sanitizeValue(
-                        service.name || service.service,
-                        "Unknown Service",
-                      ),
-                      quantity:
-                        typeof service.quantity === "number"
-                          ? service.quantity
-                          : 1,
-                      price:
-                        typeof service.price === "number"
-                          ? service.price
-                          : typeof service.amount === "number"
-                            ? service.amount
-                            : 0,
-                      id: service.id || `service_${index}`,
-                    };
-                  }
-                  return {
-                    name: String(service) || "Unknown Service",
-                    quantity: 1,
-                    price: 0,
-                    id: `service_${index}`,
-                  };
+                  return { name: String(service) || 'Unknown Service', quantity: 1, price: 0, id: `service_${index}` };
                 });
               };
 
               const safeBooking = {
-                id: sanitizeValue(
-                  booking.id || booking._id,
-                  `booking_${index}`,
-                ),
-                service: sanitizeValue(booking.service, "Home Service"),
-                provider_name: sanitizeValue(
-                  booking.provider_name,
-                  "HomeServices Pro",
-                ),
-                status: sanitizeValue(booking.status, "pending"),
+                id: sanitizeValue(booking.id || booking._id, `booking_${index}`),
+                service: sanitizeValue(booking.service, 'Home Service'),
+                provider_name: sanitizeValue(booking.provider_name, 'HomeServices Pro'),
+                status: sanitizeValue(booking.status, 'pending'),
                 services: sanitizeServices(booking.services),
-                additional_details: sanitizeValue(
-                  booking.additional_details,
-                  "",
-                ),
-                pickupDate: sanitizeValue(booking.pickupDate, ""),
-                deliveryDate: sanitizeValue(booking.deliveryDate, ""),
-                scheduled_date: sanitizeValue(booking.scheduled_date, ""),
-                pickupTime: sanitizeValue(booking.pickupTime, ""),
-                deliveryTime: sanitizeValue(booking.deliveryTime, ""),
-                scheduled_time: sanitizeValue(booking.scheduled_time, ""),
-                address: sanitizeValue(booking.address, "Address not provided"),
-                totalAmount:
-                  typeof booking.totalAmount === "number"
-                    ? booking.totalAmount
-                    : 0,
-                total_price:
-                  typeof booking.total_price === "number"
-                    ? booking.total_price
-                    : 0,
-                final_amount:
-                  typeof booking.final_amount === "number"
-                    ? booking.final_amount
-                    : 0,
-                discount_amount:
-                  typeof booking.discount_amount === "number"
-                    ? booking.discount_amount
-                    : 0,
-                payment_status: sanitizeValue(
-                  booking.payment_status,
-                  "pending",
-                ),
-                paymentStatus: sanitizeValue(booking.paymentStatus, "pending"),
+                additional_details: sanitizeValue(booking.additional_details, ''),
+                pickupDate: sanitizeValue(booking.pickupDate, ''),
+                deliveryDate: sanitizeValue(booking.deliveryDate, ''),
+                scheduled_date: sanitizeValue(booking.scheduled_date, ''),
+                pickupTime: sanitizeValue(booking.pickupTime, ''),
+                deliveryTime: sanitizeValue(booking.deliveryTime, ''),
+                scheduled_time: sanitizeValue(booking.scheduled_time, ''),
+                address: sanitizeValue(booking.address, 'Address not provided'),
+                totalAmount: typeof booking.totalAmount === 'number' ? booking.totalAmount : 0,
+                total_price: typeof booking.total_price === 'number' ? booking.total_price : 0,
+                final_amount: typeof booking.final_amount === 'number' ? booking.final_amount : 0,
+                discount_amount: typeof booking.discount_amount === 'number' ? booking.discount_amount : 0,
+                payment_status: sanitizeValue(booking.payment_status, 'pending'),
+                paymentStatus: sanitizeValue(booking.paymentStatus, 'pending'),
                 charges_breakdown: {
-                  tax_amount:
-                    typeof booking.charges_breakdown?.tax_amount === "number"
-                      ? booking.charges_breakdown.tax_amount
-                      : 0,
+                  tax_amount: typeof booking.charges_breakdown?.tax_amount === 'number' ? booking.charges_breakdown.tax_amount : 0
                 },
               };
 
@@ -498,35 +444,31 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
                   <CardContent className="space-y-4 p-4 sm:p-6">
                     {/* Booked Services */}
-                    {safeBooking.services &&
-                      Array.isArray(safeBooking.services) &&
-                      safeBooking.services.length > 0 && (
-                        <div className="space-y-3">
-                          <h4 className="font-semibold text-gray-900 text-sm">
-                            Booked Services
-                          </h4>
-                          {safeBooking.services.map(
-                            (service: any, idx: number) => (
-                              <div
-                                key={idx}
-                                className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100"
-                              >
-                                <div className="flex-1">
-                                  <p className="font-medium text-gray-900 text-sm">
-                                    <SafeText>{service.name}</SafeText>
-                                  </p>
-                                  <p className="text-xs text-gray-600">
-                                    Qty: {service.quantity}
-                                  </p>
-                                </div>
-                                <p className="font-semibold text-blue-600">
-                                  ₹{service.price}
-                                </p>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      )}
+                    {safeBooking.services && Array.isArray(safeBooking.services) && safeBooking.services.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-900 text-sm">
+                          Booked Services
+                        </h4>
+                        {safeBooking.services.map((service: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100"
+                          >
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900 text-sm">
+                                <SafeText>{service.name}</SafeText>
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                Qty: {service.quantity}
+                              </p>
+                            </div>
+                            <p className="font-semibold text-blue-600">
+                              ₹{service.price}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Pickup & Delivery Slots */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -539,28 +481,24 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                         </div>
                         <p className="text-sm text-gray-900">
                           {safeBooking.pickupDate
-                            ? new Date(
-                                safeBooking.pickupDate,
-                              ).toLocaleDateString("en-US", {
-                                weekday: "short",
-                                month: "short",
-                                day: "numeric",
-                              })
+                            ? new Date(safeBooking.pickupDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )
                             : safeBooking.scheduled_date
                               ? (() => {
                                   // Handle YYYY-MM-DD format properly
                                   const dateStr = safeBooking.scheduled_date;
                                   let date;
 
-                                  if (dateStr && dateStr.includes("-")) {
+                                  if (dateStr && dateStr.includes('-')) {
                                     // YYYY-MM-DD format - parse as local date
-                                    const [year, month, day] =
-                                      dateStr.split("-");
-                                    date = new Date(
-                                      parseInt(year),
-                                      parseInt(month) - 1,
-                                      parseInt(day),
-                                    );
+                                    const [year, month, day] = dateStr.split('-');
+                                    date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
                                   } else if (dateStr) {
                                     date = new Date(dateStr);
                                   } else {
@@ -591,27 +529,23 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                         </div>
                         <p className="text-sm text-gray-900">
                           {safeBooking.deliveryDate
-                            ? new Date(
-                                safeBooking.deliveryDate,
-                              ).toLocaleDateString("en-US", {
-                                weekday: "short",
-                                month: "short",
-                                day: "numeric",
-                              })
+                            ? new Date(safeBooking.deliveryDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )
                             : safeBooking.scheduled_date
                               ? (() => {
                                   // Calculate delivery date (next day after pickup)
                                   const dateStr = safeBooking.scheduled_date;
                                   let date;
 
-                                  if (dateStr && dateStr.includes("-")) {
-                                    const [year, month, day] =
-                                      dateStr.split("-");
-                                    date = new Date(
-                                      parseInt(year),
-                                      parseInt(month) - 1,
-                                      parseInt(day) + 1,
-                                    );
+                                  if (dateStr && dateStr.includes('-')) {
+                                    const [year, month, day] = dateStr.split('-');
+                                    date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day) + 1);
                                   } else if (dateStr) {
                                     date = new Date(dateStr);
                                     date.setDate(date.getDate() + 1);
@@ -641,9 +575,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           Service Address
                         </p>
                         <p className="text-sm text-gray-600 leading-relaxed">
-                          <SafeText>
-                            {safeBooking.address || "Address not provided"}
-                          </SafeText>
+                          <SafeText>{safeBooking.address || 'Address not provided'}</SafeText>
                         </p>
                       </div>
                     </div>
@@ -736,15 +668,10 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                         </p>
                         <p className="text-sm text-gray-600">
                           {(() => {
-                            if (
-                              typeof booking.additional_details === "string"
-                            ) {
+                            if (typeof booking.additional_details === "string") {
                               return booking.additional_details;
                             }
-                            if (
-                              typeof booking.additional_details === "object" &&
-                              booking.additional_details
-                            ) {
+                            if (typeof booking.additional_details === "object" && booking.additional_details) {
                               return JSON.stringify(booking.additional_details);
                             }
                             return "No additional details";
@@ -827,17 +754,14 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                             // Navigate back to service selection with current booking context
                             if (onBack) {
                               // Store current booking ID for adding services
-                              localStorage.setItem(
-                                "add_services_to_booking",
-                                safeBooking.id || safeBooking._id,
-                              );
+                              localStorage.setItem('add_services_to_booking', safeBooking.id || safeBooking._id);
                               onBack();
                             } else {
                               // Fallback - go to home page
-                              window.location.href = "/";
+                              window.location.href = '/';
                             }
                           }}
-                          aria-label={`Add more services to booking ${safeBooking.service || "Home Service"}`}
+                          aria-label={`Add more services to booking ${safeBooking.service || 'Home Service'}`}
                         >
                           <Plus className="mr-2 h-4 w-4" />
                           Add More Services
