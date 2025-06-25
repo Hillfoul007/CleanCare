@@ -21,6 +21,7 @@ import {
   Plus,
 } from "lucide-react";
 import ServiceSelector from "./ServiceSelector";
+import ServiceEditor from "./ServiceEditor";
 
 interface EditBookingModalProps {
   isOpen: boolean;
