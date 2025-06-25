@@ -161,19 +161,11 @@ export class DVHostingSmsService {
             errorText.trim().startsWith("<") ||
             errorText.includes("<script>")
           ) {
-            console.log(
-              "DVHosting SMS: Got HTML response instead of API - using simulation mode",
-            );
             if (isBuilderEnv) {
-              await new Promise((resolve) => setTimeout(resolve, 500));
               console.log(
-                "✅ OTP sent (simulation mode - HTML response detected)",
+                "DVHosting SMS: Got HTML response, calling DVHosting API directly",
               );
-              this.otpStorage.set(cleanPhone, {
-                otp: Math.floor(100000 + Math.random() * 900000).toString(),
-                expiresAt: Date.now() + 5 * 60 * 1000,
-              });
-              return true;
+              return await this.sendDirectDVHostingOTP(cleanPhone);
             }
           }
 
