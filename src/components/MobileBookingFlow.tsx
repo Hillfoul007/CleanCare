@@ -18,7 +18,7 @@ import {
   ArrowLeft,
   CheckCircle,
 } from "lucide-react";
-import DateTimePicker from "./DateTimePicker";
+import ProfessionalDateTimePicker from "./ProfessionalDateTimePicker";
 import PhoneOtpAuthModal from "./PhoneOtpAuthModal";
 import LocationDetector from "./LocationDetector.tsx";
 import BookingConfirmation from "./BookingConfirmation";
@@ -333,7 +333,7 @@ const MobileBookingFlow: React.FC<MobileBookingFlowProps> = ({
 
             <Card className="border-2 border-blue-100">
               <CardContent className="p-6">
-                <DateTimePicker
+                <ProfessionalDateTimePicker
                   selectedDate={selectedDate}
                   selectedTime={selectedTime}
                   onDateChange={setSelectedDate}
