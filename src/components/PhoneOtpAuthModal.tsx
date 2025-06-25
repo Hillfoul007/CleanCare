@@ -17,7 +17,7 @@ import {
   MessageSquare,
   X,
 } from "lucide-react";
-import { Fast2SmsService } from "@/services/fast2smsService";
+import { DVHostingSmsService } from "@/services/dvhostingSmsService";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PhoneOtpAuthModalProps {
