@@ -60,10 +60,12 @@ const AccountMenu: React.FC<AccountMenuProps> = ({
 
   // Get user's full name from different possible sources
   const getUserDisplayName = () => {
+    if (currentUser?.name && currentUser.name.trim()) return currentUser.name;
     if (currentUser?.full_name) return currentUser.full_name;
     if (currentUser?.profile?.full_name) return currentUser.profile.full_name;
     if (currentUser?.displayName) return currentUser.displayName;
     if (userEmail) return userEmail.split("@")[0];
+    if (currentUser?.phone) return `+91 ${currentUser.phone}`;
     return "User";
   };
 
