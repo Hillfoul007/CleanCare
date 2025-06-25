@@ -82,6 +82,22 @@ const ProfessionalDateTimePicker: React.FC<ProfessionalDateTimePickerProps> = ({
     return dates;
   };
 
+  const goToPreviousWeek = () => {
+    const newWeekStart = subWeeks(currentWeekStart, 1);
+    // Don't go to past weeks
+    if (newWeekStart >= startOfWeek(new Date(), { weekStartsOn: 1 })) {
+      setCurrentWeekStart(newWeekStart);
+    }
+  };
+
+  const goToNextWeek = () => {
+    setCurrentWeekStart(addWeeks(currentWeekStart, 1));
+  };
+
+  const goToCurrentWeek = () => {
+    setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  };
+
   // Generate time slots with 1-hour intervals
   const generateTimeSlots = () => {
     const slots = [];
@@ -117,8 +133,11 @@ const ProfessionalDateTimePicker: React.FC<ProfessionalDateTimePickerProps> = ({
     return slots;
   };
 
-  const dates = generateDates();
+  const weekDates = generateWeekDates(currentWeekStart);
+  const extendedDates = generateExtendedDates();
   const timeSlots = generateTimeSlots();
+  const canGoPrevious =
+    currentWeekStart > startOfWeek(new Date(), { weekStartsOn: 1 });
 
   return (
     <div className={cn("space-y-6", className)}>
