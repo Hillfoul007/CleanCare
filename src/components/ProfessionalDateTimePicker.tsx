@@ -38,10 +38,35 @@ const ProfessionalDateTimePicker: React.FC<ProfessionalDateTimePickerProps> = ({
   onTimeChange,
   className,
 }) => {
-  // Generate next 7 days
-  const generateDates = () => {
+  const [currentWeekStart, setCurrentWeekStart] = useState(
+    startOfWeek(new Date(), { weekStartsOn: 1 }),
+  ); // Start from Monday
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  // Generate dates for current week
+  const generateWeekDates = (weekStart: Date) => {
+    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+    const dates = eachDayOfInterval({ start: weekStart, end: weekEnd });
+
+    return dates.map((date) => ({
+      date,
+      label: isToday(date)
+        ? "Today"
+        : isTomorrow(date)
+          ? "Tomorrow"
+          : format(date, "EEE"),
+      shortDate: format(date, "dd MMM"),
+      fullDate: format(date, "dd"),
+      month: format(date, "MMM"),
+      day: format(date, "EEE"),
+      isPast: date < new Date() && !isToday(date),
+    }));
+  };
+
+  // Generate extended date options for dropdown (next 30 days)
+  const generateExtendedDates = () => {
     const dates = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 30; i++) {
       const date = addDays(new Date(), i);
       dates.push({
         date,
@@ -49,11 +74,9 @@ const ProfessionalDateTimePicker: React.FC<ProfessionalDateTimePickerProps> = ({
           ? "Today"
           : isTomorrow(date)
             ? "Tomorrow"
-            : format(date, "EEE"),
-        shortDate: format(date, "dd MMM"),
-        fullDate: format(date, "dd"),
-        month: format(date, "MMM"),
-        day: format(date, "EEE"),
+            : format(date, "EEE, MMM dd"),
+        value: date.toISOString(),
+        isPast: false,
       });
     }
     return dates;
