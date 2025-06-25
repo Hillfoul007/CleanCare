@@ -10,19 +10,7 @@ export interface BookingDetails {
   deliveryDate: string;
   pickupTime: string;
   deliveryTime: string;
-  address: {
-    fullAddress: string;
-    flatNo?: string;
-    street?: string;
-    landmark?: string;
-    village?: string;
-    city?: string;
-    pincode?: string;
-    coordinates?: {
-      lat: number;
-      lng: number;
-    };
-  };
+  address: string;
   contactDetails: {
     phone: string;
     name: string;
