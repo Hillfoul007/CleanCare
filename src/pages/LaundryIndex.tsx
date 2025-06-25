@@ -56,7 +56,7 @@ const LaundryIndex = () => {
         if (user) {
           setCurrentUser(user);
           setIsLoggedIn(true);
-          console.log("✅ User already logged in:", user.full_name);
+          console.log("✅ User already logged in:", user.name || user.phone);
         } else {
           setIsLoggedIn(false);
           console.log("ℹ️ No authenticated user found");
