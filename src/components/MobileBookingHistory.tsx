@@ -625,28 +625,28 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           </span>
                           <span className="font-medium">
                             ₹
-                            {booking.totalAmount ||
-                              booking.total_price ||
-                              booking.final_amount ||
+                            {safeBooking.totalAmount ||
+                              safeBooking.total_price ||
+                              safeBooking.final_amount ||
                               0}
                           </span>
                         </div>
 
                         {/* Discount if applicable */}
-                        {booking.discount_amount &&
-                          booking.discount_amount > 0 && (
+                        {safeBooking.discount_amount &&
+                          safeBooking.discount_amount > 0 && (
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm text-green-600">
                                 Discount
                               </span>
                               <span className="font-medium text-green-600">
-                                -₹{booking.discount_amount}
+                                -₹{safeBooking.discount_amount}
                               </span>
                             </div>
                           )}
 
                         {/* Tax if applicable */}
-                        {booking.charges_breakdown?.tax_amount && (
+                        {safeBooking.charges_breakdown?.tax_amount && (
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-sm text-gray-600">Tax</span>
                             <span className="font-medium">
