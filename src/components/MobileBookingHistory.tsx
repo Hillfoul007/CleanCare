@@ -130,23 +130,23 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
   const cancelBooking = async (bookingId: string) => {
     try {
-      const { data, error } = await adaptiveBookingHelpers.cancelBooking(
-        bookingId,
-        "Cancelled by user",
-      );
+      // Use BookingService for cancellation
+      const bookingService = BookingService.getInstance();
+      const result = await bookingService.cancelBooking(bookingId);
 
-      if (error) {
+      if (!result.success) {
         addNotification(
           createErrorNotification(
             "Cancellation Failed",
-            `Failed to cancel booking: ${error.message}`,
+            result.error || "Failed to cancel booking",
           ),
         );
         return;
       }
 
+      // Update local state immediately
       const updatedBookings = bookings.map((booking: any) =>
-        booking._id === bookingId
+        booking.id === bookingId || booking._id === bookingId
           ? {
               ...booking,
               status: "cancelled",
@@ -161,6 +161,9 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
           "Your booking has been cancelled successfully!",
         ),
       );
+
+      // Refresh bookings to get updated data
+      await refreshBookings();
     } catch (error) {
       console.error("Error cancelling booking:", error);
       addNotification(
