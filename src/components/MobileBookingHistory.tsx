@@ -682,10 +682,22 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Button
                           variant="ghost"
-                          className="rounded-xl border border-blue-200 hover:bg-blue-50 text-blue-600 font-medium py-3"
+                          className="rounded-xl border border-blue-200 hover:bg-blue-50 text-blue-600 font-medium py-3 focus:ring-2 focus:ring-blue-300 focus:outline-none"
                           onClick={() => {
-                            /* Add more services logic */
+                            // Navigate back to service selection with current booking context
+                            if (onBack) {
+                              // Store current booking ID for adding services
+                              localStorage.setItem(
+                                "add_services_to_booking",
+                                booking.id || booking._id,
+                              );
+                              onBack();
+                            } else {
+                              // Fallback - go to home page
+                              window.location.href = "/";
+                            }
                           }}
+                          aria-label={`Add more services to booking ${booking.service || "Home Service"}`}
                         >
                           <Plus className="mr-2 h-4 w-4" />
                           Add More Services
