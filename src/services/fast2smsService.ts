@@ -31,19 +31,34 @@ export class Fast2SmsService {
         throw new Error("Invalid Indian phone number");
       }
 
-      // Call backend API instead of Fast2SMS directly to avoid CORS issues
-      const response = await fetch(`/api/auth/send-otp?t=${Date.now()}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-          Expires: "0",
-        },
-        body: JSON.stringify({
-          phone: cleanPhone,
-        }),
+      // Detect Builder.io environment and use absolute URL
+      const isBuilderEnv =
+        window.location.hostname.includes("builder.codes") ||
+        document.querySelector("[data-loc]") !== null;
+      const baseUrl = isBuilderEnv ? "http://localhost:3001" : "";
+
+      console.log("Fast2SMS: Environment detection:", {
+        isBuilderEnv,
+        baseUrl,
+        hostname: window.location.hostname,
       });
+
+      // Call backend API instead of Fast2SMS directly to avoid CORS issues
+      const response = await fetch(
+        `${baseUrl}/api/auth/send-otp?t=${Date.now()}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+          },
+          body: JSON.stringify({
+            phone: cleanPhone,
+          }),
+        },
+      );
 
       if (response.ok) {
         const contentType = response.headers.get("content-type");
