@@ -476,16 +476,83 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                       </div>
                     </div>
 
-                    {/* Price */}
-                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                      <DollarSign className="h-5 w-5 text-green-600" />
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
-                          Total Amount
-                        </p>
-                        <p className="text-2xl font-bold text-green-600">
-                          ₹{booking.final_amount || booking.total_price}
-                        </p>
+                    {/* Price Breakdown */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-900 text-sm">
+                        Price Breakdown
+                      </h4>
+
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 p-4">
+                        {/* Service Total */}
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-gray-600">
+                            Services Total
+                          </span>
+                          <span className="font-medium">
+                            ₹
+                            {booking.totalAmount ||
+                              booking.total_price ||
+                              booking.final_amount ||
+                              0}
+                          </span>
+                        </div>
+
+                        {/* Discount if applicable */}
+                        {booking.discount_amount &&
+                          booking.discount_amount > 0 && (
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm text-green-600">
+                                Discount
+                              </span>
+                              <span className="font-medium text-green-600">
+                                -₹{booking.discount_amount}
+                              </span>
+                            </div>
+                          )}
+
+                        {/* Tax if applicable */}
+                        {booking.charges_breakdown?.tax_amount && (
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm text-gray-600">Tax</span>
+                            <span className="font-medium">
+                              ₹{booking.charges_breakdown.tax_amount}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="border-t border-green-200 pt-2">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-gray-900">
+                              Total Amount
+                            </span>
+                            <span className="text-xl font-bold text-green-600">
+                              ₹
+                              {booking.final_amount ||
+                                booking.totalAmount ||
+                                booking.total_price ||
+                                0}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="text-xs text-gray-500">
+                              Payment Status
+                            </span>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                (booking.payment_status ||
+                                  booking.paymentStatus) === "paid"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {(
+                                booking.payment_status ||
+                                booking.paymentStatus ||
+                                "pending"
+                              ).toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
