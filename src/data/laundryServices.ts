@@ -350,7 +350,26 @@ export const getPopularServices = (): LaundryService[] => {
   laundryServices.forEach((category) => {
     popular.push(...category.services.filter((s) => s.popular));
   });
-  return popular;
+  // Sort popular services alphabetically
+  return popular.sort((a, b) => a.name.localeCompare(b.name));
+};
+
+export const getSortedServices = (): LaundryService[] => {
+  const allServices: LaundryService[] = [];
+  laundryServices.forEach((category) => {
+    allServices.push(...category.services);
+  });
+
+  // Separate popular and regular services
+  const popular = allServices
+    .filter((s) => s.popular)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const regular = allServices
+    .filter((s) => !s.popular)
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Return popular first, then regular
+  return [...popular, ...regular];
 };
 
 export const searchServices = (query: string): LaundryService[] => {
