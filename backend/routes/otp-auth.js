@@ -170,8 +170,8 @@ const sendSMS = async (phone, otp) => {
       return { success: true, message: "OTP sent (simulation mode)" };
     }
 
-    // DVHosting SMS API endpoint
-    const url = `https://dvhosting.in/api-sms-v3.php?api_key=${apiKey}&number=${phone}&otp=${otp}`;
+    // DVHosting SMS API endpoint (v4 for GET requests with API key in URL)
+    const url = `https://dvhosting.in/api-sms-v4.php?api_key=${apiKey}&number=${phone}&otp=${otp}`;
 
     const response = await fetch(url, {
       method: "GET",
