@@ -521,10 +521,34 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           Service Address
                         </p>
                         <p className="text-sm text-gray-600 leading-relaxed">
-                          {typeof booking.address === "string"
-                            ? booking.address
-                            : booking.address?.fullAddress ||
-                              `${booking.address?.flatNo || ""} ${booking.address?.street || ""}, ${booking.address?.village || ""}, ${booking.address?.city || ""} ${booking.address?.pincode || ""}`.trim()}
+                          {(() => {
+                            if (typeof booking.address === "string") {
+                              return booking.address;
+                            }
+
+                            if (
+                              typeof booking.address === "object" &&
+                              booking.address
+                            ) {
+                              if (booking.address.fullAddress) {
+                                return booking.address.fullAddress;
+                              }
+
+                              const addressParts = [
+                                booking.address.flatNo,
+                                booking.address.street,
+                                booking.address.village,
+                                booking.address.city,
+                                booking.address.pincode,
+                              ].filter(Boolean);
+
+                              return addressParts.length > 0
+                                ? addressParts.join(", ")
+                                : "Address not provided";
+                            }
+
+                            return "Address not provided";
+                          })()}
                         </p>
                       </div>
                     </div>
