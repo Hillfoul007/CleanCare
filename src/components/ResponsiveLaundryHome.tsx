@@ -34,7 +34,7 @@ import UserMenuDropdown from "./UserMenuDropdown";
 import DebugPanel from "./DebugPanel";
 import ConnectionStatus from "./ConnectionStatus";
 import NotificationPanel from "./NotificationPanel";
-import { Fast2SmsService } from "@/services/fast2smsService";
+import { DVHostingSmsService } from "@/services/dvhostingSmsService";
 import { saveCartData, getCartData } from "@/utils/formPersistence";
 
 interface ResponsiveLaundryHomeProps {
