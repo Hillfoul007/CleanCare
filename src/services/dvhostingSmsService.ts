@@ -103,7 +103,7 @@ export class DVHostingSmsService {
           !responseText.trim().startsWith("[")
         ) {
           // In hosted environments, call DVHosting API directly
-          if (isBuilderEnv) {
+          if (isHostedEnv) {
             console.log(
               "DVHosting SMS: Detected HTML response, calling DVHosting API directly",
             );
