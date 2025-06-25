@@ -15,7 +15,9 @@
     "start:prod": "npm run build && concurrently \"cd backend && NODE_ENV=production node server-laundry.js\" \"npx serve -s dist -p 8080\"",
     "start:backend": "cd backend && NODE_ENV=production node server-laundry.js",
     "start:frontend": "npx serve -s dist -p 8080",
-    "deploy": "chmod +x deploy.sh && ./deploy.sh"
+    "deploy": "chmod +x deploy.sh && ./deploy.sh",
+    "render:build": "npm install && cd backend && npm install && cd .. && npm run build",
+    "render:start": "cd backend && NODE_ENV=production node server-laundry.js"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.1",
