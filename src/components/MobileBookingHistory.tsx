@@ -37,6 +37,7 @@ import {
   Plus,
 } from "lucide-react";
 import { BookingService } from "@/services/bookingService";
+import { adaptiveBookingHelpers } from "@/integrations/adaptive/bookingHelpers";
 import EditBookingModal from "./EditBookingModal";
 
 interface MobileBookingHistoryProps {
