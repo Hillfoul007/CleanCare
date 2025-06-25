@@ -123,7 +123,10 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               <div className="space-y-1">
                 {selectedServices.map((service, index) => (
                   <p key={index} className="text-blue-800 text-sm">
-                    • {service}
+                    •{" "}
+                    {typeof service === "object"
+                      ? service.name || JSON.stringify(service)
+                      : service}
                   </p>
                 ))}
                 {selectedServices.length === 0 && (
