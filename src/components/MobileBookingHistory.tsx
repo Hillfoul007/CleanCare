@@ -584,39 +584,12 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                     <Button
                       variant="ghost"
                       className="rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-medium py-3"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Cancel
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-2xl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Cancel Booking?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. You may be charged a
-                            cancellation fee depending on the cancellation
-                            policy.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-xl">
-                            Keep Booking
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => cancelBooking(booking._id)}
-                            className="bg-red-600 hover:bg-red-700 rounded-xl"
-                          >
-                            Yes, Cancel
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-
-                  <Button
-                    variant="outline"
-                    className="flex-1 min-w-[120px] rounded-xl border-2 border-blue-200 hover:bg-blue-50"
-                  >
+                    >
+                      <Phone className="mr-2 h-4 w-4" />
+                      Contact Support
+                    </Button>
+                  </div>
+                </div>
                     <Phone className="mr-2 h-4 w-4" />
                     Contact
                   </Button>
