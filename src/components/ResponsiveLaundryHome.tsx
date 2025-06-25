@@ -557,7 +557,6 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
             )}
           </div>
         </div>
-      </div>
 
       {/* Auth Modal */}
       <PhoneOtpAuthModal
