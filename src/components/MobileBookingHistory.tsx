@@ -37,7 +37,9 @@ import {
   Plus,
 } from "lucide-react";
 import { BookingService } from "@/services/bookingService";
+import { adaptiveBookingHelpers } from "@/integrations/adaptive/bookingHelpers";
 import EditBookingModal from "./EditBookingModal";
+import { clearAllUserData } from "@/utils/clearStorage";
 
 interface MobileBookingHistoryProps {
   currentUser?: any;
@@ -54,6 +56,8 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [addingServicesBooking, setAddingServicesBooking] = useState(null);
+  const [showAddServicesModal, setShowAddServicesModal] = useState(false);
 
   const loadBookings = async () => {
     if (!currentUser?.id && !currentUser?._id && !currentUser?.phone) {
@@ -87,13 +91,37 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
   const refreshBookings = async () => {
     setRefreshing(true);
-    await loadBookings();
-    setRefreshing(false);
+    try {
+      // Force reload from backend/localStorage
+      await loadBookings();
+    } catch (error) {
+      console.error("Error refreshing bookings:", error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   useEffect(() => {
     loadBookings();
   }, [currentUser]);
+
+  // Debug function to check booking structure
+  useEffect(() => {
+    if (bookings.length > 0) {
+      console.log(
+        "🐛 DEBUG: Current bookings structure:",
+        bookings.map((b) => ({
+          id: b.id,
+          _id: b._id,
+          status: b.status,
+          services: b.services,
+          totalAmount: b.totalAmount,
+          total_price: b.total_price,
+          final_amount: b.final_amount,
+        })),
+      );
+    }
+  }, [bookings]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -127,44 +155,121 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
   const cancelBooking = async (bookingId: string) => {
     try {
-      const { data, error } = await adaptiveBookingHelpers.cancelBooking(
-        bookingId,
-        "Cancelled by user",
+      console.log("🔄 Attempting to cancel booking:", bookingId);
+      console.log(
+        "📋 Current bookings:",
+        bookings.map((b) => ({ id: b.id || b._id, status: b.status })),
+      );
+
+      // Update local state immediately for better UX
+      const updatedBookings = bookings.map((booking: any) => {
+        const matches = booking.id === bookingId || booking._id === bookingId;
+        console.log(
+          `📝 Checking booking ${booking.id || booking._id} against ${bookingId}: ${matches}`,
+        );
+        return matches
+          ? {
+              ...booking,
+              status: "cancelled",
+            }
+          : booking;
+      });
+
+      console.log(
+        "📊 Updated bookings:",
+        updatedBookings.map((b) => ({ id: b.id || b._id, status: b.status })),
+      );
+      setBookings(updatedBookings);
+
+      // Use BookingService for cancellation
+      const bookingService = BookingService.getInstance();
+      const result = await bookingService.cancelBooking(bookingId);
+
+      console.log("📋 Cancellation result:", result);
+
+      if (result.success) {
+        addNotification(
+          createSuccessNotification(
+            "Booking Cancelled",
+            "Your booking has been cancelled successfully!",
+          ),
+        );
+
+        // Refresh to get latest data
+        await refreshBookings();
+      } else {
+        // Revert local state if backend failed
+        setBookings(bookings);
+        addNotification(
+          createErrorNotification(
+            "Cancellation Failed",
+            result.error || "Failed to cancel booking",
+          ),
+        );
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      // Revert local state on error
+      setBookings(bookings);
+      addNotification(
+        createErrorNotification(
+          "Cancellation Failed",
+          "Failed to cancel booking. Please try again.",
+        ),
+      );
+    }
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    await cancelBooking(bookingId);
+  };
+
+  const handleAddServices = (booking: any) => {
+    setAddingServicesBooking(booking);
+    setShowAddServicesModal(true);
+  };
+
+  const handleSaveAddedServices = async (updatedBooking: any) => {
+    try {
+      // Update the booking with new services
+      const { data, error } = await adaptiveBookingHelpers.updateBooking(
+        updatedBooking._id || updatedBooking.id,
+        updatedBooking,
       );
 
       if (error) {
         addNotification(
           createErrorNotification(
-            "Cancellation Failed",
-            `Failed to cancel booking: ${error.message}`,
+            "Update Failed",
+            `Failed to add services: ${error.message}`,
           ),
         );
         return;
       }
 
+      // Update the bookings list
       const updatedBookings = bookings.map((booking: any) =>
-        booking._id === bookingId
-          ? {
-              ...booking,
-              status: "cancelled",
-              updated_at: new Date(),
-            }
+        (booking._id || booking.id) ===
+        (updatedBooking._id || updatedBooking.id)
+          ? updatedBooking
           : booking,
       );
 
       setBookings(updatedBookings);
+      setShowAddServicesModal(false);
+      setAddingServicesBooking(null);
       addNotification(
         createSuccessNotification(
-          "Booking Cancelled",
-          "Your booking has been cancelled successfully!",
+          "Services Added",
+          "Services have been added to your booking successfully!",
         ),
       );
     } catch (error) {
-      console.error("Error cancelling booking:", error);
+      console.error("Error adding services:", error);
       addNotification(
         createErrorNotification(
-          "Network Error",
-          "Please check your connection and try again.",
+          "Update Failed",
+          "Failed to add services. Please try again.",
         ),
       );
     }
@@ -303,16 +408,37 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
               </p>
             </div>
           </div>
-          <Button
-            onClick={refreshBookings}
-            variant="ghost"
-            className="text-white hover:bg-white/20 p-2 sm:p-3 rounded-xl flex-shrink-0"
-            disabled={refreshing}
-          >
-            <RefreshCw
-              className={`h-4 w-4 sm:h-5 sm:w-5 ${refreshing ? "animate-spin" : ""}`}
-            />
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => {
+                if (confirm("Clear all data and start fresh?")) {
+                  clearAllUserData();
+                  setBookings([]);
+                  addNotification(
+                    createSuccessNotification(
+                      "Data Cleared",
+                      "All local data has been cleared. Refresh to start fresh.",
+                    ),
+                  );
+                }
+              }}
+              variant="ghost"
+              className="text-white hover:bg-white/20 p-2 sm:p-3 rounded-xl flex-shrink-0 text-xs"
+              title="Clear All Data"
+            >
+              🗑️
+            </Button>
+            <Button
+              onClick={refreshBookings}
+              variant="ghost"
+              className="text-white hover:bg-white/20 p-2 sm:p-3 rounded-xl flex-shrink-0"
+              disabled={refreshing}
+            >
+              <RefreshCw
+                className={`h-4 w-4 sm:h-5 sm:w-5 ${refreshing ? "animate-spin" : ""}`}
+              />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -345,28 +471,162 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
           </Card>
         ) : (
           bookings.map((booking: any, index) => {
+            // Safety wrapper to prevent any object rendering
+            const SafeText = ({ children }: { children: any }) => {
+              if (children === null || children === undefined) return null;
+              if (
+                typeof children === "string" ||
+                typeof children === "number" ||
+                typeof children === "boolean"
+              ) {
+                return <>{children}</>;
+              }
+              if (typeof children === "object") {
+                console.warn("Prevented object rendering:", children);
+                return <>Object (prevented)</>;
+              }
+              return <>{String(children)}</>;
+            };
+
             try {
+              // Comprehensive data sanitization to prevent object rendering
+              const sanitizeValue = (value: any, fallback: any = "") => {
+                if (value === null || value === undefined) return fallback;
+                if (
+                  typeof value === "string" ||
+                  typeof value === "number" ||
+                  typeof value === "boolean"
+                )
+                  return value;
+                if (typeof value === "object" && value.name) return value.name;
+                if (typeof value === "object" && value.fullAddress)
+                  return value.fullAddress;
+                if (typeof value === "object") return JSON.stringify(value);
+                return fallback;
+              };
+
+              const sanitizeServices = (services: any) => {
+                if (!Array.isArray(services)) return [];
+
+                // Calculate individual service price based on total
+                const totalAmount =
+                  booking.totalAmount ||
+                  booking.total_price ||
+                  booking.final_amount ||
+                  0;
+                const serviceCount = services.length || 1;
+                const defaultPrice = Math.round(totalAmount / serviceCount);
+
+                return services.map((service, index) => {
+                  if (typeof service === "string") {
+                    return {
+                      name: service,
+                      quantity: 1,
+                      price: defaultPrice,
+                      id: `service_${index}`,
+                    };
+                  }
+                  if (typeof service === "object" && service) {
+                    return {
+                      name: sanitizeValue(
+                        service.name || service.service,
+                        "Unknown Service",
+                      ),
+                      quantity:
+                        typeof service.quantity === "number"
+                          ? service.quantity
+                          : 1,
+                      price:
+                        typeof service.price === "number"
+                          ? service.price
+                          : typeof service.amount === "number"
+                            ? service.amount
+                            : defaultPrice,
+                      id: service.id || `service_${index}`,
+                    };
+                  }
+                  return {
+                    name: String(service) || "Unknown Service",
+                    quantity: 1,
+                    price: defaultPrice,
+                    id: `service_${index}`,
+                  };
+                });
+              };
+
+              const safeBooking = {
+                id: sanitizeValue(
+                  booking.id || booking._id,
+                  `booking_${index}`,
+                ),
+                service: sanitizeValue(booking.service, "Home Service"),
+                provider_name: sanitizeValue(
+                  booking.provider_name,
+                  "HomeServices Pro",
+                ),
+                status: sanitizeValue(booking.status, "pending"),
+                services: sanitizeServices(booking.services),
+                additional_details: sanitizeValue(
+                  booking.additional_details,
+                  "",
+                ),
+                pickupDate: sanitizeValue(booking.pickupDate, ""),
+                deliveryDate: sanitizeValue(booking.deliveryDate, ""),
+                scheduled_date: sanitizeValue(booking.scheduled_date, ""),
+                pickupTime: sanitizeValue(booking.pickupTime, ""),
+                deliveryTime: sanitizeValue(booking.deliveryTime, ""),
+                scheduled_time: sanitizeValue(booking.scheduled_time, ""),
+                address: sanitizeValue(booking.address, "Address not provided"),
+                totalAmount:
+                  typeof booking.totalAmount === "number"
+                    ? booking.totalAmount
+                    : 0,
+                total_price:
+                  typeof booking.total_price === "number"
+                    ? booking.total_price
+                    : 0,
+                final_amount:
+                  typeof booking.final_amount === "number"
+                    ? booking.final_amount
+                    : 0,
+                discount_amount:
+                  typeof booking.discount_amount === "number"
+                    ? booking.discount_amount
+                    : 0,
+                payment_status: sanitizeValue(
+                  booking.payment_status,
+                  "pending",
+                ),
+                paymentStatus: sanitizeValue(booking.paymentStatus, "pending"),
+                charges_breakdown: {
+                  tax_amount:
+                    typeof booking.charges_breakdown?.tax_amount === "number"
+                      ? booking.charges_breakdown.tax_amount
+                      : 0,
+                },
+              };
+
               return (
                 <Card
-                  key={booking.id || index}
+                  key={safeBooking.id || index}
                   className="border-0 shadow-xl rounded-2xl overflow-hidden bg-white/95 backdrop-blur-sm hover:shadow-2xl transition-all duration-300"
                 >
                   <CardHeader className="pb-3 p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-base sm:text-lg font-bold text-gray-900 mb-1 truncate">
-                          {booking.service || "Home Service"}
+                          {safeBooking.service}
                         </CardTitle>
                         <p className="text-xs sm:text-sm text-green-600 truncate font-medium">
-                          by {booking.provider_name || "HomeServices Pro"}
+                          by {safeBooking.provider_name}
                         </p>
                       </div>
                       <Badge
-                        className={`${getStatusColor(booking.status)} border font-medium`}
+                        className={`${getStatusColor(safeBooking.status)} border font-medium`}
                       >
-                        {getStatusIcon(booking.status)}
+                        {getStatusIcon(safeBooking.status)}
                         <span className="ml-1 capitalize">
-                          {booking.status}
+                          {safeBooking.status}
                         </span>
                       </Badge>
                     </div>
@@ -374,31 +634,37 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
                   <CardContent className="space-y-4 p-4 sm:p-6">
                     {/* Booked Services */}
-                    {booking.services && booking.services.length > 0 && (
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-gray-900 text-sm">
-                          Booked Services
-                        </h4>
-                        {booking.services.map((service: any, idx: number) => (
-                          <div
-                            key={idx}
-                            className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100"
-                          >
-                            <div className="flex-1">
-                              <p className="font-medium text-gray-900 text-sm">
-                                {service.name || service.service}
-                              </p>
-                              <p className="text-xs text-gray-600">
-                                Qty: {service.quantity || 1}
-                              </p>
-                            </div>
-                            <p className="font-semibold text-blue-600">
-                              ₹{service.price || service.amount}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {safeBooking.services &&
+                      Array.isArray(safeBooking.services) &&
+                      safeBooking.services.length > 0 && (
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-gray-900 text-sm">
+                            Booked Services
+                          </h4>
+                          {safeBooking.services.map(
+                            (service: any, idx: number) => (
+                              <div
+                                key={idx}
+                                className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100"
+                              >
+                                <div className="flex-1">
+                                  <p className="font-medium text-gray-900 text-sm">
+                                    <SafeText>{service.name}</SafeText>
+                                  </p>
+                                  <p className="text-xs text-gray-600">
+                                    Qty: {service.quantity}
+                                  </p>
+                                </div>
+                                {service.price > 0 && (
+                                  <p className="font-semibold text-blue-600">
+                                    ₹{service.price}
+                                  </p>
+                                )}
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      )}
 
                     {/* Pickup & Delivery Slots */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -410,29 +676,46 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           </span>
                         </div>
                         <p className="text-sm text-gray-900">
-                          {booking.pickupDate
-                            ? new Date(booking.pickupDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  weekday: "short",
-                                  month: "short",
-                                  day: "numeric",
-                                },
-                              )
-                            : booking.scheduled_date
-                              ? new Date(
-                                  booking.scheduled_date,
-                                ).toLocaleDateString("en-US", {
-                                  weekday: "short",
-                                  month: "short",
-                                  day: "numeric",
-                                })
-                              : "Date TBD"}
+                          {(() => {
+                            const dateStr =
+                              safeBooking.pickupDate ||
+                              safeBooking.scheduled_date;
+                            if (!dateStr) return "Date TBD";
+
+                            try {
+                              let date;
+                              if (dateStr.includes("-")) {
+                                // YYYY-MM-DD format - parse as local date
+                                const [year, month, day] = dateStr
+                                  .split("-")
+                                  .map(Number);
+                                date = new Date(year, month - 1, day);
+                              } else {
+                                date = new Date(dateStr);
+                              }
+
+                              // Validate date
+                              if (isNaN(date.getTime())) return "Date TBD";
+
+                              return date.toLocaleDateString("en-US", {
+                                weekday: "short",
+                                month: "short",
+                                day: "numeric",
+                              });
+                            } catch (error) {
+                              console.error(
+                                "Error parsing date:",
+                                dateStr,
+                                error,
+                              );
+                              return "Date TBD";
+                            }
+                          })()}
                         </p>
                         <p className="text-xs text-green-600">
-                          {booking.pickupTime ||
-                            booking.scheduled_time ||
-                            "Time TBD"}
+                          {safeBooking.pickupTime ||
+                            safeBooking.scheduled_time ||
+                            "10:00"}
                         </p>
                       </div>
 
@@ -444,19 +727,45 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           </span>
                         </div>
                         <p className="text-sm text-gray-900">
-                          {booking.deliveryDate
-                            ? new Date(booking.deliveryDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  weekday: "short",
-                                  month: "short",
-                                  day: "numeric",
-                                },
-                              )
-                            : "Date TBD"}
+                          {safeBooking.deliveryDate
+                            ? new Date(
+                                safeBooking.deliveryDate,
+                              ).toLocaleDateString("en-US", {
+                                weekday: "short",
+                                month: "short",
+                                day: "numeric",
+                              })
+                            : safeBooking.scheduled_date
+                              ? (() => {
+                                  // Calculate delivery date (next day after pickup)
+                                  const dateStr = safeBooking.scheduled_date;
+                                  let date;
+
+                                  if (dateStr && dateStr.includes("-")) {
+                                    const [year, month, day] =
+                                      dateStr.split("-");
+                                    date = new Date(
+                                      parseInt(year),
+                                      parseInt(month) - 1,
+                                      parseInt(day) + 1,
+                                    );
+                                  } else if (dateStr) {
+                                    date = new Date(dateStr);
+                                    date.setDate(date.getDate() + 1);
+                                  } else {
+                                    return "Date TBD";
+                                  }
+
+                                  return date.toLocaleDateString("en-US", {
+                                    weekday: "short",
+                                    month: "short",
+                                    day: "numeric",
+                                  });
+                                })()
+                              : "Date TBD"}
                         </p>
                         <p className="text-xs text-emerald-600">
-                          {booking.deliveryTime || "Time TBD"}
+                          {safeBooking.deliveryTime || "Time TBD"}
                         </p>
                       </div>
                     </div>
@@ -469,10 +778,9 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           Service Address
                         </p>
                         <p className="text-sm text-gray-600 leading-relaxed">
-                          {typeof booking.address === "string"
-                            ? booking.address
-                            : booking.address?.fullAddress ||
-                              `${booking.address?.flatNo || ""} ${booking.address?.street || ""}, ${booking.address?.village || ""}, ${booking.address?.city || ""} ${booking.address?.pincode || ""}`.trim()}
+                          <SafeText>
+                            {safeBooking.address || "Address not provided"}
+                          </SafeText>
                         </p>
                       </div>
                     </div>
@@ -491,32 +799,45 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           </span>
                           <span className="font-medium">
                             ₹
-                            {booking.totalAmount ||
-                              booking.total_price ||
-                              booking.final_amount ||
-                              0}
+                            {(() => {
+                              const servicesTotal = safeBooking.services.reduce(
+                                (total: number, service: any) => {
+                                  return (
+                                    total +
+                                    (service.price * service.quantity || 0)
+                                  );
+                                },
+                                0,
+                              );
+                              return servicesTotal > 0
+                                ? servicesTotal
+                                : safeBooking.totalAmount ||
+                                    safeBooking.total_price ||
+                                    safeBooking.final_amount ||
+                                    0;
+                            })()}
                           </span>
                         </div>
 
                         {/* Discount if applicable */}
-                        {booking.discount_amount &&
-                          booking.discount_amount > 0 && (
+                        {safeBooking.discount_amount &&
+                          safeBooking.discount_amount > 0 && (
                             <div className="flex justify-between items-center mb-2">
                               <span className="text-sm text-green-600">
                                 Discount
                               </span>
                               <span className="font-medium text-green-600">
-                                -₹{booking.discount_amount}
+                                -₹{safeBooking.discount_amount}
                               </span>
                             </div>
                           )}
 
                         {/* Tax if applicable */}
-                        {booking.charges_breakdown?.tax_amount && (
+                        {safeBooking.charges_breakdown?.tax_amount && (
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-sm text-gray-600">Tax</span>
                             <span className="font-medium">
-                              ₹{booking.charges_breakdown.tax_amount}
+                              ₹{safeBooking.charges_breakdown.tax_amount}
                             </span>
                           </div>
                         )}
@@ -528,10 +849,26 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                             </span>
                             <span className="text-xl font-bold text-green-600">
                               ₹
-                              {booking.final_amount ||
-                                booking.totalAmount ||
-                                booking.total_price ||
-                                0}
+                              {(() => {
+                                const servicesTotal =
+                                  safeBooking.services.reduce(
+                                    (total: number, service: any) => {
+                                      return (
+                                        total +
+                                        (service.price * service.quantity || 0)
+                                      );
+                                    },
+                                    0,
+                                  );
+                                const actualTotal =
+                                  servicesTotal > 0
+                                    ? servicesTotal
+                                    : safeBooking.final_amount ||
+                                      safeBooking.totalAmount ||
+                                      safeBooking.total_price ||
+                                      0;
+                                return actualTotal;
+                              })()}
                             </span>
                           </div>
                           <div className="flex justify-between items-center mt-1">
@@ -540,15 +877,15 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                             </span>
                             <span
                               className={`text-xs px-2 py-1 rounded-full ${
-                                (booking.payment_status ||
-                                  booking.paymentStatus) === "paid"
+                                (safeBooking.payment_status ||
+                                  safeBooking.paymentStatus) === "paid"
                                   ? "bg-green-100 text-green-800"
                                   : "bg-yellow-100 text-yellow-800"
                               }`}
                             >
                               {(
-                                booking.payment_status ||
-                                booking.paymentStatus ||
+                                safeBooking.payment_status ||
+                                safeBooking.paymentStatus ||
                                 "pending"
                               ).toUpperCase()}
                             </span>
@@ -558,15 +895,26 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                     </div>
 
                     {/* Additional Details */}
-                    {booking.additional_details && (
+                    {safeBooking.additional_details && (
                       <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
                         <p className="font-medium text-gray-900 mb-1">
                           Additional Notes
                         </p>
                         <p className="text-sm text-gray-600">
-                          {typeof booking.additional_details === "string"
-                            ? booking.additional_details
-                            : JSON.stringify(booking.additional_details)}
+                          {(() => {
+                            if (
+                              typeof booking.additional_details === "string"
+                            ) {
+                              return booking.additional_details;
+                            }
+                            if (
+                              typeof booking.additional_details === "object" &&
+                              booking.additional_details
+                            ) {
+                              return JSON.stringify(booking.additional_details);
+                            }
+                            return "No additional details";
+                          })()}
                         </p>
                       </div>
                     )}
@@ -575,12 +923,12 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                     <div className="space-y-3 pt-3">
                       {/* Primary Actions Row */}
                       <div className="grid grid-cols-2 gap-3">
-                        {(booking.status === "pending" ||
-                          booking.status === "confirmed") && (
+                        {(safeBooking.status === "pending" ||
+                          safeBooking.status === "confirmed") && (
                           <>
                             <Button
                               variant="outline"
-                              onClick={() => handleEditBooking(booking)}
+                              onClick={() => handleEditBooking(safeBooking)}
                               className="flex-1 rounded-xl border-2 border-green-200 hover:bg-green-50 text-green-600 font-medium py-3"
                             >
                               <Edit className="mr-2 h-4 w-4" />
@@ -613,7 +961,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                                   </AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() =>
-                                      handleCancelBooking(booking.id)
+                                      handleCancelBooking(safeBooking.id)
                                     }
                                     className="bg-red-600 hover:bg-red-700"
                                   >
@@ -625,7 +973,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           </>
                         )}
 
-                        {booking.status === "completed" && (
+                        {safeBooking.status === "completed" && (
                           <Button
                             variant="outline"
                             className="col-span-2 rounded-xl border-2 border-amber-200 hover:bg-amber-50 text-amber-600 font-medium py-3"
@@ -640,10 +988,9 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Button
                           variant="ghost"
-                          className="rounded-xl border border-blue-200 hover:bg-blue-50 text-blue-600 font-medium py-3"
-                          onClick={() => {
-                            /* Add more services logic */
-                          }}
+                          className="rounded-xl border border-blue-200 hover:bg-blue-50 text-blue-600 font-medium py-3 focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                          onClick={() => handleAddServices(safeBooking)}
+                          aria-label={`Add more services to booking ${safeBooking.service || "Home Service"}`}
                         >
                           <Plus className="mr-2 h-4 w-4" />
                           Add More Services
@@ -688,6 +1035,20 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
           }}
           booking={editingBooking}
           onSave={handleSaveEditedBooking}
+        />
+      )}
+
+      {/* Add Services Modal */}
+      {addingServicesBooking && (
+        <EditBookingModal
+          isOpen={showAddServicesModal}
+          onClose={() => {
+            setShowAddServicesModal(false);
+            setAddingServicesBooking(null);
+          }}
+          booking={addingServicesBooking}
+          onSave={handleSaveAddedServices}
+          mode="add-services"
         />
       )}
     </div>

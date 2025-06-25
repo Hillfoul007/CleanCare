@@ -3,32 +3,14 @@ import MongoDBService from "./mongodbService";
 export interface BookingDetails {
   id: string;
   userId: string;
-  services: Array<{
-    id: string;
-    name: string;
-    category: string;
-    price: number;
-    quantity: number;
-  }>;
+  services: string[];
   totalAmount: number;
   status: "pending" | "confirmed" | "in-progress" | "completed" | "cancelled";
   pickupDate: string;
   deliveryDate: string;
   pickupTime: string;
   deliveryTime: string;
-  address: {
-    fullAddress: string;
-    flatNo?: string;
-    street?: string;
-    landmark?: string;
-    village?: string;
-    city?: string;
-    pincode?: string;
-    coordinates?: {
-      lat: number;
-      lng: number;
-    };
-  };
+  address: string;
   contactDetails: {
     phone: string;
     name: string;
@@ -50,8 +32,7 @@ export interface BookingResponse {
 
 export class BookingService {
   private static instance: BookingService;
-  private apiBaseUrl =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
+  private apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
   private mongoService: MongoDBService;
 
   constructor() {
@@ -101,17 +82,13 @@ export class BookingService {
 
       console.log("💾 Booking saved to localStorage:", booking.id);
 
-      // Note: Backend sync disabled to prevent fetch errors
-      // When backend becomes available, uncomment the sync logic below
-      /*
       // Try to sync with backend (but don't block on it)
       if (navigator.onLine) {
         // Attempt backend sync in background (don't await)
-        this.syncBookingToBackend(booking).catch(error => {
+        this.syncBookingToBackend(booking).catch((error) => {
           console.warn("Background sync failed:", error);
         });
       }
-      */
 
       return {
         success: true,
@@ -134,19 +111,81 @@ export class BookingService {
   async getUserBookings(userId: string): Promise<BookingResponse> {
     console.log("📋 Loading bookings for user:", userId);
 
-    // Try MongoDB first
+    // Try to fetch from backend first
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch(
+        `${this.apiBaseUrl}/bookings/customer/${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("cleancare_auth_token")}`,
+          },
+          signal: controller.signal,
+        },
+      );
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(
+          "✅ Bookings loaded from backend:",
+          result.bookings?.length || 0,
+        );
+
+        if (result.bookings && result.bookings.length > 0) {
+          // Transform backend bookings to frontend format
+          const transformedBookings = result.bookings.map((booking: any) =>
+            this.transformBackendBooking(booking),
+          );
+
+          // Save to localStorage for offline access
+          transformedBookings.forEach((booking) => {
+            this.saveBookingToLocalStorage(booking);
+          });
+
+          return {
+            success: true,
+            bookings: transformedBookings,
+          };
+        }
+      } else {
+        console.warn(
+          `⚠️ Backend responded with ${response.status}: ${response.statusText}`,
+        );
+      }
+    } catch (error) {
+      // Check if it's a network error or timeout
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          console.warn("⚠️ Backend request timed out, using localStorage");
+        } else if (error.message.includes("Failed to fetch")) {
+          console.warn(
+            "⚠️ Network error - backend unavailable, using localStorage",
+          );
+        } else {
+          console.warn("⚠️ Backend fetch failed:", error.message);
+        }
+      } else {
+        console.warn("⚠️ Unknown error during backend fetch:", error);
+      }
+    }
+
+    // Try MongoDB as fallback
     try {
       const mongoBookings = await this.mongoService.getUserBookings(userId);
       if (mongoBookings && mongoBookings.length > 0) {
         console.log("✅ Bookings loaded from MongoDB:", mongoBookings.length);
-        // Map mongoBookings to include paymentStatus
-        const mappedBookings = mongoBookings.map((booking) => ({
-          ...booking,
-          paymentStatus: booking.payment_status || "pending",
-        }));
+        // Transform MongoDB bookings to match frontend format
+        const transformedBookings = mongoBookings.map((booking) =>
+          this.transformBackendBooking(booking),
+        );
         return {
           success: true,
-          bookings: mappedBookings,
+          bookings: transformedBookings,
         };
       }
     } catch (error) {
@@ -161,12 +200,8 @@ export class BookingService {
       bookings: localBookings,
     };
 
-    // Note: Backend sync disabled to prevent fetch errors
-    // When backend becomes available, uncomment the sync logic below
-    /*
     // Try to sync with backend in background (non-blocking)
     this.syncWithBackendInBackground(userId, localBookings);
-    */
   }
 
   /**
@@ -181,9 +216,10 @@ export class BookingService {
       const timeoutId = setTimeout(() => controller.abort(), 3000); // Short timeout for background sync
 
       const response = await fetch(
-        `${this.apiBaseUrl}/bookings/user/${userId}`,
+        `${this.apiBaseUrl}/bookings/customer/${userId}`,
         {
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("cleancare_auth_token")}`,
           },
           signal: controller.signal,
@@ -196,8 +232,10 @@ export class BookingService {
         const result = await response.json();
         console.log("✅ Background sync successful:", result);
 
-        // Update localStorage with merged data
-        const backendBookings = result.bookings || [];
+        // Transform backend bookings to frontend format
+        const backendBookings = (result.bookings || []).map((booking: any) =>
+          this.transformBackendBooking(booking),
+        );
         const mergedBookings = this.mergeBookings(
           localBookings,
           backendBookings,
@@ -211,6 +249,66 @@ export class BookingService {
     } catch (error) {
       console.log("ℹ️ Background sync skipped (backend unavailable)");
     }
+  }
+
+  /**
+   * Transform backend booking to frontend format
+   */
+  private transformBackendBooking(backendBooking: any): BookingDetails {
+    return {
+      id: backendBooking._id || backendBooking.id,
+      userId: backendBooking.customer_id,
+      services: backendBooking.services?.map(
+        (serviceName: string) => serviceName,
+      ) || [backendBooking.service || "Home Service"],
+      totalAmount:
+        backendBooking.total_price || backendBooking.final_amount || 0,
+      status: backendBooking.status || "pending",
+      pickupDate: backendBooking.scheduled_date,
+      deliveryDate: this.calculateDeliveryDate(backendBooking.scheduled_date),
+      pickupTime: backendBooking.scheduled_time || "10:00",
+      deliveryTime: "18:00", // Default delivery time
+      address: backendBooking.address || "Address not provided",
+      contactDetails: {
+        phone: backendBooking.customer_id?.phone || "",
+        name: backendBooking.customer_id?.full_name || "Customer",
+        instructions:
+          backendBooking.additional_details ||
+          backendBooking.special_instructions ||
+          "",
+      },
+      paymentStatus: backendBooking.payment_status || "pending",
+      paymentMethod: "cash",
+      createdAt:
+        backendBooking.created_at ||
+        backendBooking.createdAt ||
+        new Date().toISOString(),
+      updatedAt:
+        backendBooking.updated_at ||
+        backendBooking.updatedAt ||
+        new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Calculate delivery date from pickup date
+   */
+  private calculateDeliveryDate(pickupDate: string): string {
+    if (!pickupDate) return new Date().toISOString().split("T")[0];
+
+    if (pickupDate.includes("-")) {
+      const [year, month, day] = pickupDate.split("-");
+      const date = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day) + 1,
+      );
+      return date.toISOString().split("T")[0];
+    }
+
+    const date = new Date(pickupDate);
+    date.setDate(date.getDate() + 1);
+    return date.toISOString().split("T")[0];
   }
 
   /**
@@ -240,25 +338,91 @@ export class BookingService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
+      // Transform booking data to match backend schema
+      const backendBooking = {
+        customer_id: booking.userId,
+        service: Array.isArray(booking.services)
+          ? booking.services.join(", ")
+          : booking.services || "Home Service",
+        service_type: "home-service",
+        services: Array.isArray(booking.services)
+          ? booking.services
+          : [booking.services || "Home Service"],
+        scheduled_date:
+          booking.pickupDate ||
+          booking.scheduled_date ||
+          new Date().toISOString().split("T")[0],
+        scheduled_time: booking.pickupTime || booking.scheduled_time || "10:00",
+        provider_name: "HomeServices Pro",
+        address:
+          typeof booking.address === "string"
+            ? booking.address
+            : booking.address?.fullAddress || booking.address || "",
+        coordinates: (typeof booking.address === "object" &&
+          booking.address?.coordinates) || { lat: 0, lng: 0 },
+        additional_details:
+          booking.contactDetails?.instructions ||
+          booking.additional_details ||
+          "",
+        total_price: booking.totalAmount || booking.total_price || 0,
+        discount_amount: booking.discount_amount || 0,
+        final_amount:
+          booking.totalAmount ||
+          booking.final_amount ||
+          booking.total_price ||
+          0,
+        special_instructions:
+          booking.contactDetails?.instructions ||
+          booking.additional_details ||
+          "",
+        charges_breakdown: {
+          base_price: booking.totalAmount || booking.total_price || 0,
+          tax_amount: 0,
+          service_fee: 0,
+          discount: 0,
+        },
+      };
+
       const response = await fetch(`${this.apiBaseUrl}/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("cleancare_auth_token")}`,
         },
-        body: JSON.stringify(booking),
+        body: JSON.stringify(backendBooking),
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
       if (response.ok) {
-        console.log("✅ Booking synced to backend:", booking.id);
+        const result = await response.json();
+        console.log("✅ Booking synced to backend:", booking.id, result);
       } else {
-        throw new Error(`Backend sync failed with status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(
+          `Backend sync failed with status: ${response.status} - ${errorText}`,
+        );
       }
     } catch (error) {
-      console.warn("⚠️ Backend sync failed:", error);
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          console.warn("⚠️ Backend sync timed out for booking:", booking.id);
+        } else if (error.message.includes("Failed to fetch")) {
+          console.warn(
+            "⚠️ Network error - backend sync failed for booking:",
+            booking.id,
+          );
+        } else {
+          console.warn(
+            "⚠️ Backend sync failed for booking:",
+            booking.id,
+            error.message,
+          );
+        }
+      } else {
+        console.warn("⚠️ Unknown error during backend sync:", error);
+      }
       // Could implement retry logic here if needed
     }
   }
@@ -331,9 +495,27 @@ export class BookingService {
       const existingBookings = JSON.parse(
         localStorage.getItem("user_bookings") || "[]",
       );
-      existingBookings.push(booking);
+
+      // Check if booking already exists (avoid duplicates)
+      const bookingId = booking.id || (booking as any)._id;
+      const existingIndex = existingBookings.findIndex(
+        (b: any) => b.id === bookingId || b._id === bookingId,
+      );
+
+      if (existingIndex >= 0) {
+        // Update existing booking
+        existingBookings[existingIndex] = {
+          ...existingBookings[existingIndex],
+          ...booking,
+        };
+        console.log("💾 Booking updated in localStorage");
+      } else {
+        // Add new booking
+        existingBookings.push(booking);
+        console.log("💾 New booking saved to localStorage");
+      }
+
       localStorage.setItem("user_bookings", JSON.stringify(existingBookings));
-      console.log("💾 Booking saved to localStorage");
     } catch (error) {
       console.error("Failed to save booking to localStorage:", error);
     }
@@ -368,7 +550,8 @@ export class BookingService {
         localStorage.getItem("user_bookings") || "[]",
       );
       const bookingIndex = allBookings.findIndex(
-        (booking: BookingDetails) => booking.id === bookingId,
+        (booking: BookingDetails) =>
+          booking.id === bookingId || (booking as any)._id === bookingId,
       );
 
       if (bookingIndex === -1) {

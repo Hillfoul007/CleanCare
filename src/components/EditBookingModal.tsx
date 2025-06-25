@@ -12,14 +12,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Calendar, Clock, MapPin, FileText, ShoppingCart } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  FileText,
+  ShoppingCart,
+  Plus,
+} from "lucide-react";
 import ServiceSelector from "./ServiceSelector";
+import ServiceEditor from "./ServiceEditor";
 
 interface EditBookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   booking: any;
   onSave: (updatedBooking: any) => void;
+  mode?: "edit" | "add-services";
 }
 
 const EditBookingModal: React.FC<EditBookingModalProps> = ({
@@ -27,6 +36,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
   onClose,
   booking,
   onSave,
+  mode = "edit",
 }) => {
   const [formData, setFormData] = useState({
     scheduled_date: booking?.scheduled_date
@@ -37,9 +47,22 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     additional_details: booking?.additional_details || "",
   });
 
-  const [selectedServices, setSelectedServices] = useState<string[]>(
-    booking?.services || [booking?.service].filter(Boolean) || [],
-  );
+  const [selectedServices, setSelectedServices] = useState<string[]>(() => {
+    if (booking?.services && Array.isArray(booking.services)) {
+      return booking.services
+        .map((service: any) =>
+          typeof service === "object" ? service.name || "" : service,
+        )
+        .filter(Boolean);
+    }
+    if (booking?.service) {
+      const service = booking.service;
+      return [
+        typeof service === "object" ? service.name || "" : service,
+      ].filter(Boolean);
+    }
+    return [];
+  });
   const [totalPrice, setTotalPrice] = useState(
     booking?.total_price || booking?.final_amount || 0,
   );
@@ -93,12 +116,22 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       <DialogContent className="sm:max-w-2xl max-w-[95vw] max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-blue-600" />
-            Edit Booking
+            {mode === "add-services" ? (
+              <>
+                <Plus className="w-5 h-5 text-blue-600" />
+                Add Services
+              </>
+            ) : (
+              <>
+                <Calendar className="w-5 h-5 text-blue-600" />
+                Edit Booking
+              </>
+            )}
           </DialogTitle>
           <DialogDescription>
-            Update your booking details below. Changes will be saved
-            immediately.
+            {mode === "add-services"
+              ? "Add more services to your existing booking. The total amount will be updated."
+              : "Update your booking details below. Changes will be saved immediately."}
           </DialogDescription>
         </DialogHeader>
 
@@ -123,7 +156,10 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               <div className="space-y-1">
                 {selectedServices.map((service, index) => (
                   <p key={index} className="text-blue-800 text-sm">
-                    • {service}
+                    •{" "}
+                    {typeof service === "object"
+                      ? service.name || JSON.stringify(service)
+                      : service}
                   </p>
                 ))}
                 {selectedServices.length === 0 && (
@@ -207,10 +243,11 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
           </TabsContent>
 
           <TabsContent value="services" className="mt-4">
-            <ServiceSelector
+            <ServiceEditor
               selectedServices={selectedServices}
               onServicesChange={setSelectedServices}
               onPriceChange={setTotalPrice}
+              mode={mode}
             />
           </TabsContent>
         </Tabs>

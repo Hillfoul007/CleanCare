@@ -11,7 +11,8 @@
     "dev:standalone": "nodemon server-standalone.js",
     "dev:watch": "nodemon server.js",
     "build": "echo 'No build step required for Node.js backend'",
-    "test": "echo 'No tests specified' && exit 0"
+    "test": "echo 'No tests specified' && exit 0",
+    "cleanup": "node cleanup-database.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
