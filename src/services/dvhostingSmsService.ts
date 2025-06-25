@@ -25,51 +25,52 @@ export class DVHostingSmsService {
         throw new Error("Invalid Indian phone number");
       }
 
-      // Detect Builder.io environment and use appropriate URL
-      const isBuilderEnv =
+      // Detect hosted environment (Builder.io, fly.dev, etc.)
+      const isHostedEnv =
         window.location.hostname.includes("builder.codes") ||
         window.location.hostname.includes("fly.dev") ||
         document.querySelector("[data-loc]") !== null;
 
-      // Use environment variable for API base URL, with fallback
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-      const baseUrl = isBuilderEnv ? apiBaseUrl.replace("/api", "") : "";
-
       console.log("DVHosting SMS: Environment detection:", {
-        isBuilderEnv,
-        baseUrl,
-        apiBaseUrl,
+        isHostedEnv,
         hostname: window.location.hostname,
         hasDataLoc: !!document.querySelector("[data-loc]"),
-        finalUrl: `${baseUrl}/api/auth/send-otp`,
       });
 
-      // Call backend API instead of DVHosting directly to avoid CORS issues
-      const response = await fetch(
-        `${baseUrl}/api/auth/send-otp?t=${Date.now()}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-            Expires: "0",
-          },
-          body: JSON.stringify({
-            phone: cleanPhone,
-          }),
+      // In hosted environments, skip backend API and use direct/simulation mode
+      if (isHostedEnv) {
+        console.log(
+          "DVHosting SMS: Hosted environment detected, using direct API call",
+        );
+        return await this.sendDirectDVHostingOTP(cleanPhone);
+      }
+
+      // For local development, try backend API first
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+
+      console.log("DVHosting SMS: Local environment, trying backend API:", {
+        apiBaseUrl,
+        finalUrl: `/api/auth/send-otp`,
+      });
+
+      // Call backend API for local development
+      const response = await fetch(`/api/auth/send-otp?t=${Date.now()}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
         },
-      ).catch((error) => {
-        // Handle fetch errors in hosted environments
-        console.log("DVHosting SMS: Fetch error in hosted environment:", error);
-        if (isBuilderEnv) {
-          console.log(
-            "DVHosting SMS: Using simulation mode for hosted environment",
-          );
-          return null; // Will trigger simulation mode below
-        }
-        throw error;
+        body: JSON.stringify({
+          phone: cleanPhone,
+        }),
+      }).catch((error) => {
+        // Handle fetch errors in local development
+        console.log("DVHosting SMS: Backend API error:", error);
+        console.log("DVHosting SMS: Falling back to direct API call");
+        return null; // Will trigger direct API call below
       });
 
       // Handle direct DVHosting API call for hosted environments without backend
