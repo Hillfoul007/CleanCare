@@ -193,10 +193,10 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setError("");
 
     try {
-      const result = await fast2smsService.verifySmsOTP(
+      const result = await dvhostingSmsService.sendSmsOTP(
         formData.phone,
-        formData.otp,
-        formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
+        formData.name,
+      );
       );
 
       if (result.success && result.user) {
