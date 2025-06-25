@@ -35,6 +35,19 @@ export class Fast2SmsService {
       });
 
       if (response.ok) {
+        const contentType = response.headers.get("content-type");
+        console.log("Response content type:", contentType);
+
+        if (!contentType || !contentType.includes("application/json")) {
+          const textContent = await response.text();
+          console.error(
+            "❌ Expected JSON but got:",
+            contentType,
+            textContent.substring(0, 200),
+          );
+          return false;
+        }
+
         const result = await response.json();
         console.log("✅ OTP sent successfully:", result);
 
