@@ -218,6 +218,7 @@ export class Fast2SmsService {
       // Detect Builder.io environment and use absolute URL
       const isBuilderEnv =
         window.location.hostname.includes("builder.codes") ||
+        window.location.hostname.includes("fly.dev") ||
         document.querySelector("[data-loc]") !== null;
       const baseUrl = isBuilderEnv ? "http://localhost:3001" : "";
 
