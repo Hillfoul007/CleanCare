@@ -578,20 +578,6 @@ const EnhancedAddressForm: React.FC<EnhancedAddressFormProps> = ({
                   <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-gray-400" />
                 )}
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={detectCurrentLocation}
-                disabled={isDetectingLocation}
-                className="px-3"
-                title="Use my current location"
-              >
-                {isDetectingLocation ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Navigation className="h-4 w-4" />
-                )}
-              </Button>
             </div>
 
             {/* Search Suggestions */}
