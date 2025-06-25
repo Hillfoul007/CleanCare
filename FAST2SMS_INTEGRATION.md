@@ -119,10 +119,20 @@ The frontend service in `src/services/fast2smsService.ts` provides:
 
 ## Testing
 
-The service includes a simulation mode when the API key is not configured:
+The service includes multiple fallback modes:
 
 1. Set `FAST2SMS_API_KEY` to test with real SMS delivery
 2. Remove or leave empty for simulation mode (development)
+3. If Fast2SMS API fails in development mode, it automatically falls back to simulation
+
+## Debugging CORS Issues
+
+The original implementation was updated to fix CORS issues:
+
+- **Problem**: Direct calls from frontend to Fast2SMS API were blocked by CORS
+- **Solution**: Frontend now calls backend API endpoints that proxy to Fast2SMS
+- **API Endpoints**: `/api/auth/send-otp` and `/api/auth/verify-otp`
+- **Proxy Configuration**: Added in `vite.config.ts` to forward `/api/*` to `http://localhost:3001`
 
 ## Error Handling
 
