@@ -35,6 +35,7 @@ import DebugPanel from "./DebugPanel";
 import ConnectionStatus from "./ConnectionStatus";
 import NotificationPanel from "./NotificationPanel";
 import { Fast2SmsService } from "@/services/fast2smsService";
+import { saveCartData, getCartData } from "@/utils/formPersistence";
 
 interface ResponsiveLaundryHomeProps {
   currentUser?: any;
@@ -59,10 +60,20 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const fast2smsService = Fast2SmsService.getInstance();
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [cart, setCart] = useState<{ [key: string]: number }>({});
+  const [cart, setCart] = useState<{ [key: string]: number }>(() => {
+    // Load cart from localStorage on initialization
+    return getCartData();
+  });
   const [deliveryTime, setDeliveryTime] = useState("2-3 hours");
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (Object.keys(cart).length > 0) {
+      saveCartData(cart);
+    }
+  }, [cart]);
 
   // Simplified mobile detection
   useEffect(() => {
