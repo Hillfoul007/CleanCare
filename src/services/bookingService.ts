@@ -101,17 +101,13 @@ export class BookingService {
 
       console.log("💾 Booking saved to localStorage:", booking.id);
 
-      // Note: Backend sync disabled to prevent fetch errors
-      // When backend becomes available, uncomment the sync logic below
-      /*
       // Try to sync with backend (but don't block on it)
       if (navigator.onLine) {
         // Attempt backend sync in background (don't await)
-        this.syncBookingToBackend(booking).catch(error => {
+        this.syncBookingToBackend(booking).catch((error) => {
           console.warn("Background sync failed:", error);
         });
       }
-      */
 
       return {
         success: true,
