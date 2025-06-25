@@ -173,7 +173,7 @@ export class BookingService {
       const timeoutId = setTimeout(() => controller.abort(), 3000); // Short timeout for background sync
 
       const response = await fetch(
-        `${this.apiBaseUrl}/bookings/user/${userId}`,
+        `${this.apiBaseUrl}/bookings/customer/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("cleancare_auth_token")}`,
