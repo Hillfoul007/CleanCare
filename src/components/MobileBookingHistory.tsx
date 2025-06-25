@@ -773,10 +773,26 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                             </span>
                             <span className="text-xl font-bold text-green-600">
                               ₹
-                              {safeBooking.final_amount ||
-                                safeBooking.totalAmount ||
-                                safeBooking.total_price ||
-                                0}
+                              {(() => {
+                                const servicesTotal =
+                                  safeBooking.services.reduce(
+                                    (total: number, service: any) => {
+                                      return (
+                                        total +
+                                        (service.price * service.quantity || 0)
+                                      );
+                                    },
+                                    0,
+                                  );
+                                const actualTotal =
+                                  servicesTotal > 0
+                                    ? servicesTotal
+                                    : safeBooking.final_amount ||
+                                      safeBooking.totalAmount ||
+                                      safeBooking.total_price ||
+                                      0;
+                                return actualTotal;
+                              })()}
                             </span>
                           </div>
                           <div className="flex justify-between items-center mt-1">
