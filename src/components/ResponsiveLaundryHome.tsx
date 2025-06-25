@@ -320,16 +320,10 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
               <div className="p-4 space-y-3">
                 <Button
                   onClick={() => {
-                    console.log("Mobile My Bookings clicked:", {
-                      currentUser,
-                      onViewBookings,
-                    });
                     setShowMobileMenu(false);
                     if (currentUser) {
-                      console.log("User found, calling onViewBookings");
                       onViewBookings();
                     } else {
-                      console.log("No user, calling handleLogin");
                       handleLogin();
                     }
                   }}
