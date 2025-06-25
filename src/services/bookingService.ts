@@ -208,6 +208,86 @@ export class BookingService {
   }
 
   /**
+   * Transform backend booking to frontend format
+   */
+  private transformBackendBooking(backendBooking: any): BookingDetails {
+    return {
+      id: backendBooking._id || backendBooking.id,
+      userId: backendBooking.customer_id,
+      services: backendBooking.services?.map(
+        (serviceName: string, index: number) => ({
+          id: `service_${index}`,
+          name: serviceName,
+          category: backendBooking.service_type || "home-service",
+          price: Math.round(
+            (backendBooking.total_price || 0) /
+              (backendBooking.services?.length || 1),
+          ),
+          quantity: 1,
+        }),
+      ) || [
+        {
+          id: "service_0",
+          name: backendBooking.service || "Home Service",
+          category: backendBooking.service_type || "home-service",
+          price: backendBooking.total_price || 0,
+          quantity: 1,
+        },
+      ],
+      totalAmount:
+        backendBooking.total_price || backendBooking.final_amount || 0,
+      status: backendBooking.status || "pending",
+      pickupDate: backendBooking.scheduled_date,
+      deliveryDate: this.calculateDeliveryDate(backendBooking.scheduled_date),
+      pickupTime: backendBooking.scheduled_time || "10:00",
+      deliveryTime: "18:00", // Default delivery time
+      address: {
+        fullAddress: backendBooking.address,
+        coordinates: backendBooking.coordinates,
+      },
+      contactDetails: {
+        phone: backendBooking.customer_id?.phone || "",
+        name: backendBooking.customer_id?.full_name || "Customer",
+        instructions:
+          backendBooking.additional_details ||
+          backendBooking.special_instructions ||
+          "",
+      },
+      paymentStatus: backendBooking.payment_status || "pending",
+      paymentMethod: "cash",
+      createdAt:
+        backendBooking.created_at ||
+        backendBooking.createdAt ||
+        new Date().toISOString(),
+      updatedAt:
+        backendBooking.updated_at ||
+        backendBooking.updatedAt ||
+        new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Calculate delivery date from pickup date
+   */
+  private calculateDeliveryDate(pickupDate: string): string {
+    if (!pickupDate) return new Date().toISOString().split("T")[0];
+
+    if (pickupDate.includes("-")) {
+      const [year, month, day] = pickupDate.split("-");
+      const date = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day) + 1,
+      );
+      return date.toISOString().split("T")[0];
+    }
+
+    const date = new Date(pickupDate);
+    date.setDate(date.getDate() + 1);
+    return date.toISOString().split("T")[0];
+  }
+
+  /**
    * Merge local and backend bookings, prioritizing local for newer items
    */
   private mergeBookings(
