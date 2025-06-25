@@ -495,9 +495,27 @@ export class BookingService {
       const existingBookings = JSON.parse(
         localStorage.getItem("user_bookings") || "[]",
       );
-      existingBookings.push(booking);
+
+      // Check if booking already exists (avoid duplicates)
+      const bookingId = booking.id || (booking as any)._id;
+      const existingIndex = existingBookings.findIndex(
+        (b: any) => b.id === bookingId || b._id === bookingId,
+      );
+
+      if (existingIndex >= 0) {
+        // Update existing booking
+        existingBookings[existingIndex] = {
+          ...existingBookings[existingIndex],
+          ...booking,
+        };
+        console.log("💾 Booking updated in localStorage");
+      } else {
+        // Add new booking
+        existingBookings.push(booking);
+        console.log("💾 New booking saved to localStorage");
+      }
+
       localStorage.setItem("user_bookings", JSON.stringify(existingBookings));
-      console.log("💾 Booking saved to localStorage");
     } catch (error) {
       console.error("Failed to save booking to localStorage:", error);
     }
