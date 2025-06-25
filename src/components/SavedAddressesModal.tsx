@@ -68,10 +68,6 @@ const SavedAddressesModal: React.FC<SavedAddressesModalProps> = ({
       } else {
         // Start with no saved addresses - they will be added when user places orders
         setAddresses([]);
-          isDefault: true,
-        };
-        setAddresses([demoAddress]);
-        saveAddresses([demoAddress]);
       }
     } catch (error) {
       console.error("Error loading saved addresses:", error);
