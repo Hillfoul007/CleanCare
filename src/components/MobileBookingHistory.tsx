@@ -346,58 +346,72 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
         ) : (
           bookings.map((booking: any, index) => {
             try {
-              // Ensure booking has required fields and they're not objects
+              // Comprehensive data sanitization to prevent object rendering
+              const sanitizeValue = (value: any, fallback: any = "") => {
+                if (value === null || value === undefined) return fallback;
+                if (
+                  typeof value === "string" ||
+                  typeof value === "number" ||
+                  typeof value === "boolean"
+                )
+                  return value;
+                if (typeof value === "object" && value.name) return value.name;
+                if (typeof value === "object" && value.fullAddress)
+                  return value.fullAddress;
+                if (typeof value === "object") return JSON.stringify(value);
+                return fallback;
+              };
+
+              const sanitizeServices = (services: any) => {
+                if (!Array.isArray(services)) return [];
+                return services.map((service) => {
+                  if (typeof service === "string")
+                    return { name: service, quantity: 1, price: 0 };
+                  if (typeof service === "object" && service) {
+                    return {
+                      name: sanitizeValue(
+                        service.name || service.service,
+                        "Unknown Service",
+                      ),
+                      quantity:
+                        typeof service.quantity === "number"
+                          ? service.quantity
+                          : 1,
+                      price:
+                        typeof service.price === "number"
+                          ? service.price
+                          : typeof service.amount === "number"
+                            ? service.amount
+                            : 0,
+                    };
+                  }
+                  return { name: "Unknown Service", quantity: 1, price: 0 };
+                });
+              };
+
               const safeBooking = {
-                ...booking,
-                service:
-                  typeof booking.service === "string"
-                    ? booking.service
-                    : booking.service?.name || "Home Service",
-                provider_name:
-                  typeof booking.provider_name === "string"
-                    ? booking.provider_name
-                    : "HomeServices Pro",
-                status:
-                  typeof booking.status === "string"
-                    ? booking.status
-                    : "pending",
-                services: Array.isArray(booking.services)
-                  ? booking.services
-                  : [],
-                additional_details:
-                  typeof booking.additional_details === "string"
-                    ? booking.additional_details
-                    : booking.additional_details
-                      ? JSON.stringify(booking.additional_details)
-                      : "",
-                pickupDate:
-                  typeof booking.pickupDate === "string"
-                    ? booking.pickupDate
-                    : "",
-                deliveryDate:
-                  typeof booking.deliveryDate === "string"
-                    ? booking.deliveryDate
-                    : "",
-                scheduled_date:
-                  typeof booking.scheduled_date === "string"
-                    ? booking.scheduled_date
-                    : "",
-                pickupTime:
-                  typeof booking.pickupTime === "string"
-                    ? booking.pickupTime
-                    : "",
-                deliveryTime:
-                  typeof booking.deliveryTime === "string"
-                    ? booking.deliveryTime
-                    : "",
-                scheduled_time:
-                  typeof booking.scheduled_time === "string"
-                    ? booking.scheduled_time
-                    : "",
-                address:
-                  typeof booking.address === "string"
-                    ? booking.address
-                    : booking.address?.fullAddress || "",
+                id: sanitizeValue(
+                  booking.id || booking._id,
+                  `booking_${index}`,
+                ),
+                service: sanitizeValue(booking.service, "Home Service"),
+                provider_name: sanitizeValue(
+                  booking.provider_name,
+                  "HomeServices Pro",
+                ),
+                status: sanitizeValue(booking.status, "pending"),
+                services: sanitizeServices(booking.services),
+                additional_details: sanitizeValue(
+                  booking.additional_details,
+                  "",
+                ),
+                pickupDate: sanitizeValue(booking.pickupDate, ""),
+                deliveryDate: sanitizeValue(booking.deliveryDate, ""),
+                scheduled_date: sanitizeValue(booking.scheduled_date, ""),
+                pickupTime: sanitizeValue(booking.pickupTime, ""),
+                deliveryTime: sanitizeValue(booking.deliveryTime, ""),
+                scheduled_time: sanitizeValue(booking.scheduled_time, ""),
+                address: sanitizeValue(booking.address, "Address not provided"),
                 totalAmount:
                   typeof booking.totalAmount === "number"
                     ? booking.totalAmount
@@ -414,15 +428,17 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                   typeof booking.discount_amount === "number"
                     ? booking.discount_amount
                     : 0,
-                payment_status:
-                  typeof booking.payment_status === "string"
-                    ? booking.payment_status
-                    : "pending",
-                paymentStatus:
-                  typeof booking.paymentStatus === "string"
-                    ? booking.paymentStatus
-                    : "pending",
-                charges_breakdown: booking.charges_breakdown || {},
+                payment_status: sanitizeValue(
+                  booking.payment_status,
+                  "pending",
+                ),
+                paymentStatus: sanitizeValue(booking.paymentStatus, "pending"),
+                charges_breakdown: {
+                  tax_amount:
+                    typeof booking.charges_breakdown?.tax_amount === "number"
+                      ? booking.charges_breakdown.tax_amount
+                      : 0,
+                },
               };
 
               return (
