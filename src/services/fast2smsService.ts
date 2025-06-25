@@ -3,6 +3,8 @@ export class Fast2SmsService {
   private apiKey: string;
   private currentPhone: string = "";
   private storedOTP: string = "";
+  private otpStorage: Map<string, { otp: string; expiresAt: number }> =
+    new Map();
 
   constructor() {
     this.apiKey = import.meta.env.VITE_FAST2SMS_API_KEY || "";
