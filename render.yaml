@@ -28,11 +28,13 @@ services:
       - key: ALLOWED_ORIGINS
         value: https://cleancare-pro.onrender.com
 
-  # Frontend Static Site
-  - type: static_site
+  # Frontend Static Site (Vite)
+  - type: web
     name: cleancare-pro-frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
+    env: static
+    staticSite: true
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
     pullRequestPreviewsEnabled: false
     envVars:
       - key: VITE_API_BASE_URL
