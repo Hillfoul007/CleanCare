@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { ExotelMissedCallService } from "@/services/exotelMissedCallService";
 import { ResendEmailService } from "@/services/resendEmailService";
+import { DVHostingSmsService } from "@/services/dvhostingSmsService";
 import { deviceDetection, DeviceInfo } from "@/utils/deviceDetection";
 
 interface AdaptiveAuthModalProps {
