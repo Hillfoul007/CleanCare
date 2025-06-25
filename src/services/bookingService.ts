@@ -286,10 +286,7 @@ export class BookingService {
       deliveryDate: this.calculateDeliveryDate(backendBooking.scheduled_date),
       pickupTime: backendBooking.scheduled_time || "10:00",
       deliveryTime: "18:00", // Default delivery time
-      address: {
-        fullAddress: backendBooking.address,
-        coordinates: backendBooking.coordinates,
-      },
+      address: backendBooking.address || "Address not provided",
       contactDetails: {
         phone: backendBooking.customer_id?.phone || "",
         name: backendBooking.customer_id?.full_name || "Customer",
@@ -439,7 +436,7 @@ export class BookingService {
     updates: Partial<BookingDetails>,
   ): Promise<BookingResponse> {
     try {
-      console.log("✏️ Updating booking:", bookingId, updates);
+      console.log("���️ Updating booking:", bookingId, updates);
 
       const updatedData = {
         ...updates,
