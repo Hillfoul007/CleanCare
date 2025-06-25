@@ -188,8 +188,10 @@ export class BookingService {
         const result = await response.json();
         console.log("✅ Background sync successful:", result);
 
-        // Update localStorage with merged data
-        const backendBookings = result.bookings || [];
+        // Transform backend bookings to frontend format
+        const backendBookings = (result.bookings || []).map((booking: any) =>
+          this.transformBackendBooking(booking),
+        );
         const mergedBookings = this.mergeBookings(
           localBookings,
           backendBookings,
