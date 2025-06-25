@@ -56,6 +56,12 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Fix FullStory namespace conflict -->
+    <script>
+      window._fs_namespace = "FS";
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
 
     <!-- Register Service Worker -->
