@@ -91,10 +91,13 @@ export class Fast2SmsService {
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
 
       // Call backend API for OTP verification
-      const response = await fetch("/api/auth/verify-otp", {
+      const response = await fetch(`/api/auth/verify-otp?t=${Date.now()}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
         },
         body: JSON.stringify({
           phone: cleanPhone,
