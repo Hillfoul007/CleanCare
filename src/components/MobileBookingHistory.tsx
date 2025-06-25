@@ -650,7 +650,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           <div className="flex justify-between items-center mb-2">
                             <span className="text-sm text-gray-600">Tax</span>
                             <span className="font-medium">
-                              ₹{booking.charges_breakdown.tax_amount}
+                              ₹{safeBooking.charges_breakdown.tax_amount}
                             </span>
                           </div>
                         )}
@@ -662,9 +662,9 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                             </span>
                             <span className="text-xl font-bold text-green-600">
                               ₹
-                              {booking.final_amount ||
-                                booking.totalAmount ||
-                                booking.total_price ||
+                              {safeBooking.final_amount ||
+                                safeBooking.totalAmount ||
+                                safeBooking.total_price ||
                                 0}
                             </span>
                           </div>
@@ -674,15 +674,15 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                             </span>
                             <span
                               className={`text-xs px-2 py-1 rounded-full ${
-                                (booking.payment_status ||
-                                  booking.paymentStatus) === "paid"
+                                (safeBooking.payment_status ||
+                                  safeBooking.paymentStatus) === "paid"
                                   ? "bg-green-100 text-green-800"
                                   : "bg-yellow-100 text-yellow-800"
                               }`}
                             >
                               {(
-                                booking.payment_status ||
-                                booking.paymentStatus ||
+                                safeBooking.payment_status ||
+                                safeBooking.paymentStatus ||
                                 "pending"
                               ).toUpperCase()}
                             </span>
@@ -692,7 +692,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                     </div>
 
                     {/* Additional Details */}
-                    {booking.additional_details && (
+                    {safeBooking.additional_details && (
                       <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
                         <p className="font-medium text-gray-900 mb-1">
                           Additional Notes
