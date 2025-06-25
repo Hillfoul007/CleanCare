@@ -124,18 +124,43 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
       );
       if (success) {
         setPreferences(newPreferences);
+        // Also save to localStorage as backup
+        try {
+          localStorage.setItem(
+            `preferences_${currentUser.phone}`,
+            JSON.stringify(newPreferences),
+          );
+        } catch (localError) {
+          console.warn(
+            "Failed to save preferences to localStorage:",
+            localError,
+          );
+        }
         toast({
           title: "Success",
           description: "Preferences saved successfully",
         });
       } else {
-        throw new Error("Failed to save preferences");
+        // If UserService fails, try localStorage only
+        try {
+          localStorage.setItem(
+            `preferences_${currentUser.phone}`,
+            JSON.stringify(newPreferences),
+          );
+          setPreferences(newPreferences);
+          toast({
+            title: "Success",
+            description: "Preferences saved locally",
+          });
+        } catch (localError) {
+          throw new Error("Failed to save preferences");
+        }
       }
     } catch (error) {
       console.error("Error saving preferences:", error);
       toast({
         title: "Error",
-        description: "Failed to save preferences",
+        description: "Failed to save preferences. Please try again.",
         variant: "destructive",
       });
     }
