@@ -17,7 +17,7 @@ import {
   MessageSquare,
   X,
 } from "lucide-react";
-import { TwilioSmsService } from "@/services/twilioSmsService";
+import { Fast2SmsService } from "@/services/fast2smsService";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PhoneOtpAuthModalProps {
@@ -43,7 +43,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     name: "",
   });
 
-  const twilioService = TwilioSmsService.getInstance();
+  const fast2smsService = Fast2SmsService.getInstance();
 
   const resetForm = () => {
     setFormData({
@@ -78,7 +78,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setError("");
 
     try {
-      const result = await twilioService.sendSmsOTP(
+      const result = await fast2smsService.sendSmsOTP(
         formData.phone,
         formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
       );
@@ -111,7 +111,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setError("");
 
     try {
-      const result = await twilioService.verifySmsOTP(
+      const result = await fast2smsService.verifySmsOTP(
         formData.phone,
         formData.otp,
         formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
