@@ -130,19 +130,63 @@ export class BookingService {
   async getUserBookings(userId: string): Promise<BookingResponse> {
     console.log("📋 Loading bookings for user:", userId);
 
-    // Try MongoDB first
+    // Try to fetch from backend first
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const response = await fetch(
+        `${this.apiBaseUrl}/bookings/customer/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("cleancare_auth_token")}`,
+          },
+          signal: controller.signal,
+        },
+      );
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(
+          "✅ Bookings loaded from backend:",
+          result.bookings?.length || 0,
+        );
+
+        if (result.bookings && result.bookings.length > 0) {
+          // Transform backend bookings to frontend format
+          const transformedBookings = result.bookings.map((booking: any) =>
+            this.transformBackendBooking(booking),
+          );
+
+          // Save to localStorage for offline access
+          transformedBookings.forEach((booking) => {
+            this.saveBookingToLocalStorage(booking);
+          });
+
+          return {
+            success: true,
+            bookings: transformedBookings,
+          };
+        }
+      }
+    } catch (error) {
+      console.warn("⚠️ Backend fetch failed, using localStorage:", error);
+    }
+
+    // Try MongoDB as fallback
     try {
       const mongoBookings = await this.mongoService.getUserBookings(userId);
       if (mongoBookings && mongoBookings.length > 0) {
         console.log("✅ Bookings loaded from MongoDB:", mongoBookings.length);
-        // Map mongoBookings to include paymentStatus
-        const mappedBookings = mongoBookings.map((booking) => ({
-          ...booking,
-          paymentStatus: booking.payment_status || "pending",
-        }));
+        // Transform MongoDB bookings to match frontend format
+        const transformedBookings = mongoBookings.map((booking) =>
+          this.transformBackendBooking(booking),
+        );
         return {
           success: true,
-          bookings: mappedBookings,
+          bookings: transformedBookings,
         };
       }
     } catch (error) {
