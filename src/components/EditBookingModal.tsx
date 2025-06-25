@@ -108,12 +108,22 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
       <DialogContent className="sm:max-w-2xl max-w-[95vw] max-h-[90vh] overflow-y-auto rounded-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-blue-600" />
-            Edit Booking
+            {mode === "add-services" ? (
+              <>
+                <Plus className="w-5 h-5 text-blue-600" />
+                Add Services
+              </>
+            ) : (
+              <>
+                <Calendar className="w-5 h-5 text-blue-600" />
+                Edit Booking
+              </>
+            )}
           </DialogTitle>
           <DialogDescription>
-            Update your booking details below. Changes will be saved
-            immediately.
+            {mode === "add-services"
+              ? "Add more services to your existing booking. The total amount will be updated."
+              : "Update your booking details below. Changes will be saved immediately."}
           </DialogDescription>
         </DialogHeader>
 
