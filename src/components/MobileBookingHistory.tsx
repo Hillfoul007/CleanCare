@@ -943,6 +943,20 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
           onSave={handleSaveEditedBooking}
         />
       )}
+
+      {/* Add Services Modal */}
+      {addingServicesBooking && (
+        <EditBookingModal
+          isOpen={showAddServicesModal}
+          onClose={() => {
+            setShowAddServicesModal(false);
+            setAddingServicesBooking(null);
+          }}
+          booking={addingServicesBooking}
+          onSave={handleSaveAddedServices}
+          mode="add-services"
+        />
+      )}
     </div>
   );
 };
