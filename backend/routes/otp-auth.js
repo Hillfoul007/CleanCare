@@ -155,7 +155,7 @@ const isValidIndianPhone = (phone) => {
   return isValid;
 };
 
-// Enhanced SMS sending using Fast2SMS API
+// Enhanced SMS sending using DVHosting SMS API
 const sendSMS = async (phone, otp) => {
   try {
     log(
@@ -163,19 +163,15 @@ const sendSMS = async (phone, otp) => {
     );
 
     // Check if API key is configured
-    const apiKey = process.env.FAST2SMS_API_KEY;
+    const apiKey = process.env.DVHOSTING_API_KEY;
     if (!apiKey) {
-      log("Fast2SMS API key not configured, using simulation mode");
+      log("DVHosting API key not configured, using simulation mode");
       await new Promise((resolve) => setTimeout(resolve, 100));
       return { success: true, message: "OTP sent (simulation mode)" };
     }
 
-    // Prepare message
-    const message = `Your CleanCare Pro OTP is ${otp}. Valid for 5 minutes. Do not share this code.`;
-    const encodedMessage = encodeURIComponent(message);
-
-    // Fast2SMS API endpoint for OTP
-    const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${otp}&flash=0&numbers=${phone}`;
+    // DVHosting SMS API endpoint
+    const url = `https://dvhosting.in/api-sms-v3.php?api_key=${apiKey}&number=${phone}&otp=${otp}`;
 
     const response = await fetch(url, {
       method: "GET",
