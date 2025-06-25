@@ -192,7 +192,7 @@ const sendSMS = async (phone, otp) => {
           return {
             success: true,
             message: "OTP sent successfully",
-            data: { request_id: result.request_id }
+            data: { request_id: result.request_id },
           };
         } else {
           log(`DVHosting API error: ${JSON.stringify(result)}`);
@@ -203,7 +203,10 @@ const sendSMS = async (phone, otp) => {
         }
       } catch (parseError) {
         // Fallback to text parsing if not JSON
-        if (responseText.toLowerCase().includes('success') || responseText.toLowerCase().includes('sent')) {
+        if (
+          responseText.toLowerCase().includes("success") ||
+          responseText.toLowerCase().includes("sent")
+        ) {
           return { success: true, message: "OTP sent successfully" };
         } else {
           log(`DVHosting API error: ${responseText}`);
@@ -213,7 +216,6 @@ const sendSMS = async (phone, otp) => {
           };
         }
       }
-    }
     } else {
       const errorText = await response.text();
       log(`DVHosting HTTP error: ${response.status} - ${errorText}`);
