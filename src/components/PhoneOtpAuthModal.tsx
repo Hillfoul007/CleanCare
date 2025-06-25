@@ -123,7 +123,12 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
       }
     } catch (error: any) {
       console.error("PhoneOtpAuthModal: Exception during OTP send", error);
-      setError(error.message || "Failed to send OTP");
+      console.error("PhoneOtpAuthModal: Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      });
+      setError(error.message || "Failed to send OTP. Please try again.");
     } finally {
       setIsLoading(false);
     }
