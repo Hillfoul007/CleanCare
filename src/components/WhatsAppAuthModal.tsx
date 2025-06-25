@@ -17,6 +17,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { WhatsAppOTPService } from "@/services/whatsappOtpService";
+import { DVHostingSmsService } from "@/services/dvhostingSmsService";
 
 interface WhatsAppAuthModalProps {
   isOpen: boolean;
