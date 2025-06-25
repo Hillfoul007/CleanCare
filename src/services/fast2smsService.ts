@@ -25,15 +25,6 @@ export class Fast2SmsService {
 
   async sendOTP(phoneNumber: string): Promise<boolean> {
     try {
-      if (!this.apiKey) {
-        throw new Error("Fast2SMS API key not configured");
-      }
-
-      // Generate 6-digit OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      this.storedOTP = otp;
-      this.currentPhone = phoneNumber;
-
       // Clean phone number (remove +91 if present)
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
 
@@ -42,34 +33,32 @@ export class Fast2SmsService {
         throw new Error("Invalid Indian phone number");
       }
 
-      // Prepare message
-      const message = `Your OTP for CleanCare laundry service is: ${otp}. Valid for 5 minutes.`;
-      const encodedMessage = encodeURIComponent(message);
-
-      // Fast2SMS API endpoint
-      const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${this.apiKey}&route=otp&sender_id=FSTSMS&message=${encodedMessage}&language=english&flash=0&numbers=${cleanPhone}`;
-
-      const response = await fetch(url, {
-        method: "GET",
+      // Call backend API instead of Fast2SMS directly to avoid CORS issues
+      const response = await fetch("/api/otp-auth/send-otp", {
+        method: "POST",
         headers: {
-          "cache-control": "no-cache",
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          phone: cleanPhone,
+        }),
       });
 
       if (response.ok) {
         const result = await response.json();
         console.log("✅ OTP sent successfully:", result);
 
-        // Check if the API response indicates success
-        if (result.return === true || result.request_id) {
+        if (result.success) {
+          // Store phone for verification
+          this.currentPhone = cleanPhone;
           return true;
         } else {
-          console.error("❌ Fast2SMS API error:", result);
+          console.error("❌ Backend API error:", result);
           return false;
         }
       } else {
         const errorText = await response.text();
-        console.error("❌ Fast2SMS HTTP error:", response.status, errorText);
+        console.error("❌ Backend HTTP error:", response.status, errorText);
         return false;
       }
     } catch (error) {
@@ -81,17 +70,34 @@ export class Fast2SmsService {
   async verifyOTP(phoneNumber: string, otp: string): Promise<boolean> {
     try {
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
-      const isValid =
-        otp === this.storedOTP && cleanPhone === this.currentPhone;
 
-      if (isValid) {
-        console.log("✅ OTP verified successfully");
-        // Clear stored OTP after successful verification
-        this.storedOTP = "";
-        this.currentPhone = "";
-        return true;
+      // Call backend API for OTP verification
+      const response = await fetch("/api/otp-auth/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: cleanPhone,
+          otp: otp,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+
+        if (result.success) {
+          console.log("✅ OTP verified successfully");
+          // Clear stored data after successful verification
+          this.currentPhone = "";
+          return true;
+        } else {
+          console.log("❌ Invalid OTP:", result.message);
+          return false;
+        }
       } else {
-        console.log("❌ Invalid OTP or phone number");
+        const errorText = await response.text();
+        console.error("❌ Backend HTTP error:", response.status, errorText);
         return false;
       }
     } catch (error) {
@@ -124,30 +130,68 @@ export class Fast2SmsService {
     message?: string;
     error?: string;
   }> {
-    const isValid = await this.verifyOTP(phoneNumber, otp);
-
-    if (isValid) {
+    try {
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
-      const user = {
-        id: Date.now().toString(),
-        phone: cleanPhone,
-        full_name:
-          name && name.trim() ? name.trim() : `User ${cleanPhone.slice(-4)}`,
-        user_type: "customer",
-      };
 
-      this.login(user);
+      // Call backend API for OTP verification with user name
+      const response = await fetch("/api/otp-auth/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: cleanPhone,
+          otp: otp,
+          name:
+            name && name.trim() ? name.trim() : `User ${cleanPhone.slice(-4)}`,
+        }),
+      });
 
-      return {
-        success: true,
-        user,
-        message: "Login successful",
-      };
-    } else {
+      if (response.ok) {
+        const result = await response.json();
+
+        if (result.success && result.data && result.data.user) {
+          console.log("✅ OTP verified successfully");
+
+          // Format user data for frontend
+          const user = {
+            id: result.data.user._id,
+            phone: result.data.user.phone,
+            full_name: result.data.user.name,
+            user_type: "customer",
+            token: result.data.token,
+          };
+
+          this.login(user);
+          this.currentPhone = "";
+
+          return {
+            success: true,
+            user,
+            message: result.message || "Login successful",
+          };
+        } else {
+          return {
+            success: false,
+            message: result.message || "Invalid OTP",
+            error: result.message || "Invalid OTP",
+          };
+        }
+      } else {
+        const errorText = await response.text();
+        console.error("❌ Backend HTTP error:", response.status, errorText);
+        return {
+          success: false,
+          message: "Verification failed",
+          error: `HTTP ${response.status}: ${errorText}`,
+        };
+      }
+    } catch (error: any) {
+      console.error("❌ OTP verification error:", error);
       return {
         success: false,
-        message: "Invalid OTP",
-        error: "Invalid OTP",
+        message: "Verification failed",
+        error: error.message || "Network error",
       };
     }
   }
