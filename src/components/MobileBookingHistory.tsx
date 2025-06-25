@@ -136,9 +136,13 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
   const cancelBooking = async (bookingId: string) => {
     try {
+      console.log("🔄 Attempting to cancel booking:", bookingId);
+
       // Use BookingService for cancellation
       const bookingService = BookingService.getInstance();
       const result = await bookingService.cancelBooking(bookingId);
+
+      console.log("📋 Cancellation result:", result);
 
       if (!result.success) {
         addNotification(
@@ -151,16 +155,25 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       }
 
       // Update local state immediately
-      const updatedBookings = bookings.map((booking: any) =>
-        booking.id === bookingId || booking._id === bookingId
+      const updatedBookings = bookings.map((booking: any) => {
+        const matches = booking.id === bookingId || booking._id === bookingId;
+        console.log(
+          `📝 Checking booking ${booking.id || booking._id} against ${bookingId}: ${matches}`,
+        );
+        return matches
           ? {
               ...booking,
               status: "cancelled",
             }
-          : booking,
-      );
+          : booking;
+      });
 
+      console.log(
+        "📊 Updated bookings:",
+        updatedBookings.map((b) => ({ id: b.id || b._id, status: b.status })),
+      );
       setBookings(updatedBookings);
+
       addNotification(
         createSuccessNotification(
           "Booking Cancelled",
@@ -168,8 +181,8 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
         ),
       );
 
-      // Refresh bookings to get updated data
-      await refreshBookings();
+      // Refresh bookings to get updated data from backend
+      setTimeout(() => refreshBookings(), 1000);
     } catch (error) {
       console.error("Error cancelling booking:", error);
       addNotification(
