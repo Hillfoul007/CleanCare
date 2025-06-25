@@ -345,6 +345,23 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
           </Card>
         ) : (
           bookings.map((booking: any, index) => {
+            // Safety wrapper to prevent any object rendering
+            const SafeText = ({ children }: { children: any }) => {
+              if (children === null || children === undefined) return null;
+              if (
+                typeof children === "string" ||
+                typeof children === "number" ||
+                typeof children === "boolean"
+              ) {
+                return <>{children}</>;
+              }
+              if (typeof children === "object") {
+                console.warn("Prevented object rendering:", children);
+                return <>Object (prevented)</>;
+              }
+              return <>{String(children)}</>;
+            };
+
             try {
               // Comprehensive data sanitization to prevent object rendering
               const sanitizeValue = (value: any, fallback: any = "") => {
