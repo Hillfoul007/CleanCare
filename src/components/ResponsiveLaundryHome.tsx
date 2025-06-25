@@ -533,37 +533,38 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
         {/* Empty State */}
         {!getPopularServices().length && (
           <div className="text-center py-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Welcome to CleanCare Pro
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Your trusted home services partner
-          </p>
-          <div className="space-y-3">
-            <Button
-              onClick={handleBookService}
-              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 px-8 py-3 rounded-xl text-lg font-medium w-full sm:w-auto"
-            >
-              Get Started
-            </Button>
-            {currentUser && (
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Welcome to CleanCare Pro
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Your trusted home services partner
+            </p>
+            <div className="space-y-3">
               <Button
-                onClick={onViewBookings}
-                variant="outline"
-                className="px-8 py-3 rounded-xl text-lg font-medium w-full sm:w-auto"
+                onClick={handleBookService}
+                className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 px-8 py-3 rounded-xl text-lg font-medium w-full sm:w-auto"
               >
-                🧪 Test My Bookings
+                Get Started
               </Button>
-            )}
+              {currentUser && (
+                <Button
+                  onClick={onViewBookings}
+                  variant="outline"
+                  className="px-8 py-3 rounded-xl text-lg font-medium w-full sm:w-auto"
+                >
+                  🧪 Test My Bookings
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-      {/* Auth Modal */}
-      <PhoneOtpAuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthSuccess}
-      />
+        {/* Auth Modal */}
+        <PhoneOtpAuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={handleAuthSuccess}
+        />
       </div>
     );
   }
