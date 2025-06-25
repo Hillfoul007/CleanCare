@@ -895,20 +895,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                         <Button
                           variant="ghost"
                           className="rounded-xl border border-blue-200 hover:bg-blue-50 text-blue-600 font-medium py-3 focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                          onClick={() => {
-                            // Navigate back to service selection with current booking context
-                            if (onBack) {
-                              // Store current booking ID for adding services
-                              localStorage.setItem(
-                                "add_services_to_booking",
-                                safeBooking.id || safeBooking._id,
-                              );
-                              onBack();
-                            } else {
-                              // Fallback - go to home page
-                              window.location.href = "/";
-                            }
-                          }}
+                          onClick={() => handleAddServices(safeBooking)}
                           aria-label={`Add more services to booking ${safeBooking.service || "Home Service"}`}
                         >
                           <Plus className="mr-2 h-4 w-4" />
