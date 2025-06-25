@@ -26,6 +26,24 @@ export class ApiClient {
     endpoint: string,
     options: RequestInit = {},
   ): Promise<ApiResponse<T>> {
+    // Detect hosted environment
+    const isHostedEnv =
+      window.location.hostname.includes("builder.codes") ||
+      window.location.hostname.includes("fly.dev") ||
+      document.querySelector("[data-loc]") !== null;
+
+    // In hosted environments, skip API calls and return failure to trigger fallback
+    if (isHostedEnv) {
+      console.log(
+        `ApiClient: Hosted environment detected, skipping API call to ${endpoint}`,
+      );
+      return {
+        success: false,
+        error: "API not available in hosted environment",
+        message: "Using localStorage fallback",
+      };
+    }
+
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
