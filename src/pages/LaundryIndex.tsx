@@ -324,7 +324,13 @@ const LaundryIndex = () => {
   };
 
   const handleProceedToCheckout = async (cartData: any) => {
-    // User is authenticated at this point (checked in LaundryCart)
+    // Check if user is authenticated first
+    if (!currentUser) {
+      console.log("User not authenticated, switching to auth view");
+      setCurrentView("auth");
+      return;
+    }
+
     console.log("Processing checkout for authenticated user:", cartData);
 
     try {

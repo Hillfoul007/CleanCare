@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { useNotifications } from "@/contexts/NotificationContext";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  createSuccessNotification,
+  createErrorNotification,
+  createWarningNotification,
+} from "@/utils/notificationUtils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,72 +21,128 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Calendar,
   Clock,
   MapPin,
-  DollarSign,
   Edit,
   Trash2,
   CheckCircle,
   XCircle,
   AlertCircle,
+  Phone,
+  RefreshCw,
+  Star,
+  ArrowLeft,
+  Plus,
+  Package,
+  CreditCard,
   User,
+  MessageCircle,
 } from "lucide-react";
-import { bookingHelpers } from "@/integrations/mongodb/client";
-import ProfessionalDateTimePicker from "./ProfessionalDateTimePicker";
+import { BookingService } from "@/services/bookingService";
+import EditBookingModal from "./EditBookingModal";
 
-interface BookingHistoryProps {
+interface EnhancedBookingHistoryProps {
   currentUser?: any;
+  onBack?: () => void;
+  onLoginRequired?: () => void;
 }
 
-const EnhancedBookingHistory: React.FC<BookingHistoryProps> = ({
+const EnhancedBookingHistory: React.FC<EnhancedBookingHistoryProps> = ({
   currentUser,
+  onBack,
+  onLoginRequired,
 }) => {
+  const { addNotification } = useNotifications();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editingBooking, setEditingBooking] = useState<any>(null);
-  const [editForm, setEditForm] = useState({
-    scheduled_date: new Date(),
-    scheduled_time: "",
-    address: "",
-    additional_details: "",
-  });
+  const [refreshing, setRefreshing] = useState(false);
+  const [editingBooking, setEditingBooking] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [addingServicesBooking, setAddingServicesBooking] = useState(null);
+  const [showAddServicesModal, setShowAddServicesModal] = useState(false);
+  const [cancellingBooking, setCancellingBooking] = useState<string | null>(
+    null,
+  );
+  const [showContactDialog, setShowContactDialog] = useState(false);
+  const [contactBookingId, setContactBookingId] = useState<string | null>(null);
 
-  // Load bookings
+  const loadBookings = async () => {
+    if (!currentUser?.id && !currentUser?._id && !currentUser?.phone) {
+      console.log("No user ID found for loading bookings");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const bookingService = BookingService.getInstance();
+      const userId = currentUser.id || currentUser._id || currentUser.phone;
+
+      console.log("Loading bookings for user:", userId);
+      const response = await bookingService.getUserBookings(userId);
+
+      if (response.success && response.bookings) {
+        console.log("Bookings loaded successfully:", response.bookings.length);
+        setBookings(response.bookings);
+      } else {
+        console.log("No bookings found or error:", response.error);
+        setBookings([]);
+      }
+    } catch (error) {
+      console.error("Error loading bookings:", error);
+      setBookings([]);
+      addNotification(
+        createErrorNotification(
+          "Loading Error",
+          "Failed to load bookings. Please try again.",
+        ),
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const refreshBookings = async () => {
+    setRefreshing(true);
+    try {
+      await loadBookings();
+      addNotification(
+        createSuccessNotification(
+          "Refreshed",
+          "Booking history updated successfully",
+        ),
+      );
+    } catch (error) {
+      console.error("Error refreshing bookings:", error);
+      addNotification(
+        createErrorNotification("Refresh Failed", "Failed to refresh bookings"),
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    const loadBookings = async () => {
-      if (!currentUser?._id && !currentUser?.id) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const userId = currentUser._id || currentUser.id;
-        const { data, error } = await bookingHelpers.getUserBookings(userId);
-
-        if (error) {
-          console.error("Error loading bookings:", error);
-        } else {
-          setBookings(data || []);
-        }
-      } catch (error) {
-        console.error("Error loading bookings:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadBookings();
   }, [currentUser]);
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case "pending":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
       case "confirmed":
         return "bg-blue-100 text-blue-800 border-blue-200";
       case "in_progress":
+      case "in-progress":
         return "bg-purple-100 text-purple-800 border-purple-200";
       case "completed":
         return "bg-green-100 text-green-800 border-green-200";
@@ -101,149 +154,282 @@ const EnhancedBookingHistory: React.FC<BookingHistoryProps> = ({
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
+      case "confirmed":
+        return <CheckCircle className="h-4 w-4" />;
       case "completed":
         return <CheckCircle className="h-4 w-4" />;
       case "cancelled":
         return <XCircle className="h-4 w-4" />;
       case "in_progress":
-        return <Clock className="h-4 w-4" />;
+      case "in-progress":
+        return <RefreshCw className="h-4 w-4 animate-spin" />;
       default:
-        return <AlertCircle className="h-4 w-4" />;
+        return <Clock className="h-4 w-4" />;
     }
   };
 
-  const canEditBooking = (booking: any) => {
-    // Can edit if booking is pending or confirmed and not in the past
-    const bookingDate = new Date(
-      `${booking.scheduled_date} ${booking.scheduled_time}`,
-    );
-    const now = new Date();
-    return (
-      (booking.status === "pending" || booking.status === "confirmed") &&
-      bookingDate > now
-    );
+  const canCancelBooking = (booking: any) => {
+    const status = booking.status?.toLowerCase();
+    return status !== "cancelled" && status !== "completed";
   };
 
-  const canCancelBooking = (booking: any) => {
-    // Can cancel if booking is not completed and not already cancelled
-    return booking.status !== "completed" && booking.status !== "cancelled";
+  const canEditBooking = (booking: any) => {
+    const status = booking.status?.toLowerCase();
+    return status === "pending" || status === "confirmed";
+  };
+
+  const handleCancelBooking = async (bookingId: string) => {
+    if (!bookingId) {
+      addNotification(createErrorNotification("Error", "Invalid booking ID"));
+      return;
+    }
+
+    setCancellingBooking(bookingId);
+
+    try {
+      const bookingService = BookingService.getInstance();
+      const result = await bookingService.cancelBooking(bookingId);
+
+      if (result.success) {
+        // Update local state
+        setBookings((prev) =>
+          prev.map((booking: any) =>
+            booking.id === bookingId || booking._id === bookingId
+              ? {
+                  ...booking,
+                  status: "cancelled",
+                  updatedAt: new Date().toISOString(),
+                }
+              : booking,
+          ),
+        );
+
+        addNotification(
+          createSuccessNotification(
+            "Booking Cancelled",
+            "Your booking has been cancelled successfully",
+          ),
+        );
+      } else {
+        addNotification(
+          createErrorNotification(
+            "Cancellation Failed",
+            result.error || "Failed to cancel booking",
+          ),
+        );
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      addNotification(
+        createErrorNotification(
+          "Cancellation Failed",
+          "Network error. Please check your connection and try again.",
+        ),
+      );
+    } finally {
+      setCancellingBooking(null);
+    }
   };
 
   const handleEditBooking = (booking: any) => {
+    if (!canEditBooking(booking)) {
+      addNotification(
+        createWarningNotification(
+          "Cannot Edit",
+          "This booking cannot be edited in its current status",
+        ),
+      );
+      return;
+    }
     setEditingBooking(booking);
-    setEditForm({
-      scheduled_date: new Date(booking.scheduled_date),
-      scheduled_time: booking.scheduled_time,
-      address: booking.address,
-      additional_details: booking.additional_details || "",
-    });
+    setShowEditModal(true);
   };
 
-  const saveBookingChanges = async () => {
-    if (!editingBooking) return;
-
+  const handleSaveEditedBooking = async (updatedBooking: any) => {
     try {
-      const API_BASE_URL =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
+      const bookingService = BookingService.getInstance();
+      const bookingId = updatedBooking.id || updatedBooking._id;
 
-      // Call backend API to update booking
-      const response = await fetch(
-        `${API_BASE_URL}/bookings/${editingBooking._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
-          },
-          body: JSON.stringify({
-            scheduled_date: editForm.scheduled_date.toISOString().split("T")[0],
-            scheduled_time: editForm.scheduled_time,
-            address: editForm.address,
-            additional_details: editForm.additional_details,
-          }),
-        },
+      const result = await bookingService.updateBooking(
+        bookingId,
+        updatedBooking,
       );
 
-      if (response.ok) {
-        // Update the booking in the local state only if backend update succeeds
-        const updatedBookings = bookings.map((booking: any) =>
-          booking._id === editingBooking._id
-            ? {
-                ...booking,
-                scheduled_date: editForm.scheduled_date
-                  .toISOString()
-                  .split("T")[0],
-                scheduled_time: editForm.scheduled_time,
-                address: editForm.address,
-                additional_details: editForm.additional_details,
-                updated_at: new Date(),
-              }
-            : booking,
+      if (result.success) {
+        // Update local state
+        setBookings((prev) =>
+          prev.map((booking: any) =>
+            booking.id === bookingId || booking._id === bookingId
+              ? {
+                  ...booking,
+                  ...updatedBooking,
+                  updatedAt: new Date().toISOString(),
+                }
+              : booking,
+          ),
         );
 
-        setBookings(updatedBookings);
+        setShowEditModal(false);
         setEditingBooking(null);
 
-        // Show success message
-        alert("Booking updated successfully!");
+        addNotification(
+          createSuccessNotification(
+            "Booking Updated",
+            "Your booking has been updated successfully",
+          ),
+        );
       } else {
-        const errorData = await response.json();
-        alert(
-          `Failed to update booking: ${errorData.error || "Unknown error"}`,
+        addNotification(
+          createErrorNotification(
+            "Update Failed",
+            result.error || "Failed to update booking",
+          ),
         );
       }
     } catch (error) {
       console.error("Error updating booking:", error);
-      alert("Network error. Please check your connection and try again.");
+      addNotification(
+        createErrorNotification(
+          "Update Failed",
+          "Failed to update booking. Please try again.",
+        ),
+      );
     }
   };
 
-  const cancelBooking = async (bookingId: string) => {
+  const handleAddServices = (booking: any) => {
+    if (!canEditBooking(booking)) {
+      addNotification(
+        createWarningNotification(
+          "Cannot Add Services",
+          "Services cannot be added to this booking in its current status",
+        ),
+      );
+      return;
+    }
+    setAddingServicesBooking(booking);
+    setShowAddServicesModal(true);
+  };
+
+  const handleSaveAddedServices = async (updatedBooking: any) => {
     try {
-      // Use the booking helper to cancel the booking
-      const { data, error } = await bookingHelpers.cancelBooking(
+      const bookingService = BookingService.getInstance();
+      const bookingId = updatedBooking.id || updatedBooking._id;
+
+      const result = await bookingService.updateBooking(
         bookingId,
-        currentUser._id || currentUser.id,
-        "customer",
+        updatedBooking,
       );
 
-      if (error) {
-        alert(`Failed to cancel booking: ${error.message}`);
-        return;
+      if (result.success) {
+        // Update local state
+        setBookings((prev) =>
+          prev.map((booking: any) =>
+            booking.id === bookingId || booking._id === bookingId
+              ? {
+                  ...booking,
+                  ...updatedBooking,
+                  updatedAt: new Date().toISOString(),
+                }
+              : booking,
+          ),
+        );
+
+        setShowAddServicesModal(false);
+        setAddingServicesBooking(null);
+
+        addNotification(
+          createSuccessNotification(
+            "Services Added",
+            "Services have been added to your booking successfully",
+          ),
+        );
+      } else {
+        addNotification(
+          createErrorNotification(
+            "Update Failed",
+            result.error || "Failed to add services",
+          ),
+        );
+      }
+    } catch (error) {
+      console.error("Error adding services:", error);
+      addNotification(
+        createErrorNotification(
+          "Update Failed",
+          "Failed to add services. Please try again.",
+        ),
+      );
+    }
+  };
+
+  const handleContactSupport = (bookingId: string) => {
+    setContactBookingId(bookingId);
+    setShowContactDialog(true);
+  };
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "Date TBD";
+
+    try {
+      let date;
+      if (dateStr.includes("-")) {
+        const [year, month, day] = dateStr.split("-").map(Number);
+        date = new Date(year, month - 1, day);
+      } else {
+        date = new Date(dateStr);
       }
 
-      // Update booking status to cancelled in local state
-      const updatedBookings = bookings.map((booking: any) =>
-        booking._id === bookingId
-          ? {
-              ...booking,
-              status: "cancelled",
-              updated_at: new Date(),
-            }
-          : booking,
-      );
+      if (isNaN(date.getTime())) return "Date TBD";
 
-      setBookings(updatedBookings);
-      alert("Booking cancelled successfully!");
+      return date.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+      });
     } catch (error) {
-      console.error("Error cancelling booking:", error);
-      alert("Network error. Please check your connection and try again.");
+      console.error("Error parsing date:", dateStr, error);
+      return "Date TBD";
     }
+  };
+
+  const calculateTotal = (booking: any) => {
+    if (booking.totalAmount) return booking.totalAmount;
+    if (booking.total_price) return booking.total_price;
+    if (booking.final_amount) return booking.final_amount;
+
+    // Calculate from services if available
+    if (Array.isArray(booking.services)) {
+      return booking.services.reduce((total: number, service: any) => {
+        const price = service.price || service.amount || 0;
+        const quantity = service.quantity || 1;
+        return total + price * quantity;
+      }, 0);
+    }
+
+    return 0;
   };
 
   if (!currentUser) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <Card>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
           <CardContent className="text-center py-12">
-            <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <User className="h-16 w-16 text-gray-400 mx-auto mb-6" />
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Please Sign In
+              Sign In Required
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 mb-6">
               You need to sign in to view your booking history.
             </p>
+            <Button
+              onClick={onLoginRequired}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 w-full py-3 rounded-xl text-white font-medium"
+            >
+              <User className="mr-2 h-4 w-4" />
+              Sign In
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -252,213 +438,417 @@ const EnhancedBookingHistory: React.FC<BookingHistoryProps> = ({
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-2 text-gray-600">Loading your bookings...</span>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading your bookings...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900">Booking History</h1>
-        <Badge variant="secondary" className="text-lg px-3 py-1">
-          {bookings.length} {bookings.length === 1 ? "Booking" : "Bookings"}
-        </Badge>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-4 py-6 sm:px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {onBack && (
+                <Button
+                  onClick={onBack}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+              )}
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Booking History
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  {bookings.length}{" "}
+                  {bookings.length === 1 ? "booking" : "bookings"} found
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={refreshBookings}
+              variant="outline"
+              size="sm"
+              disabled={refreshing}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {bookings.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">
-              No bookings yet
-            </h2>
-            <p className="text-gray-600">
-              Your booking history will appear here once you book a service.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6">
-          {bookings.map((booking: any) => (
-            <Card key={booking._id} className="border-l-4 border-l-blue-500">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-xl">{booking.service}</CardTitle>
-                    <p className="text-sm text-gray-600 mt-1">
-                      Booking ID: {booking._id}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      className={`border ${getStatusColor(booking.status)}`}
-                    >
-                      {getStatusIcon(booking.status)}
-                      <span className="ml-1 capitalize">{booking.status}</span>
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
+      {/* Content */}
+      <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6">
+        {bookings.length === 0 ? (
+          <Card className="text-center py-12">
+            <CardContent>
+              <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-6" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                No Bookings Yet
+              </h3>
+              <p className="text-gray-600 mb-8">
+                Your booking history will appear here once you book a service.
+              </p>
+              <Button
+                onClick={onBack}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium"
+              >
+                Book Your First Service
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-6">
+            {bookings.map((booking: any, index) => {
+              const bookingId = booking.id || booking._id || `booking_${index}`;
+              const services = Array.isArray(booking.services)
+                ? booking.services
+                : [booking.service || "Home Service"];
+              const total = calculateTotal(booking);
 
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm">{booking.scheduled_date}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm">{booking.scheduled_time}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm truncate">{booking.address}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm font-semibold">
-                      ${booking.final_amount}
-                    </span>
-                  </div>
-                </div>
+              return (
+                <Card
+                  key={bookingId}
+                  className="overflow-hidden border border-gray-200 shadow-lg hover:shadow-xl transition-shadow duration-300"
+                >
+                  <CardHeader className="bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl font-bold text-gray-900 mb-2">
+                          {booking.service || "Home Service"}
+                        </CardTitle>
+                        <p className="text-sm text-blue-600 font-medium">
+                          by {booking.provider_name || "HomeServices Pro"}
+                        </p>
+                      </div>
+                      <Badge
+                        className={`${getStatusColor(booking.status)} border font-medium flex items-center gap-1`}
+                      >
+                        {getStatusIcon(booking.status)}
+                        <span className="capitalize">
+                          {booking.status || "pending"}
+                        </span>
+                      </Badge>
+                    </div>
+                  </CardHeader>
 
-                {booking.additional_details && (
-                  <div className="bg-gray-50 p-3 rounded-lg">
-                    <p className="text-sm text-gray-700">
-                      {booking.additional_details}
-                    </p>
-                  </div>
-                )}
+                  <CardContent className="p-6 space-y-6">
+                    {/* Services */}
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <Package className="h-4 w-4 text-blue-600" />
+                        Booked Services
+                      </h4>
+                      <div className="space-y-2">
+                        {services.map((service: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100"
+                          >
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {typeof service === "object"
+                                  ? service.name || service.service
+                                  : service}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                Qty:{" "}
+                                {typeof service === "object"
+                                  ? service.quantity || 1
+                                  : 1}
+                              </p>
+                            </div>
+                            {typeof service === "object" && service.price && (
+                              <p className="font-semibold text-blue-600">
+                                ₹{service.price}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
-                  {canEditBooking(booking) && (
-                    <Dialog>
-                      <DialogTrigger asChild>
+                    {/* Schedule */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-green-50 rounded-lg border border-green-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="h-4 w-4 text-green-600" />
+                          <span className="font-medium text-gray-900">
+                            Pickup
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {formatDate(
+                            booking.pickupDate || booking.scheduled_date,
+                          )}
+                        </p>
+                        <p className="text-xs text-green-600">
+                          {booking.pickupTime ||
+                            booking.scheduled_time ||
+                            "10:00"}
+                        </p>
+                      </div>
+
+                      <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="h-4 w-4 text-emerald-600" />
+                          <span className="font-medium text-gray-900">
+                            Delivery
+                          </span>
+                        </div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {formatDate(booking.deliveryDate) || "Date TBD"}
+                        </p>
+                        <p className="text-xs text-emerald-600">
+                          {booking.deliveryTime || "18:00"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Address */}
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                      <div className="flex items-start gap-3">
+                        <MapPin className="h-5 w-5 text-gray-600 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-gray-900 mb-1">
+                            Service Address
+                          </p>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {booking.address || "Address not provided"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Price Breakdown */}
+                    <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                      <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-green-600" />
+                        Price Breakdown
+                      </h4>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">
+                            Services Total
+                          </span>
+                          <span className="font-medium">₹{total}</span>
+                        </div>
+
+                        {booking.discount_amount &&
+                          booking.discount_amount > 0 && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-green-600">
+                                Discount
+                              </span>
+                              <span className="font-medium text-green-600">
+                                -₹{booking.discount_amount}
+                              </span>
+                            </div>
+                          )}
+
+                        <Separator />
+
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold text-gray-900">
+                            Total Amount
+                          </span>
+                          <span className="text-xl font-bold text-green-600">
+                            ₹{total}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs text-gray-500">
+                            Payment Status
+                          </span>
+                          <Badge
+                            variant={
+                              (booking.payment_status ||
+                                booking.paymentStatus) === "paid"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
+                            {(
+                              booking.payment_status ||
+                              booking.paymentStatus ||
+                              "pending"
+                            ).toUpperCase()}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-4 border-t border-gray-200">
+                      {canEditBooking(booking) && (
                         <Button
-                          variant="outline"
-                          size="sm"
                           onClick={() => handleEditBooking(booking)}
+                          variant="outline"
+                          className="flex items-center gap-2 border-green-200 text-green-600 hover:bg-green-50"
                         >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Edit
+                          <Edit className="h-4 w-4" />
+                          Edit Order
                         </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Edit Booking</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label>Service</Label>
-                            <Input value={booking.service} disabled />
-                          </div>
+                      )}
 
-                          <ProfessionalDateTimePicker
-                            selectedDate={editForm.scheduled_date}
-                            selectedTime={editForm.scheduled_time}
-                            onDateChange={(date) =>
-                              setEditForm((prev) => ({
-                                ...prev,
-                                scheduled_date: date!,
-                              }))
-                            }
-                            onTimeChange={(time) =>
-                              setEditForm((prev) => ({
-                                ...prev,
-                                scheduled_time: time,
-                              }))
-                            }
-                          />
-
-                          <div>
-                            <Label htmlFor="address">Address</Label>
-                            <Input
-                              id="address"
-                              value={editForm.address}
-                              onChange={(e) =>
-                                setEditForm((prev) => ({
-                                  ...prev,
-                                  address: e.target.value,
-                                }))
-                              }
-                            />
-                          </div>
-
-                          <div>
-                            <Label htmlFor="details">Additional Details</Label>
-                            <Textarea
-                              id="details"
-                              value={editForm.additional_details}
-                              onChange={(e) =>
-                                setEditForm((prev) => ({
-                                  ...prev,
-                                  additional_details: e.target.value,
-                                }))
-                              }
-                              rows={3}
-                            />
-                          </div>
-
-                          <div className="flex justify-end gap-2">
+                      {canCancelBooking(booking) && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
                             <Button
                               variant="outline"
-                              onClick={() => setEditingBooking(null)}
+                              className="flex items-center gap-2 border-red-200 text-red-600 hover:bg-red-50"
+                              disabled={cancellingBooking === bookingId}
                             >
-                              Cancel
+                              <Trash2 className="h-4 w-4" />
+                              {cancellingBooking === bookingId
+                                ? "Cancelling..."
+                                : "Cancel"}
                             </Button>
-                            <Button onClick={saveBookingChanges}>
-                              Save Changes
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Cancel Booking?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to cancel this booking?
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>
+                                Keep Booking
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleCancelBooking(bookingId)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Yes, Cancel Booking
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
 
-                  {canCancelBooking(booking) && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                      {canEditBooking(booking) && (
                         <Button
+                          onClick={() => handleAddServices(booking)}
                           variant="outline"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700"
+                          className="flex items-center gap-2 border-blue-200 text-blue-600 hover:bg-blue-50"
                         >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Cancel
+                          <Plus className="h-4 w-4" />
+                          Add More Services
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Cancel Booking?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to cancel this booking? This
-                            action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Keep Booking</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => cancelBooking(booking._id)}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            Cancel Booking
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                      )}
+
+                      <Button
+                        onClick={() => handleContactSupport(bookingId)}
+                        variant="outline"
+                        className="flex items-center gap-2 border-gray-200 text-gray-600 hover:bg-gray-50"
+                      >
+                        <MessageCircle className="h-4 w-4" />
+                        Contact Support
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Edit Booking Modal */}
+      {editingBooking && (
+        <EditBookingModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingBooking(null);
+          }}
+          booking={editingBooking}
+          onSave={handleSaveEditedBooking}
+        />
       )}
+
+      {/* Add Services Modal */}
+      {addingServicesBooking && (
+        <EditBookingModal
+          isOpen={showAddServicesModal}
+          onClose={() => {
+            setShowAddServicesModal(false);
+            setAddingServicesBooking(null);
+          }}
+          booking={addingServicesBooking}
+          onSave={handleSaveAddedServices}
+          mode="add-services"
+        />
+      )}
+
+      {/* Contact Support Dialog */}
+      <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Phone className="h-5 w-5 text-blue-600" />
+              Contact Support
+            </DialogTitle>
+            <DialogDescription>
+              Get help with your booking #{contactBookingId}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Phone Support</h4>
+              <p className="text-blue-800 font-mono text-lg">+91 9876543210</p>
+              <p className="text-sm text-blue-600 mt-1">Available 24/7</p>
+            </div>
+
+            <div className="p-4 bg-green-50 rounded-lg">
+              <h4 className="font-medium text-green-900 mb-2">
+                WhatsApp Support
+              </h4>
+              <p className="text-green-800 font-mono text-lg">+91 9876543210</p>
+              <p className="text-sm text-green-600 mt-1">Quick responses</p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowContactDialog(false)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                window.open("tel:+919876543210", "_self");
+                setShowContactDialog(false);
+              }}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Phone className="h-4 w-4 mr-2" />
+              Call Now
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
