@@ -104,6 +104,24 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
     loadBookings();
   }, [currentUser]);
 
+  // Debug function to check booking structure
+  useEffect(() => {
+    if (bookings.length > 0) {
+      console.log(
+        "🐛 DEBUG: Current bookings structure:",
+        bookings.map((b) => ({
+          id: b.id,
+          _id: b._id,
+          status: b.status,
+          services: b.services,
+          totalAmount: b.totalAmount,
+          total_price: b.total_price,
+          final_amount: b.final_amount,
+        })),
+      );
+    }
+  }, [bookings]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pending":
