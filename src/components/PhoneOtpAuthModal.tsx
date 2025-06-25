@@ -124,6 +124,11 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     if (e) {
       e.preventDefault();
     }
+    if (!formData.name || formData.name.trim().length === 0) {
+      setError("Please enter your full name");
+      return;
+    }
+
     if (!formData.phone) {
       setError("Please enter your phone number");
       return;
@@ -257,7 +262,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
                 <form onSubmit={handleSendOTP} className="space-y-4">
                   <div>
                     <Label htmlFor="name" className="text-sm font-medium">
-                      Full Name
+                      Full Name *
                     </Label>
                     <Input
                       id="name"
