@@ -232,23 +232,23 @@ const SavedAddressesModal: React.FC<SavedAddressesModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto mx-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            Saved Addresses
+          <DialogTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <span className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Saved Addresses
+            </span>
             <Button
               onClick={() => setShowAddressForm(true)}
               size="sm"
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 self-start sm:self-auto"
             >
               <Plus className="h-4 w-4 mr-1" />
               Add Address
             </Button>
           </DialogTitle>
         </DialogHeader>
-
-        <div className="space-y-4">
-          {addresses.length === 0 ? (
             <div className="text-center py-8">
               <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 mb-4">No saved addresses yet</p>
