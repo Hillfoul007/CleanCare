@@ -305,18 +305,18 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
           <Button
             onClick={refreshBookings}
             variant="ghost"
-            className="text-white hover:bg-white/10 p-3 rounded-xl"
+            className="text-white hover:bg-white/10 p-2 sm:p-3 rounded-xl flex-shrink-0"
             disabled={refreshing}
           >
             <RefreshCw
-              className={`h-5 w-5 ${refreshing ? "animate-spin" : ""}`}
+              className={`h-4 w-4 sm:h-5 sm:w-5 ${refreshing ? "animate-spin" : ""}`}
             />
           </Button>
         </div>
       </div>
 
       {/* Bookings List */}
-      <div className="px-4 space-y-4">
+      <div className="px-3 sm:px-4 py-4 space-y-3 sm:space-y-4 overflow-x-hidden">
         {bookings.length === 0 ? (
           <Card className="max-w-md mx-auto">
             <CardContent className="text-center py-12">
