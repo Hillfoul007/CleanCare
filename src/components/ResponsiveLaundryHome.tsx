@@ -32,6 +32,7 @@ import PhoneOtpAuthModal from "./PhoneOtpAuthModal";
 import EnhancedBookingHistoryModal from "./EnhancedBookingHistoryModal";
 import UserMenuDropdown from "./UserMenuDropdown";
 import DebugPanel from "./DebugPanel";
+import BookingDebugPanel from "./BookingDebugPanel";
 import ConnectionStatus from "./ConnectionStatus";
 import NotificationPanel from "./NotificationPanel";
 import { DVHostingSmsService } from "@/services/dvhostingSmsService";
@@ -57,6 +58,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
+  const [showBookingDebugPanel, setShowBookingDebugPanel] = useState(false);
   const dvhostingSmsService = DVHostingSmsService.getInstance();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cart, setCart] = useState<{ [key: string]: number }>(() => {
