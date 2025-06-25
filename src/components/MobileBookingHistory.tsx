@@ -720,12 +720,12 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                     <div className="space-y-3 pt-3">
                       {/* Primary Actions Row */}
                       <div className="grid grid-cols-2 gap-3">
-                        {(booking.status === "pending" ||
-                          booking.status === "confirmed") && (
+                        {(safeBooking.status === "pending" ||
+                          safeBooking.status === "confirmed") && (
                           <>
                             <Button
                               variant="outline"
-                              onClick={() => handleEditBooking(booking)}
+                              onClick={() => handleEditBooking(safeBooking)}
                               className="flex-1 rounded-xl border-2 border-green-200 hover:bg-green-50 text-green-600 font-medium py-3"
                             >
                               <Edit className="mr-2 h-4 w-4" />
@@ -758,7 +758,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                                   </AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() =>
-                                      handleCancelBooking(booking.id)
+                                      handleCancelBooking(safeBooking.id)
                                     }
                                     className="bg-red-600 hover:bg-red-700"
                                   >
