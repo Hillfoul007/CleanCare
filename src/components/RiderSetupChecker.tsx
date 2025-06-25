@@ -33,16 +33,16 @@ const RiderSetupChecker: React.FC<RiderSetupCheckerProps> = ({
 
       // Check if backend is running
       try {
+        const apiBaseUrl =
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
         const healthResponse = await fetch(
-          "https://auth-back-ula7.onrender.com/health",
+          `${apiBaseUrl.replace("/api", "")}/health`,
         );
         if (healthResponse.ok) {
           status.backendRunning = true;
 
           // Check if API endpoints are working
-          const testResponse = await fetch(
-            "https://auth-back-ula7.onrender.com/api/test",
-          );
+          const testResponse = await fetch(`${apiBaseUrl}/test`);
           if (testResponse.ok) {
             status.apiEndpoints = true;
             status.mongodbConfigured = true; // If API works, MongoDB is likely configured
@@ -203,8 +203,16 @@ const RiderSetupChecker: React.FC<RiderSetupCheckerProps> = ({
         </div>
 
         <div className="text-xs text-gray-500 space-y-1">
-          <p>🔧 Backend Health: https://auth-back-ula7.onrender.com/health</p>
-          <p>🧪 API Test: https://auth-back-ula7.onrender.com/api/test</p>
+          <p>
+            🔧 Backend Health:{" "}
+            {import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}
+            /health
+          </p>
+          <p>
+            🧪 API Test:{" "}
+            {import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api"}
+            /test
+          </p>
           <p>📚 Documentation: See MONGODB_SETUP_GUIDE.md</p>
         </div>
       </CardContent>
