@@ -397,7 +397,10 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                       Service Address
                     </p>
                     <p className="text-sm text-gray-600 leading-relaxed">
-                      {booking.address}
+                      {typeof booking.address === "string"
+                        ? booking.address
+                        : booking.address?.fullAddress ||
+                          `${booking.address?.flatNo || ""} ${booking.address?.street || ""}, ${booking.address?.village || ""}, ${booking.address?.city || ""} ${booking.address?.pincode || ""}`.trim()}
                     </p>
                   </div>
                 </div>
