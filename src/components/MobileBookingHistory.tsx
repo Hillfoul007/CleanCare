@@ -408,16 +408,37 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
               </p>
             </div>
           </div>
-          <Button
-            onClick={refreshBookings}
-            variant="ghost"
-            className="text-white hover:bg-white/20 p-2 sm:p-3 rounded-xl flex-shrink-0"
-            disabled={refreshing}
-          >
-            <RefreshCw
-              className={`h-4 w-4 sm:h-5 sm:w-5 ${refreshing ? "animate-spin" : ""}`}
-            />
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => {
+                if (confirm("Clear all data and start fresh?")) {
+                  clearAllUserData();
+                  setBookings([]);
+                  addNotification(
+                    createSuccessNotification(
+                      "Data Cleared",
+                      "All local data has been cleared. Refresh to start fresh.",
+                    ),
+                  );
+                }
+              }}
+              variant="ghost"
+              className="text-white hover:bg-white/20 p-2 sm:p-3 rounded-xl flex-shrink-0 text-xs"
+              title="Clear All Data"
+            >
+              🗑️
+            </Button>
+            <Button
+              onClick={refreshBookings}
+              variant="ghost"
+              className="text-white hover:bg-white/20 p-2 sm:p-3 rounded-xl flex-shrink-0"
+              disabled={refreshing}
+            >
+              <RefreshCw
+                className={`h-4 w-4 sm:h-5 sm:w-5 ${refreshing ? "animate-spin" : ""}`}
+              />
+            </Button>
+          </div>
         </div>
       </div>
 
