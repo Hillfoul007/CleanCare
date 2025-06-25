@@ -261,6 +261,35 @@ export class Fast2SmsService {
         throw error;
       });
 
+      // Handle local verification for hosted environments without backend
+      if (!response) {
+        console.log(
+          "Fast2SMS: Using local verification - no backend available",
+        );
+        const storedData = this.otpStorage.get(cleanPhone);
+
+        if (!storedData) {
+          console.log("❌ No OTP found for phone:", cleanPhone);
+          return false;
+        }
+
+        if (Date.now() > storedData.expiresAt) {
+          console.log("❌ OTP expired for phone:", cleanPhone);
+          this.otpStorage.delete(cleanPhone);
+          return false;
+        }
+
+        if (storedData.otp === otp) {
+          console.log("✅ OTP verified successfully (local verification)");
+          this.otpStorage.delete(cleanPhone);
+          this.currentPhone = "";
+          return true;
+        } else {
+          console.log("❌ Invalid OTP (local verification)");
+          return false;
+        }
+      }
+
       if (response.ok) {
         const result = await response.json();
 
