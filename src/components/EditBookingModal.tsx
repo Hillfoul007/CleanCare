@@ -12,7 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Calendar, Clock, MapPin, FileText, ShoppingCart } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  FileText,
+  ShoppingCart,
+  Plus,
+} from "lucide-react";
 import ServiceSelector from "./ServiceSelector";
 
 interface EditBookingModalProps {
