@@ -162,7 +162,7 @@ export class DVHostingSmsService {
             errorText.trim().startsWith("<") ||
             errorText.includes("<script>")
           ) {
-            if (isBuilderEnv) {
+            if (isHostedEnv) {
               console.log(
                 "DVHosting SMS: Got HTML response, calling DVHosting API directly",
               );
