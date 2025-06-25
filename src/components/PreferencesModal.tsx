@@ -292,15 +292,17 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="preferred-time">Preferred Time Slot</Label>
+              <div className="space-y-2">
+                <Label htmlFor="preferred-time" className="text-sm font-medium">
+                  Preferred Time Slot
+                </Label>
                 <Select
                   value={preferences.scheduling.preferredTimeSlot}
                   onValueChange={(value) =>
                     updatePreference("scheduling", "preferredTimeSlot", value)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
