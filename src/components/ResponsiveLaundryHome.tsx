@@ -60,6 +60,27 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [showBookingDebugPanel, setShowBookingDebugPanel] = useState(false);
   const dvhostingSmsService = DVHostingSmsService.getInstance();
+
+  // Add keyboard shortcut for booking debug panel
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl+Shift+B to open booking debug panel
+      if (event.ctrlKey && event.shiftKey && event.key === "B") {
+        event.preventDefault();
+        setShowBookingDebugPanel(true);
+      }
+      // Ctrl+Shift+D to open debug panel
+      if (event.ctrlKey && event.shiftKey && event.key === "D") {
+        event.preventDefault();
+        setShowDebugPanel(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cart, setCart] = useState<{ [key: string]: number }>(() => {
     // Load cart from localStorage on initialization
