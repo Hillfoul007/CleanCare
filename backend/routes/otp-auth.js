@@ -201,10 +201,32 @@ const sendSMS = async (phone, otp) => {
     } else {
       const errorText = await response.text();
       log(`Fast2SMS HTTP error: ${response.status} - ${errorText}`);
+
+      // Fallback to simulation mode in development
+      if (process.env.NODE_ENV === "development") {
+        log("Falling back to simulation mode due to Fast2SMS error");
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        return {
+          success: true,
+          message: "OTP sent (simulation mode - Fast2SMS failed)",
+        };
+      }
+
       return { success: false, error: `HTTP ${response.status}: ${errorText}` };
     }
   } catch (error) {
     log(`SMS sending failed: ${error.message}`);
+
+    // Fallback to simulation mode in development
+    if (process.env.NODE_ENV === "development") {
+      log("Falling back to simulation mode due to Fast2SMS network error");
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return {
+        success: true,
+        message: "OTP sent (simulation mode - network error)",
+      };
+    }
+
     return { success: false, error: error.message };
   }
 };
