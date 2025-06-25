@@ -108,24 +108,28 @@ export class DVHostingSmsService {
           !responseText.trim().startsWith("{") &&
           !responseText.trim().startsWith("[")
         ) {
-          console.error(
-            "❌ Expected JSON but got non-JSON content:",
-            responseText.substring(0, 200),
-          );
-
           // In hosted environments, fall back to simulation mode
           if (isBuilderEnv) {
             console.log(
-              "DVHosting SMS: Using simulation mode due to non-JSON response",
+              "DVHosting SMS: Detected HTML response in hosted environment, switching to simulation mode",
+            );
+            console.log(
+              "DVHosting SMS: Response content:",
+              responseText.substring(0, 200),
             );
             await new Promise((resolve) => setTimeout(resolve, 500));
-            console.log("✅ OTP sent (simulation mode - non-JSON response)");
+            console.log("✅ OTP sent (simulation mode - hosted environment)");
             this.otpStorage.set(cleanPhone, {
               otp: Math.floor(100000 + Math.random() * 900000).toString(),
               expiresAt: Date.now() + 5 * 60 * 1000,
             });
             return true;
           }
+
+          console.error(
+            "❌ Expected JSON but got non-JSON content:",
+            responseText.substring(0, 200),
+          );
 
           return false;
         }
