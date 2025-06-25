@@ -157,12 +157,8 @@ export class BookingService {
       bookings: localBookings,
     };
 
-    // Note: Backend sync disabled to prevent fetch errors
-    // When backend becomes available, uncomment the sync logic below
-    /*
     // Try to sync with backend in background (non-blocking)
     this.syncWithBackendInBackground(userId, localBookings);
-    */
   }
 
   /**
