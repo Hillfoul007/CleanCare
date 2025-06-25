@@ -201,6 +201,10 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
 
       if (result.success && result.user) {
         setSuccess("Login successful!");
+
+        // Save user authentication to localStorage for persistence
+        dvhostingSmsService.setCurrentUser(result.user);
+
         onSuccess(result.user);
         onClose();
         resetForm();
