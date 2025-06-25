@@ -376,7 +376,20 @@ export class Fast2SmsService {
                 : `User ${cleanPhone.slice(-4)}`,
           }),
         },
-      );
+      ).catch((error) => {
+        // Handle fetch errors in hosted environments
+        console.log(
+          "Fast2SMS: SMS verification fetch error in hosted environment:",
+          error,
+        );
+        if (isBuilderEnv) {
+          console.log(
+            "Fast2SMS: Using local SMS verification for hosted environment",
+          );
+          return null; // Will trigger local verification below
+        }
+        throw error;
+      });
 
       if (response.ok) {
         // Get response text first to inspect it
