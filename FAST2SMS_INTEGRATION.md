@@ -29,7 +29,7 @@ This project has been migrated from Twilio SMS to Fast2SMS for OTP authenticatio
 ### Backend (.env file):
 
 ```bash
-FAST2SMS_API_KEY=AoPndbi8YuGmQU5FeZLVvw7chJM0ksgKHDN461rEqxTjlOIzC3UxV0QS1ZD7WKoIdGAmgC53lc6NTHjP
+FAST2SMS_API_KEY=your_fast2sms_api_key_here
 JWT_SECRET=your_jwt_secret_here
 DB_URI=mongodb://localhost:27017/cleancare-pro
 ```
@@ -37,7 +37,7 @@ DB_URI=mongodb://localhost:27017/cleancare-pro
 ### Frontend (.env file):
 
 ```bash
-VITE_FAST2SMS_API_KEY=AoPndbi8YuGmQU5FeZLVvw7chJM0ksgKHDN461rEqxTjlOIzC3UxV0QS1ZD7WKoIdGAmgC53lc6NTHjP
+VITE_FAST2SMS_API_KEY=your_fast2sms_api_key_here
 ```
 
 ## Fast2SMS API Response Format
