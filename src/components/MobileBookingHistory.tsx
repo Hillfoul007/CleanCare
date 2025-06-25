@@ -348,13 +348,13 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
               key={index}
               className="border-0 shadow-lg rounded-2xl overflow-hidden"
             >
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg font-bold text-gray-900 mb-1">
+              <CardHeader className="pb-3 p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-base sm:text-lg font-bold text-gray-900 mb-1 truncate">
                       {booking.service || "Home Service"}
                     </CardTitle>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs sm:text-sm text-gray-600 truncate">
                       by {booking.provider_name || "HomeServices Pro"}
                     </p>
                   </div>
