@@ -274,8 +274,8 @@ const isRateLimited = (phone) => {
   const key = `otp_${phone}`;
   const lastRequest = rateLimitStore.get(key);
 
-  if (lastRequest && now - lastRequest < 5000) {
-    // 5 seconds
+  if (lastRequest && now - lastRequest < 30000) {
+    // 30 seconds
     log(`Rate limited: ${phone}`);
     return true;
   }
