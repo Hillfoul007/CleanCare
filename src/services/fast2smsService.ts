@@ -181,12 +181,20 @@ export class Fast2SmsService {
           };
         }
       } else {
-        const errorText = await response.text();
-        console.error("❌ Backend HTTP error:", response.status, errorText);
+        let errorMessage = "Verification failed";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+          console.error("❌ Backend API error:", response.status, errorData);
+        } catch (parseError) {
+          const errorText = await response.text();
+          console.error("❌ Backend HTTP error:", response.status, errorText);
+          errorMessage = `HTTP ${response.status}: ${errorText}`;
+        }
         return {
           success: false,
-          message: "Verification failed",
-          error: `HTTP ${response.status}: ${errorText}`,
+          message: errorMessage,
+          error: errorMessage,
         };
       }
     } catch (error: any) {
