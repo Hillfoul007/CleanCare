@@ -1,5 +1,5 @@
-// This service has been replaced by TwilioSmsService
-// Keeping file for backward compatibility but functionality moved to Twilio SMS OTP
+// This service has been replaced by Fast2SmsService
+// Keeping file for backward compatibility but functionality moved to Fast2SMS OTP
 
 export class ExotelMissedCallService {
   private static instance: ExotelMissedCallService;
