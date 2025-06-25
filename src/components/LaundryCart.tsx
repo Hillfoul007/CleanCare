@@ -61,6 +61,36 @@ const LaundryCart: React.FC<LaundryCartProps> = ({
 
   const authService = OTPAuthService.getInstance();
 
+  // Load saved form data on component mount
+  useEffect(() => {
+    const savedFormData = getBookingFormData();
+
+    if (savedFormData.selectedDate) setSelectedDate(savedFormData.selectedDate);
+    if (savedFormData.selectedTime) setSelectedTime(savedFormData.selectedTime);
+    if (savedFormData.additionalDetails)
+      setSpecialInstructions(savedFormData.additionalDetails);
+    if (savedFormData.couponCode) setCouponCode(savedFormData.couponCode);
+    if (savedFormData.appliedCoupon)
+      setAppliedCoupon(savedFormData.appliedCoupon);
+  }, []);
+
+  // Auto-save form data when it changes
+  useEffect(() => {
+    saveBookingFormData({
+      selectedDate,
+      selectedTime,
+      additionalDetails: specialInstructions,
+      couponCode,
+      appliedCoupon,
+    });
+  }, [
+    selectedDate,
+    selectedTime,
+    specialInstructions,
+    couponCode,
+    appliedCoupon,
+  ]);
+
   // Load cart from localStorage
   useEffect(() => {
     const savedCart = localStorage.getItem("laundry_cart");
