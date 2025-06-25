@@ -207,45 +207,100 @@ export class Fast2SmsService {
       });
 
       if (response.ok) {
-        const result = await response.json();
+        // Get response text first to inspect it
+        const responseText = await response.text();
+        console.log(
+          "Fast2SMS Verify: Raw response:",
+          responseText.substring(0, 300),
+        );
 
-        if (result.success && result.data && result.data.user) {
-          console.log("✅ OTP verified successfully");
-
-          // Format user data for frontend
-          const user = {
-            id: result.data.user._id,
-            phone: result.data.user.phone,
-            full_name: result.data.user.name,
-            user_type: "customer",
-            token: result.data.token,
-          };
-
-          this.login(user);
-          this.currentPhone = "";
-
-          return {
-            success: true,
-            user,
-            message: result.message || "Login successful",
-          };
-        } else {
+        // Check if response looks like JSON
+        if (
+          !responseText.trim().startsWith("{") &&
+          !responseText.trim().startsWith("[")
+        ) {
+          console.error(
+            "❌ Expected JSON but got non-JSON content:",
+            responseText.substring(0, 200),
+          );
           return {
             success: false,
-            message: result.message || "Invalid OTP",
-            error: result.message || "Invalid OTP",
+            message: "Invalid response format",
+            error: "Invalid response format",
+          };
+        }
+
+        try {
+          const result = JSON.parse(responseText);
+
+          if (result.success && result.data && result.data.user) {
+            console.log("✅ OTP verified successfully");
+
+            // Format user data for frontend
+            const user = {
+              id: result.data.user._id,
+              phone: result.data.user.phone,
+              full_name: result.data.user.name,
+              user_type: "customer",
+              token: result.data.token,
+            };
+
+            this.login(user);
+            this.currentPhone = "";
+
+            return {
+              success: true,
+              user,
+              message: result.message || "Login successful",
+            };
+          } else {
+            return {
+              success: false,
+              message: result.message || "Invalid OTP",
+              error: result.message || "Invalid OTP",
+            };
+          }
+        } catch (parseError) {
+          console.error(
+            "❌ Failed to parse verify JSON response:",
+            parseError,
+            "Raw text:",
+            responseText.substring(0, 200),
+          );
+          return {
+            success: false,
+            message: "Invalid response format",
+            error: "Invalid response format",
           };
         }
       } else {
         let errorMessage = "Verification failed";
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-          console.error("❌ Backend API error:", response.status, errorData);
+          const responseText = await response.text();
+          console.log(
+            "Fast2SMS Verify Error: Raw response:",
+            responseText.substring(0, 300),
+          );
+
+          // Try to parse as JSON
+          if (
+            responseText.trim().startsWith("{") ||
+            responseText.trim().startsWith("[")
+          ) {
+            const errorData = JSON.parse(responseText);
+            errorMessage = errorData.message || errorMessage;
+            console.error("❌ Backend API error:", response.status, errorData);
+          } else {
+            console.error(
+              "❌ Backend HTTP error:",
+              response.status,
+              responseText.substring(0, 200),
+            );
+            errorMessage = `HTTP ${response.status}: ${responseText.substring(0, 100)}`;
+          }
         } catch (parseError) {
-          const errorText = await response.text();
-          console.error("❌ Backend HTTP error:", response.status, errorText);
-          errorMessage = `HTTP ${response.status}: ${errorText}`;
+          console.error("❌ Error parsing error response:", parseError);
+          errorMessage = `HTTP ${response.status}: Parse error`;
         }
         return {
           success: false,
