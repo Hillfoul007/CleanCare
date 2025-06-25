@@ -66,17 +66,8 @@ const SavedAddressesModal: React.FC<SavedAddressesModalProps> = ({
       if (saved) {
         setAddresses(JSON.parse(saved));
       } else {
-        // Add a default demo address
-        const demoAddress: SavedAddress = {
-          id: Date.now().toString(),
-          label: "Home",
-          type: "home",
-          flatHouseNo: "A-123",
-          street: "Green Valley Street",
-          landmark: "Near City Mall",
-          village: "Sector 21",
-          city: "Gurugram",
-          pincode: "122018",
+        // Start with no saved addresses - they will be added when user places orders
+        setAddresses([]);
           isDefault: true,
         };
         setAddresses([demoAddress]);
