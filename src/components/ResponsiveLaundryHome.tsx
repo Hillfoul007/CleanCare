@@ -174,7 +174,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   };
 
   const handleLogout = () => {
-    twilioService.logout();
+    fast2smsService.logout();
     if (onLogout) {
       onLogout();
     }
