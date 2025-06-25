@@ -385,6 +385,8 @@ const LaundryIndex = () => {
     }
   };
 
+  console.log("LaundryIndex render:", { currentView, currentUser, isLoggedIn });
+
   return (
     <div className="min-h-screen">
       {currentView === "home" && (
@@ -401,10 +403,15 @@ const LaundryIndex = () => {
       {/* Authentication is now handled directly in ResponsiveLaundryHome via PhoneOtpAuthModal */}
 
       {currentView === "bookings" && (
-        <MobileBookingHistory
-          currentUser={currentUser}
-          onBack={() => setCurrentView("home")}
-        />
+        <div>
+          <div className="p-4 bg-blue-50 text-sm">
+            Debug: Bookings view active, currentUser: {currentUser?.phone}
+          </div>
+          <MobileBookingHistory
+            currentUser={currentUser}
+            onBack={() => setCurrentView("home")}
+          />
+        </div>
       )}
 
       {currentView === "cart" && (
