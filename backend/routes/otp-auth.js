@@ -176,35 +176,39 @@ const sendSMS = async (phone, otp) => {
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        "cache-control": "no-cache",
+        "Content-Type": "application/json",
       },
     });
 
     if (response.ok) {
-      const result = await response.json();
-      log(`SMS sent successfully via Fast2SMS: ${JSON.stringify(result)}`);
+      const responseText = await response.text();
+      log(`SMS sent successfully via DVHosting: ${responseText}`);
 
-      // Check if the API response indicates success
-      if (result.return === true || result.request_id) {
-        return { success: true, data: result };
+      // DVHosting typically returns simple text response
+      // Success responses usually contain "success" or similar text
+      if (
+        responseText.toLowerCase().includes("success") ||
+        responseText.toLowerCase().includes("sent")
+      ) {
+        return { success: true, message: "OTP sent successfully" };
       } else {
-        log(`Fast2SMS API error: ${JSON.stringify(result)}`);
+        log(`DVHosting API error: ${responseText}`);
         return {
           success: false,
-          error: result.message || "Failed to send SMS",
+          error: responseText || "Failed to send SMS",
         };
       }
     } else {
       const errorText = await response.text();
-      log(`Fast2SMS HTTP error: ${response.status} - ${errorText}`);
+      log(`DVHosting HTTP error: ${response.status} - ${errorText}`);
 
       // Fallback to simulation mode in development
       if (process.env.NODE_ENV === "development") {
-        log("Falling back to simulation mode due to Fast2SMS error");
+        log("Falling back to simulation mode due to DVHosting error");
         await new Promise((resolve) => setTimeout(resolve, 100));
         return {
           success: true,
-          message: "OTP sent (simulation mode - Fast2SMS failed)",
+          message: "OTP sent (simulation mode - DVHosting failed)",
         };
       }
 
