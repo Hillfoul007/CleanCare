@@ -243,104 +243,12 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
           </TabsContent>
 
           <TabsContent value="services" className="mt-4">
-            {mode === "add-services" ? (
-              <ServiceSelector
-                selectedServices={selectedServices}
-                onServicesChange={setSelectedServices}
-                onPriceChange={setTotalPrice}
-              />
-            ) : (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Current Services</h3>
-                <p className="text-sm text-gray-600">
-                  You can edit service quantities or use "Add More Services" to
-                  add new services.
-                </p>
-
-                <div className="space-y-3">
-                  {selectedServices.map((serviceName, index) => {
-                    const quantity =
-                      serviceName.match(/\(x(\d+)\)$/)?.[1] || "1";
-                    const name = serviceName.replace(/\s*\(x\d+\)$/, "");
-
-                    return (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border"
-                      >
-                        <div className="flex-1">
-                          <p className="font-medium text-gray-900">{name}</p>
-                          <p className="text-sm text-gray-600">
-                            Current service
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const currentQty = parseInt(quantity);
-                                if (currentQty > 1) {
-                                  const newQty = currentQty - 1;
-                                  const newServiceName =
-                                    newQty > 1 ? `${name} (x${newQty})` : name;
-                                  const newServices = [...selectedServices];
-                                  newServices[index] = newServiceName;
-                                  setSelectedServices(newServices);
-                                }
-                              }}
-                              className="w-8 h-8 p-0"
-                            >
-                              -
-                            </Button>
-                            <span className="w-8 text-center font-medium">
-                              {quantity}
-                            </span>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const currentQty = parseInt(quantity);
-                                const newQty = currentQty + 1;
-                                const newServiceName = `${name} (x${newQty})`;
-                                const newServices = [...selectedServices];
-                                newServices[index] = newServiceName;
-                                setSelectedServices(newServices);
-                              }}
-                              className="w-8 h-8 p-0"
-                            >
-                              +
-                            </Button>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              const newServices = selectedServices.filter(
-                                (_, i) => i !== index,
-                              );
-                              setSelectedServices(newServices);
-                            }}
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {selectedServices.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No services selected</p>
-                  </div>
-                )}
-              </div>
-            )}
+            <ServiceEditor
+              selectedServices={selectedServices}
+              onServicesChange={setSelectedServices}
+              onPriceChange={setTotalPrice}
+              mode={mode}
+            />
           </TabsContent>
         </Tabs>
 
