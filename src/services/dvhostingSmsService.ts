@@ -247,7 +247,7 @@ export class DVHostingSmsService {
           "DVHosting SMS: Verification fetch error in hosted environment:",
           error,
         );
-        if (isBuilderEnv) {
+        if (isHostedEnv) {
           console.log(
             "DVHosting SMS: Using local verification for hosted environment",
           );
