@@ -426,11 +426,11 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                 )}
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-2 flex-wrap">
+                <div className="flex gap-2 pt-3 flex-wrap">
                   {booking.status === "completed" && (
                     <Button
                       variant="outline"
-                      className="flex-1 min-w-[120px] rounded-xl border-2 border-yellow-200 hover:bg-yellow-50"
+                      className="flex-1 min-w-[120px] rounded-xl border-2 border-amber-200 hover:bg-amber-50 text-amber-600 font-medium"
                     >
                       <Star className="mr-2 h-4 w-4" />
                       Rate Service
@@ -441,7 +441,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                     <Button
                       variant="outline"
                       onClick={() => handleEditBooking(booking)}
-                      className="flex-1 min-w-[120px] rounded-xl border-2 border-green-200 hover:bg-green-50 text-green-600"
+                      className="flex-1 min-w-[120px] rounded-xl border-2 border-green-200 hover:bg-green-50 text-green-600 font-medium"
                     >
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
@@ -453,7 +453,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="outline"
-                          className="flex-1 min-w-[120px] rounded-xl border-2 border-red-200 hover:bg-red-50 text-red-600"
+                          className="flex-1 min-w-[120px] rounded-xl border-2 border-red-200 hover:bg-red-50 text-red-600 font-medium"
                         >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Cancel
