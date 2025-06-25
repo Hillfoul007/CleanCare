@@ -523,9 +523,11 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                                     Qty: {service.quantity}
                                   </p>
                                 </div>
-                                <p className="font-semibold text-blue-600">
-                                  ₹{service.price}
-                                </p>
+                                {service.price > 0 && (
+                                  <p className="font-semibold text-blue-600">
+                                    ₹{service.price}
+                                  </p>
+                                )}
                               </div>
                             ),
                           )}
