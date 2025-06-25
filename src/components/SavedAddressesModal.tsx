@@ -269,12 +269,14 @@ const SavedAddressesModal: React.FC<SavedAddressesModalProps> = ({
                 key={address.id}
                 className={address.isDefault ? "ring-2 ring-green-500" : ""}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         {getAddressTypeIcon(address.type)}
-                        <span className="font-medium">{address.label}</span>
+                        <span className="font-medium text-sm sm:text-base">
+                          {address.label}
+                        </span>
                         {address.isDefault && (
                           <Badge variant="secondary" className="text-xs">
                             <Star className="h-3 w-3 mr-1" />
