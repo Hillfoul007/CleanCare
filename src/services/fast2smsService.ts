@@ -61,6 +61,11 @@ export class Fast2SmsService {
       }
     } catch (error) {
       console.error("❌ Failed to send OTP:", error);
+      console.error("❌ Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      });
       return false;
     }
   }
