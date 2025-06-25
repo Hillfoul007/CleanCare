@@ -20,6 +20,7 @@ interface EditBookingModalProps {
   onClose: () => void;
   booking: any;
   onSave: (updatedBooking: any) => void;
+  mode?: "edit" | "add-services";
 }
 
 const EditBookingModal: React.FC<EditBookingModalProps> = ({
