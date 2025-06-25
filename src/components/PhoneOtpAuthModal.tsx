@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   AlertCircle,
@@ -468,6 +469,11 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
               </div>
             </DialogTitle>
           </div>
+          <DialogDescription className="sr-only">
+            {currentStep === "phone"
+              ? "Enter your phone number to receive an OTP for authentication"
+              : "Enter the OTP sent to your phone number to complete authentication"}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

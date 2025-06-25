@@ -103,7 +103,7 @@ export class DVHostingSmsService {
           !responseText.trim().startsWith("[")
         ) {
           // In hosted environments, call DVHosting API directly
-          if (isBuilderEnv) {
+          if (isHostedEnv) {
             console.log(
               "DVHosting SMS: Detected HTML response, calling DVHosting API directly",
             );
@@ -132,7 +132,7 @@ export class DVHostingSmsService {
           }
         } catch (parseError) {
           // In hosted environments, call DVHosting API directly
-          if (isBuilderEnv) {
+          if (isHostedEnv) {
             console.log(
               "DVHosting SMS: JSON parse failed, calling DVHosting API directly",
             );
@@ -162,7 +162,7 @@ export class DVHostingSmsService {
             errorText.trim().startsWith("<") ||
             errorText.includes("<script>")
           ) {
-            if (isBuilderEnv) {
+            if (isHostedEnv) {
               console.log(
                 "DVHosting SMS: Got HTML response, calling DVHosting API directly",
               );
@@ -247,7 +247,7 @@ export class DVHostingSmsService {
           "DVHosting SMS: Verification fetch error in hosted environment:",
           error,
         );
-        if (isBuilderEnv) {
+        if (isHostedEnv) {
           console.log(
             "DVHosting SMS: Using local verification for hosted environment",
           );
