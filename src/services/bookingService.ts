@@ -3,13 +3,7 @@ import MongoDBService from "./mongodbService";
 export interface BookingDetails {
   id: string;
   userId: string;
-  services: Array<{
-    id: string;
-    name: string;
-    category: string;
-    price: number;
-    quantity: number;
-  }>;
+  services: string[];
   totalAmount: number;
   status: "pending" | "confirmed" | "in-progress" | "completed" | "cancelled";
   pickupDate: string;
@@ -436,7 +430,7 @@ export class BookingService {
     updates: Partial<BookingDetails>,
   ): Promise<BookingResponse> {
     try {
-      console.log("���️ Updating booking:", bookingId, updates);
+      console.log("✏️ Updating booking:", bookingId, updates);
 
       const updatedData = {
         ...updates,
