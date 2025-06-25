@@ -24,6 +24,7 @@ import {
 import {
   laundryServices,
   getPopularServices,
+  getSortedServices,
   searchServices,
   LaundryService,
 } from "@/data/laundryServices";
@@ -154,10 +155,17 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
     if (searchQuery) {
       services = searchServices(searchQuery);
     } else if (selectedCategory === "all") {
-      services = getPopularServices();
+      services = getSortedServices();
     } else {
       const category = laundryServices.find((c) => c.id === selectedCategory);
-      services = category ? category.services : [];
+      services = category
+        ? category.services.sort((a, b) => {
+            // Sort by popular first, then alphabetically
+            if (a.popular && !b.popular) return -1;
+            if (!a.popular && b.popular) return 1;
+            return a.name.localeCompare(b.name);
+          })
+        : [];
     }
 
     return services;
