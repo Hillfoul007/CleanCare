@@ -31,16 +31,21 @@ export class Fast2SmsService {
         throw new Error("Invalid Indian phone number");
       }
 
-      // Detect Builder.io environment and use absolute URL
+      // Detect Builder.io environment and use appropriate URL
       const isBuilderEnv =
         window.location.hostname.includes("builder.codes") ||
         window.location.hostname.includes("fly.dev") ||
         document.querySelector("[data-loc]") !== null;
-      const baseUrl = isBuilderEnv ? "http://localhost:3001" : "";
+
+      // Use environment variable for API base URL, with fallback
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+      const baseUrl = isBuilderEnv ? apiBaseUrl.replace("/api", "") : "";
 
       console.log("Fast2SMS: Environment detection:", {
         isBuilderEnv,
         baseUrl,
+        apiBaseUrl,
         hostname: window.location.hostname,
       });
 
