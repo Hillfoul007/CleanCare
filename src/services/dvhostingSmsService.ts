@@ -554,6 +554,66 @@ export class DVHostingSmsService {
   getCurrentPhone(): string {
     return this.currentPhone;
   }
+
+  // Authentication persistence methods
+  isAuthenticated(): boolean {
+    try {
+      const token = localStorage.getItem("cleancare_auth_token");
+      const user = this.getCurrentUser();
+      return !!(token && user);
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+      return false;
+    }
+  }
+
+  getCurrentUser(): any | null {
+    try {
+      const userStr = localStorage.getItem("current_user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        // Verify user data is valid
+        if (user && user.phone) {
+          return user;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Error getting current user:", error);
+      return null;
+    }
+  }
+
+  setCurrentUser(user: any, token?: string): void {
+    try {
+      if (user) {
+        localStorage.setItem("current_user", JSON.stringify(user));
+        if (token) {
+          localStorage.setItem("cleancare_auth_token", token);
+        } else {
+          // Generate a simple token if none provided
+          localStorage.setItem(
+            "cleancare_auth_token",
+            `phone_token_${Date.now()}_${user.phone}`,
+          );
+        }
+        console.log("✅ User authentication saved to localStorage");
+      }
+    } catch (error) {
+      console.error("Error setting current user:", error);
+    }
+  }
+
+  logout(): void {
+    try {
+      localStorage.removeItem("current_user");
+      localStorage.removeItem("cleancare_auth_token");
+      this.currentPhone = "";
+      console.log("✅ User logged out successfully");
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
+  }
 }
 
 export default DVHostingSmsService;
