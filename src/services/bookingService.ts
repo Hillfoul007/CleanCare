@@ -138,6 +138,7 @@ export class BookingService {
         `${this.apiBaseUrl}/bookings/customer/${userId}`,
         {
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("cleancare_auth_token")}`,
           },
           signal: controller.signal,
@@ -169,9 +170,26 @@ export class BookingService {
             bookings: transformedBookings,
           };
         }
+      } else {
+        console.warn(
+          `⚠️ Backend responded with ${response.status}: ${response.statusText}`,
+        );
       }
     } catch (error) {
-      console.warn("⚠️ Backend fetch failed, using localStorage:", error);
+      // Check if it's a network error or timeout
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          console.warn("⚠️ Backend request timed out, using localStorage");
+        } else if (error.message.includes("Failed to fetch")) {
+          console.warn(
+            "⚠️ Network error - backend unavailable, using localStorage",
+          );
+        } else {
+          console.warn("⚠️ Backend fetch failed:", error.message);
+        }
+      } else {
+        console.warn("⚠️ Unknown error during backend fetch:", error);
+      }
     }
 
     // Try MongoDB as fallback
