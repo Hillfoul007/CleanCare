@@ -1,19 +1,9 @@
 export class Fast2SmsService {
   private static instance: Fast2SmsService;
-  private apiKey: string;
-  private storedOTP: string = "";
   private currentPhone: string = "";
 
   constructor() {
-    this.apiKey =
-      import.meta.env.VITE_FAST2SMS_API_KEY ||
-      "AoPndbi8YuGmQU5FeZLVvw7chJM0ksgKHDN461rEqxTjlOIzC3UxV0QS1ZD7WKoIdGAmgC53lc6NTHjP";
-
-    if (!this.apiKey) {
-      console.error("❌ Fast2SMS API key not configured");
-    } else {
-      console.log("✅ Fast2SMS service initialized");
-    }
+    console.log("✅ Fast2SMS service initialized (using backend API)");
   }
 
   public static getInstance(): Fast2SmsService {
