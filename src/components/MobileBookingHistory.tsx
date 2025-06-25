@@ -293,7 +293,9 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-white truncate">My Bookings</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-white truncate">
+                My Bookings
+              </h1>
               <p className="text-green-100 text-xs sm:text-sm">
                 {bookings.length}{" "}
                 {bookings.length === 1 ? "booking" : "bookings"} found
@@ -348,159 +350,177 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                   key={booking.id || index}
                   className="border-0 shadow-xl rounded-2xl overflow-hidden bg-white/95 backdrop-blur-sm hover:shadow-2xl transition-all duration-300"
                 >
-              <CardHeader className="pb-3 p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-base sm:text-lg font-bold text-gray-900 mb-1 truncate">
-                      {booking.service || "Home Service"}
-                    </CardTitle>
-                    <p className="text-xs sm:text-sm text-green-600 truncate font-medium">
-                      by {booking.provider_name || "HomeServices Pro"}
-                    </p>
-                  </div>
-                  <Badge
-                    className={`${getStatusColor(booking.status)} border font-medium`}
-                  >
-                    {getStatusIcon(booking.status)}
-                    <span className="ml-1 capitalize">{booking.status}</span>
-                  </Badge>
-                </div>
-              </CardHeader>
+                  <CardHeader className="pb-3 p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base sm:text-lg font-bold text-gray-900 mb-1 truncate">
+                          {booking.service || "Home Service"}
+                        </CardTitle>
+                        <p className="text-xs sm:text-sm text-green-600 truncate font-medium">
+                          by {booking.provider_name || "HomeServices Pro"}
+                        </p>
+                      </div>
+                      <Badge
+                        className={`${getStatusColor(booking.status)} border font-medium`}
+                      >
+                        {getStatusIcon(booking.status)}
+                        <span className="ml-1 capitalize">
+                          {booking.status}
+                        </span>
+                      </Badge>
+                    </div>
+                  </CardHeader>
 
-              <CardContent className="space-y-4 p-4 sm:p-6">
-                {/* Date & Time */}
-                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl border border-green-100">
-                  <Calendar className="h-5 w-5 text-green-600" />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">
-                      {new Date(booking.scheduled_date).toLocaleDateString(
-                        "en-US",
-                        {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        },
-                      )}
-                    </p>
-                    <p className="text-sm text-green-600">
-                      at {booking.scheduled_time}
-                    </p>
-                  </div>
-                </div>
+                  <CardContent className="space-y-4 p-4 sm:p-6">
+                    {/* Date & Time */}
+                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl border border-green-100">
+                      <Calendar className="h-5 w-5 text-green-600" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">
+                          {new Date(booking.scheduled_date).toLocaleDateString(
+                            "en-US",
+                            {
+                              weekday: "long",
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            },
+                          )}
+                        </p>
+                        <p className="text-sm text-green-600">
+                          at {booking.scheduled_time}
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Address */}
-                <div className="flex items-start gap-3 p-3 bg-green-50/50 rounded-xl border border-green-100/50">
-                  <MapPin className="h-5 w-5 text-green-600 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900 mb-1">
-                      Service Address
-                    </p>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {typeof booking.address === 'string'
-                        ? booking.address
-                        : booking.address?.fullAddress ||
-                          `${booking.address?.flatNo || ''} ${booking.address?.street || ''}, ${booking.address?.village || ''}, ${booking.address?.city || ''} ${booking.address?.pincode || ''}`.trim()
-                      }
-                    </p>
-                  </div>
-                </div>
+                    {/* Address */}
+                    <div className="flex items-start gap-3 p-3 bg-green-50/50 rounded-xl border border-green-100/50">
+                      <MapPin className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 mb-1">
+                          Service Address
+                        </p>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          {typeof booking.address === "string"
+                            ? booking.address
+                            : booking.address?.fullAddress ||
+                              `${booking.address?.flatNo || ""} ${booking.address?.street || ""}, ${booking.address?.village || ""}, ${booking.address?.city || ""} ${booking.address?.pincode || ""}`.trim()}
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Price */}
-                <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                  <DollarSign className="h-5 w-5 text-green-600" />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">Total Amount</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      ₹{booking.final_amount || booking.total_price}
-                    </p>
-                  </div>
-                </div>
+                    {/* Price */}
+                    <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                      <DollarSign className="h-5 w-5 text-green-600" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">
+                          Total Amount
+                        </p>
+                        <p className="text-2xl font-bold text-green-600">
+                          ₹{booking.final_amount || booking.total_price}
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Additional Details */}
-                {booking.additional_details && (
-                  <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
-                    <p className="font-medium text-gray-900 mb-1">
-                      Additional Notes
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {typeof booking.additional_details === 'string'
-                        ? booking.additional_details
-                        : JSON.stringify(booking.additional_details)
-                      }
-                    </p>
-                  </div>
-                )}
+                    {/* Additional Details */}
+                    {booking.additional_details && (
+                      <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
+                        <p className="font-medium text-gray-900 mb-1">
+                          Additional Notes
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {typeof booking.additional_details === "string"
+                            ? booking.additional_details
+                            : JSON.stringify(booking.additional_details)}
+                        </p>
+                      </div>
+                    )}
 
-                {/* Actions */}
-                <div className="flex gap-2 pt-3 flex-wrap">
-                  {booking.status === "completed" && (
-                    <Button
-                      variant="outline"
-                      className="flex-1 min-w-[120px] rounded-xl border-2 border-amber-200 hover:bg-amber-50 text-amber-600 font-medium"
-                    >
-                      <Star className="mr-2 h-4 w-4" />
-                      Rate Service
-                    </Button>
-                  )}
-
-                  {canEditBooking(booking) && (
-                    <Button
-                      variant="outline"
-                      onClick={() => handleEditBooking(booking)}
-                      className="flex-1 min-w-[120px] rounded-xl border-2 border-green-200 hover:bg-green-50 text-green-600 font-medium"
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </Button>
-                  )}
-
-                  {canCancelBooking(booking) && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                    {/* Actions */}
+                    <div className="flex gap-2 pt-3 flex-wrap">
+                      {booking.status === "completed" && (
                         <Button
                           variant="outline"
-                          className="flex-1 min-w-[120px] rounded-xl border-2 border-red-200 hover:bg-red-50 text-red-600 font-medium"
+                          className="flex-1 min-w-[120px] rounded-xl border-2 border-amber-200 hover:bg-amber-50 text-amber-600 font-medium"
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Cancel
+                          <Star className="mr-2 h-4 w-4" />
+                          Rate Service
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-2xl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Cancel Booking?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. You may be charged a
-                            cancellation fee depending on the cancellation
-                            policy.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-xl">
-                            Keep Booking
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => cancelBooking(booking._id)}
-                            className="bg-red-600 hover:bg-red-700 rounded-xl"
-                          >
-                            Yes, Cancel
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
+                      )}
 
-                  <Button
-                    variant="outline"
-                    className="flex-1 min-w-[120px] rounded-xl border-2 border-blue-200 hover:bg-blue-50"
-                  >
-                    <Phone className="mr-2 h-4 w-4" />
-                    Contact
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                      {canEditBooking(booking) && (
+                        <Button
+                          variant="outline"
+                          onClick={() => handleEditBooking(booking)}
+                          className="flex-1 min-w-[120px] rounded-xl border-2 border-green-200 hover:bg-green-50 text-green-600 font-medium"
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                        </Button>
+                      )}
+
+                      {canCancelBooking(booking) && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="flex-1 min-w-[120px] rounded-xl border-2 border-red-200 hover:bg-red-50 text-red-600 font-medium"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Cancel
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-2xl">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Cancel Booking?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. You may be charged
+                                a cancellation fee depending on the cancellation
+                                policy.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="rounded-xl">
+                                Keep Booking
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => cancelBooking(booking._id)}
+                                className="bg-red-600 hover:bg-red-700 rounded-xl"
+                              >
+                                Yes, Cancel
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+
+                      <Button
+                        variant="outline"
+                        className="flex-1 min-w-[120px] rounded-xl border-2 border-blue-200 hover:bg-blue-50"
+                      >
+                        <Phone className="mr-2 h-4 w-4" />
+                        Contact
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            } catch (error) {
+              console.error("Error rendering booking:", error, booking);
+              return (
+                <Card
+                  key={booking.id || index}
+                  className="border-0 shadow-lg rounded-2xl overflow-hidden bg-red-50"
+                >
+                  <CardContent className="text-center py-8">
+                    <p className="text-red-600">Error loading booking</p>
+                  </CardContent>
+                </Card>
+              );
+            }
+          })
         )}
       </div>
 
