@@ -346,9 +346,35 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
         ) : (
           bookings.map((booking: any, index) => {
             try {
+              // Ensure booking has required fields and they're not objects
+              const safeBooking = {
+                ...booking,
+                service:
+                  typeof booking.service === "string"
+                    ? booking.service
+                    : booking.service?.name || "Home Service",
+                provider_name:
+                  typeof booking.provider_name === "string"
+                    ? booking.provider_name
+                    : "HomeServices Pro",
+                status:
+                  typeof booking.status === "string"
+                    ? booking.status
+                    : "pending",
+                services: Array.isArray(booking.services)
+                  ? booking.services
+                  : [],
+                additional_details:
+                  typeof booking.additional_details === "string"
+                    ? booking.additional_details
+                    : booking.additional_details
+                      ? JSON.stringify(booking.additional_details)
+                      : "",
+              };
+
               return (
                 <Card
-                  key={booking.id || index}
+                  key={safeBooking.id || index}
                   className="border-0 shadow-xl rounded-2xl overflow-hidden bg-white/95 backdrop-blur-sm hover:shadow-2xl transition-all duration-300"
                 >
                   <CardHeader className="pb-3 p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50">
