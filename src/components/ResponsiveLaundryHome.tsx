@@ -549,9 +549,14 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
             )}
           </div>
         </div>
-          }}
-          onSuccess={handleAuthSuccess}
-        />
+      </div>
+
+      {/* Auth Modal */}
+      <PhoneOtpAuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+      />
       </div>
     );
   }
