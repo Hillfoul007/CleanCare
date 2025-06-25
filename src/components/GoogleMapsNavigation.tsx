@@ -172,7 +172,10 @@ const GoogleMapsNavigation: React.FC<GoogleMapsNavigationProps> = ({
           window.open(url, "_blank");
         },
         (error) => {
-          console.error("Error getting location:", error);
+          console.error("Error getting location:", {
+            code: error.code,
+            message: error.message,
+          });
           // Fallback to destination only
           openInGoogleMaps();
         },
