@@ -341,25 +341,42 @@ export class BookingService {
       // Transform booking data to match backend schema
       const backendBooking = {
         customer_id: booking.userId,
-        service: booking.services.map((s) => s.name).join(", "),
-        service_type: booking.services[0]?.category || "home-service",
-        services: booking.services.map((s) => s.name),
+        service: Array.isArray(booking.services)
+          ? booking.services.join(", ")
+          : booking.services || "Home Service",
+        service_type: "home-service",
+        services: Array.isArray(booking.services)
+          ? booking.services
+          : [booking.services || "Home Service"],
         scheduled_date:
-          booking.pickupDate || new Date().toISOString().split("T")[0],
-        scheduled_time: booking.pickupTime || "10:00",
+          booking.pickupDate ||
+          booking.scheduled_date ||
+          new Date().toISOString().split("T")[0],
+        scheduled_time: booking.pickupTime || booking.scheduled_time || "10:00",
         provider_name: "HomeServices Pro",
         address:
           typeof booking.address === "string"
             ? booking.address
-            : booking.address.fullAddress,
-        coordinates: booking.address.coordinates || { lat: 0, lng: 0 },
-        additional_details: booking.contactDetails.instructions || "",
-        total_price: booking.totalAmount,
-        discount_amount: 0,
-        final_amount: booking.totalAmount,
-        special_instructions: booking.contactDetails.instructions || "",
+            : booking.address?.fullAddress || booking.address || "",
+        coordinates: (typeof booking.address === "object" &&
+          booking.address?.coordinates) || { lat: 0, lng: 0 },
+        additional_details:
+          booking.contactDetails?.instructions ||
+          booking.additional_details ||
+          "",
+        total_price: booking.totalAmount || booking.total_price || 0,
+        discount_amount: booking.discount_amount || 0,
+        final_amount:
+          booking.totalAmount ||
+          booking.final_amount ||
+          booking.total_price ||
+          0,
+        special_instructions:
+          booking.contactDetails?.instructions ||
+          booking.additional_details ||
+          "",
         charges_breakdown: {
-          base_price: booking.totalAmount,
+          base_price: booking.totalAmount || booking.total_price || 0,
           tax_amount: 0,
           service_fee: 0,
           discount: 0,
