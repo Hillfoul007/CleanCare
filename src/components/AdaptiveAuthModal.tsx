@@ -188,6 +188,11 @@ const AdaptiveAuthModal: React.FC<AdaptiveAuthModalProps> = ({
 
       if (result.success && result.user) {
         setSuccess("Login successful!");
+
+        // Save user authentication to localStorage for persistence
+        const authService = DVHostingSmsService.getInstance();
+        authService.setCurrentUser(result.user);
+
         onSuccess(result.user);
         onClose();
         resetForm();
