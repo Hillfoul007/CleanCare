@@ -147,26 +147,30 @@ export class DVHostingSmsService {
             return false;
           }
         } catch (parseError) {
-          console.error(
-            "❌ Failed to parse JSON response:",
-            parseError,
-            "Raw text:",
-            responseText.substring(0, 200),
-          );
-
           // In hosted environments, fall back to simulation mode
           if (isBuilderEnv) {
             console.log(
-              "DVHosting SMS: Using simulation mode due to JSON parse error",
+              "DVHosting SMS: JSON parse failed in hosted environment, switching to simulation mode",
+            );
+            console.log(
+              "DVHosting SMS: Response content:",
+              responseText.substring(0, 200),
             );
             await new Promise((resolve) => setTimeout(resolve, 500));
-            console.log("✅ OTP sent (simulation mode - JSON parse error)");
+            console.log("✅ OTP sent (simulation mode - hosted environment)");
             this.otpStorage.set(cleanPhone, {
               otp: Math.floor(100000 + Math.random() * 900000).toString(),
               expiresAt: Date.now() + 5 * 60 * 1000,
             });
             return true;
           }
+
+          console.error(
+            "❌ Failed to parse JSON response:",
+            parseError,
+            "Raw text:",
+            responseText.substring(0, 200),
+          );
 
           return false;
         }
