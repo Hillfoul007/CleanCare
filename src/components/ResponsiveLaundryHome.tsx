@@ -33,7 +33,7 @@ import UserMenuDropdown from "./UserMenuDropdown";
 import DebugPanel from "./DebugPanel";
 import ConnectionStatus from "./ConnectionStatus";
 import NotificationPanel from "./NotificationPanel";
-import { TwilioSmsService } from "@/services/twilioSmsService";
+import { Fast2SmsService } from "@/services/fast2smsService";
 
 interface ResponsiveLaundryHomeProps {
   currentUser?: any;
@@ -56,7 +56,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showBookingHistory, setShowBookingHistory] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
-  const twilioService = TwilioSmsService.getInstance();
+  const fast2smsService = Fast2SmsService.getInstance();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cart, setCart] = useState<{ [key: string]: number }>({});
   const [deliveryTime, setDeliveryTime] = useState("2-3 hours");
