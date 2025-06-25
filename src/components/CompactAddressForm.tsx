@@ -232,11 +232,11 @@ const CompactAddressForm: React.FC<CompactAddressFormProps> = ({
           {/* Combined Area Details */}
           <div className="relative">
             <Label htmlFor="areaDetails" className="text-sm font-medium">
-              🌍 Area, City, State & Pincode *
+              🌍 Village/Town/City, State & Pincode *
             </Label>
             <Input
               id="areaDetails"
-              placeholder="e.g., Sector 18, Noida, Uttar Pradesh, 201301"
+              placeholder="e.g., Village Sector 18, Noida, Uttar Pradesh, 201301"
               value={address.areaDetails}
               onChange={(e) => handleFieldChange("areaDetails", e.target.value)}
               className="mt-1"
