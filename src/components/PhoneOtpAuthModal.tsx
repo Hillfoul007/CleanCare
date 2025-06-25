@@ -37,6 +37,15 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
   const [success, setSuccess] = useState("");
   const isMobile = useIsMobile();
 
+  // Debug mobile detection
+  React.useEffect(() => {
+    console.log("PhoneOtpAuthModal mobile detection:", {
+      isMobile,
+      width: window.innerWidth,
+      userAgent: navigator.userAgent,
+    });
+  }, [isMobile]);
+
   const [formData, setFormData] = useState({
     phone: "",
     otp: "",
