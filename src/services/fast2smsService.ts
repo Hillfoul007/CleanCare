@@ -3,14 +3,14 @@ export class Fast2SmsService {
   private currentPhone: string = "";
 
   constructor() {
-    console.log("✅ Fast2SMS service initialized (using backend API)");
-  }
+    this.apiKey = import.meta.env.VITE_FAST2SMS_API_KEY || "";
 
-  public static getInstance(): Fast2SmsService {
-    if (!Fast2SmsService.instance) {
-      Fast2SmsService.instance = new Fast2SmsService();
+    if (!this.apiKey) {
+      console.error("❌ Fast2SMS API key not configured");
+    } else {
+      console.log("✅ Fast2SMS service initialized");
     }
-    return Fast2SmsService.instance;
+  }
   }
 
   async sendOTP(phoneNumber: string): Promise<boolean> {
@@ -25,12 +25,12 @@ export class Fast2SmsService {
 
       // Call backend API instead of Fast2SMS directly to avoid CORS issues
       const response = await fetch(`/api/auth/send-otp?t=${Date.now()}`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-          Expires: "0",
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         },
         body: JSON.stringify({
           phone: cleanPhone,
@@ -38,16 +38,12 @@ export class Fast2SmsService {
       });
 
       if (response.ok) {
-        const contentType = response.headers.get("content-type");
-        console.log("Response content type:", contentType);
+        const contentType = response.headers.get('content-type');
+        console.log('Response content type:', contentType);
 
-        if (!contentType || !contentType.includes("application/json")) {
+        if (!contentType || !contentType.includes('application/json')) {
           const textContent = await response.text();
-          console.error(
-            "❌ Expected JSON but got:",
-            contentType,
-            textContent.substring(0, 200),
-          );
+          console.error('❌ Expected JSON but got:', contentType, textContent.substring(0, 200));
           return false;
         }
 
@@ -80,7 +76,7 @@ export class Fast2SmsService {
       console.error("❌ Error details:", {
         name: error.name,
         message: error.message,
-        stack: error.stack,
+        stack: error.stack
       });
       return false;
     }
@@ -92,12 +88,12 @@ export class Fast2SmsService {
 
       // Call backend API for OTP verification
       const response = await fetch(`/api/auth/verify-otp?t=${Date.now()}`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-          Expires: "0",
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         },
         body: JSON.stringify({
           phone: cleanPhone,
@@ -140,9 +136,7 @@ export class Fast2SmsService {
     const success = await this.sendOTP(phoneNumber);
     return {
       success,
-      message: success
-        ? "OTP sent successfully via Fast2SMS"
-        : "Failed to send OTP",
+      message: success ? "OTP sent successfully via Fast2SMS" : "Failed to send OTP",
       error: success ? undefined : "Failed to send OTP via Fast2SMS",
     };
   }
@@ -162,18 +156,17 @@ export class Fast2SmsService {
 
       // Call backend API for OTP verification with user name
       const response = await fetch(`/api/auth/verify-otp?t=${Date.now()}`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-          Expires: "0",
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         },
         body: JSON.stringify({
           phone: cleanPhone,
           otp: otp,
-          name:
-            name && name.trim() ? name.trim() : `User ${cleanPhone.slice(-4)}`,
+          name: name && name.trim() ? name.trim() : `User ${cleanPhone.slice(-4)}`,
         }),
       });
 
