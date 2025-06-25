@@ -237,6 +237,7 @@ export class BookingService {
         `${this.apiBaseUrl}/bookings/customer/${userId}`,
         {
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("cleancare_auth_token")}`,
           },
           signal: controller.signal,
