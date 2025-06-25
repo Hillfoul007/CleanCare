@@ -143,12 +143,93 @@ const ProfessionalDateTimePicker: React.FC<ProfessionalDateTimePickerProps> = ({
     <div className={cn("space-y-6", className)}>
       {/* Date Selection */}
       <div className="space-y-3">
-        <Label className="text-sm font-medium flex items-center gap-2">
-          <CalendarIcon className="h-4 w-4" />
-          Select Date
-        </Label>
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium flex items-center gap-2">
+            <CalendarIcon className="h-4 w-4" />
+            Select Date
+          </Label>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goToCurrentWeek}
+              className="text-xs px-2 py-1 h-auto"
+            >
+              Today
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="text-xs px-2 py-1 h-auto"
+            >
+              All Dates
+            </Button>
+          </div>
+        </div>
+
+        {/* Dropdown for extended date selection */}
+        {showDropdown && (
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">
+              Choose from next 30 days:
+            </Label>
+            <Select
+              value={selectedDate?.toISOString() || ""}
+              onValueChange={(value) => {
+                if (value) {
+                  onDateChange(new Date(value));
+                  setShowDropdown(false);
+                }
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose any date" />
+              </SelectTrigger>
+              <SelectContent>
+                {extendedDates.map((dateItem) => (
+                  <SelectItem key={dateItem.value} value={dateItem.value}>
+                    {dateItem.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Week navigation */}
+        <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={goToPreviousWeek}
+            disabled={!canGoPrevious}
+            className="p-2 h-auto"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <span className="text-sm font-medium">
+            {format(currentWeekStart, "MMM dd")} -{" "}
+            {format(
+              endOfWeek(currentWeekStart, { weekStartsOn: 1 }),
+              "MMM dd, yyyy",
+            )}
+          </span>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={goToNextWeek}
+            className="p-2 h-auto"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Week dates */}
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {dates.map((dateItem) => (
+          {weekDates.map((dateItem) => (
             <Button
               key={dateItem.date.toISOString()}
               variant={
@@ -157,11 +238,14 @@ const ProfessionalDateTimePicker: React.FC<ProfessionalDateTimePickerProps> = ({
                   : "outline"
               }
               onClick={() => onDateChange(dateItem.date)}
+              disabled={dateItem.isPast}
               className={cn(
                 "flex-shrink-0 h-auto flex flex-col items-center p-3 min-w-[70px] hover:scale-105 transition-transform",
                 selectedDate && isSameDay(selectedDate, dateItem.date)
                   ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
-                  : "hover:border-green-300 hover:bg-green-50",
+                  : dateItem.isPast
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:border-green-300 hover:bg-green-50",
               )}
             >
               <span className="text-xs font-medium">{dateItem.day}</span>
