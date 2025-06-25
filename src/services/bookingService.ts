@@ -232,22 +232,54 @@ export class BookingService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
+      // Transform booking data to match backend schema
+      const backendBooking = {
+        customer_id: booking.userId,
+        service: booking.services.map((s) => s.name).join(", "),
+        service_type: booking.services[0]?.category || "home-service",
+        services: booking.services.map((s) => s.name),
+        scheduled_date:
+          booking.pickupDate || new Date().toISOString().split("T")[0],
+        scheduled_time: booking.pickupTime || "10:00",
+        provider_name: "HomeServices Pro",
+        address:
+          typeof booking.address === "string"
+            ? booking.address
+            : booking.address.fullAddress,
+        coordinates: booking.address.coordinates || { lat: 0, lng: 0 },
+        additional_details: booking.contactDetails.instructions || "",
+        total_price: booking.totalAmount,
+        discount_amount: 0,
+        final_amount: booking.totalAmount,
+        special_instructions: booking.contactDetails.instructions || "",
+        charges_breakdown: {
+          base_price: booking.totalAmount,
+          tax_amount: 0,
+          service_fee: 0,
+          discount: 0,
+        },
+      };
+
       const response = await fetch(`${this.apiBaseUrl}/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("cleancare_auth_token")}`,
         },
-        body: JSON.stringify(booking),
+        body: JSON.stringify(backendBooking),
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
       if (response.ok) {
-        console.log("✅ Booking synced to backend:", booking.id);
+        const result = await response.json();
+        console.log("✅ Booking synced to backend:", booking.id, result);
       } else {
-        throw new Error(`Backend sync failed with status: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(
+          `Backend sync failed with status: ${response.status} - ${errorText}`,
+        );
       }
     } catch (error) {
       console.warn("⚠️ Backend sync failed:", error);
