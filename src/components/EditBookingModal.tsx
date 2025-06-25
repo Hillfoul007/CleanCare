@@ -37,9 +37,22 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     additional_details: booking?.additional_details || "",
   });
 
-  const [selectedServices, setSelectedServices] = useState<string[]>(
-    booking?.services || [booking?.service].filter(Boolean) || [],
-  );
+  const [selectedServices, setSelectedServices] = useState<string[]>(() => {
+    if (booking?.services && Array.isArray(booking.services)) {
+      return booking.services
+        .map((service: any) =>
+          typeof service === "object" ? service.name || "" : service,
+        )
+        .filter(Boolean);
+    }
+    if (booking?.service) {
+      const service = booking.service;
+      return [
+        typeof service === "object" ? service.name || "" : service,
+      ].filter(Boolean);
+    }
+    return [];
+  });
   const [totalPrice, setTotalPrice] = useState(
     booking?.total_price || booking?.final_amount || 0,
   );
