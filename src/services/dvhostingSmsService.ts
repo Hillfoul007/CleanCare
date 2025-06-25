@@ -101,22 +101,12 @@ export class DVHostingSmsService {
           !responseText.trim().startsWith("{") &&
           !responseText.trim().startsWith("[")
         ) {
-          // In hosted environments, fall back to simulation mode
+          // In hosted environments, call DVHosting API directly
           if (isBuilderEnv) {
             console.log(
-              "DVHosting SMS: Detected HTML response in hosted environment, switching to simulation mode",
+              "DVHosting SMS: Detected HTML response, calling DVHosting API directly",
             );
-            console.log(
-              "DVHosting SMS: Response content:",
-              responseText.substring(0, 200),
-            );
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            console.log("✅ OTP sent (simulation mode - hosted environment)");
-            this.otpStorage.set(cleanPhone, {
-              otp: Math.floor(100000 + Math.random() * 900000).toString(),
-              expiresAt: Date.now() + 5 * 60 * 1000,
-            });
-            return true;
+            return await this.sendDirectDVHostingOTP(cleanPhone);
           }
 
           console.error(
