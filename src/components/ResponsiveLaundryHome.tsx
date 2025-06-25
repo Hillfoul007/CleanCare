@@ -539,23 +539,12 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
             <p className="text-gray-600 mb-6">
               Your trusted home services partner
             </p>
-            <div className="space-y-3">
-              <Button
-                onClick={handleBookService}
-                className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 px-8 py-3 rounded-xl text-lg font-medium w-full sm:w-auto"
-              >
-                Get Started
-              </Button>
-              {currentUser && (
-                <Button
-                  onClick={onViewBookings}
-                  variant="outline"
-                  className="px-8 py-3 rounded-xl text-lg font-medium w-full sm:w-auto"
-                >
-                  🧪 Test My Bookings
-                </Button>
-              )}
-            </div>
+            <Button
+              onClick={handleBookService}
+              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 px-8 py-3 rounded-xl text-lg font-medium"
+            >
+              Get Started
+            </Button>
           </div>
         )}
 
