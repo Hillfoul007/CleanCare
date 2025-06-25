@@ -450,22 +450,21 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           </span>
                         </div>
                         <p className="text-sm text-gray-900">
-                          {booking.pickupDate
-                            ? new Date(booking.pickupDate).toLocaleDateString(
-                                "en-US",
-                                {
-                                  weekday: "short",
-                                  month: "short",
-                                  day: "numeric",
-                                },
-                              )
-                            : booking.scheduled_date
+                          {safeBooking.pickupDate
+                            ? new Date(
+                                safeBooking.pickupDate,
+                              ).toLocaleDateString("en-US", {
+                                weekday: "short",
+                                month: "short",
+                                day: "numeric",
+                              })
+                            : safeBooking.scheduled_date
                               ? (() => {
                                   // Handle YYYY-MM-DD format properly
-                                  const dateStr = booking.scheduled_date;
+                                  const dateStr = safeBooking.scheduled_date;
                                   let date;
 
-                                  if (dateStr.includes("-")) {
+                                  if (dateStr && dateStr.includes("-")) {
                                     // YYYY-MM-DD format - parse as local date
                                     const [year, month, day] =
                                       dateStr.split("-");
@@ -474,8 +473,10 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                                       parseInt(month) - 1,
                                       parseInt(day),
                                     );
-                                  } else {
+                                  } else if (dateStr) {
                                     date = new Date(dateStr);
+                                  } else {
+                                    return "Date TBD";
                                   }
 
                                   return date.toLocaleDateString("en-US", {
@@ -487,8 +488,8 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                               : "Date TBD"}
                         </p>
                         <p className="text-xs text-green-600">
-                          {booking.pickupTime ||
-                            booking.scheduled_time ||
+                          {safeBooking.pickupTime ||
+                            safeBooking.scheduled_time ||
                             "Time TBD"}
                         </p>
                       </div>
