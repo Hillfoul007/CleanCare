@@ -523,8 +523,16 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   {getCartItemCount()} item{getCartItemCount() > 1 ? "s" : ""}
                 </span>
               </div>
+              <span className="text-xs bg-white/20 px-2 py-1 rounded">
+                View Cart
+              </span>
+            </Button>
+          </div>
+        )}
 
-        <div className="text-center py-8">
+        {/* Empty State */}
+        {!getPopularServices().length && (
+          <div className="text-center py-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Welcome to CleanCare Pro
           </h2>
