@@ -47,6 +47,8 @@ export class Fast2SmsService {
         baseUrl,
         apiBaseUrl,
         hostname: window.location.hostname,
+        hasDataLoc: !!document.querySelector("[data-loc]"),
+        finalUrl: `${baseUrl}/api/auth/send-otp`,
       });
 
       // Call backend API instead of Fast2SMS directly to avoid CORS issues
