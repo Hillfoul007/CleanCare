@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ResponsiveLaundryHome from "../components/ResponsiveLaundryHome";
 import LaundryCart from "../components/LaundryCart";
-import MobileBookingHistory from "../components/MobileBookingHistory";
+import EnhancedBookingHistory from "@/components/EnhancedBookingHistory";
 import { DVHostingSmsService } from "../services/dvhostingSmsService";
 import PushNotificationService from "../services/pushNotificationService";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -404,9 +404,10 @@ const LaundryIndex = () => {
       {/* Authentication is now handled directly in ResponsiveLaundryHome via PhoneOtpAuthModal */}
 
       {currentView === "bookings" && (
-        <MobileBookingHistory
+        <EnhancedBookingHistory
           currentUser={currentUser}
           onBack={() => setCurrentView("home")}
+          onLoginRequired={() => setCurrentView("auth")}
         />
       )}
 
