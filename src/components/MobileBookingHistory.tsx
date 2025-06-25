@@ -470,7 +470,32 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                                   day: "numeric",
                                 },
                               )
-                            : "Date TBD"}
+                            : booking.scheduled_date
+                              ? (() => {
+                                  // Calculate delivery date (next day after pickup)
+                                  const dateStr = booking.scheduled_date;
+                                  let date;
+
+                                  if (dateStr.includes("-")) {
+                                    const [year, month, day] =
+                                      dateStr.split("-");
+                                    date = new Date(
+                                      parseInt(year),
+                                      parseInt(month) - 1,
+                                      parseInt(day) + 1,
+                                    );
+                                  } else {
+                                    date = new Date(dateStr);
+                                    date.setDate(date.getDate() + 1);
+                                  }
+
+                                  return date.toLocaleDateString("en-US", {
+                                    weekday: "short",
+                                    month: "short",
+                                    day: "numeric",
+                                  });
+                                })()
+                              : "Date TBD"}
                         </p>
                         <p className="text-xs text-emerald-600">
                           {booking.deliveryTime || "Time TBD"}
