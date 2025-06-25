@@ -47,8 +47,16 @@ export class Fast2SmsService {
           return false;
         }
       } else {
-        const errorText = await response.text();
-        console.error("❌ Backend HTTP error:", response.status, errorText);
+        let errorMessage = `HTTP ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+          console.error("❌ Backend API error:", response.status, errorData);
+        } catch (parseError) {
+          const errorText = await response.text();
+          console.error("❌ Backend HTTP error:", response.status, errorText);
+          errorMessage = errorText;
+        }
         return false;
       }
     } catch (error) {
