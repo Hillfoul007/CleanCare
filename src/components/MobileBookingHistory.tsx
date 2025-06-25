@@ -600,42 +600,41 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           </span>
                         </div>
                         <p className="text-sm text-gray-900">
-                          {safeBooking.pickupDate
-                            ? new Date(
-                                safeBooking.pickupDate,
-                              ).toLocaleDateString("en-US", {
+                          {(() => {
+                            const dateStr =
+                              safeBooking.pickupDate ||
+                              safeBooking.scheduled_date;
+                            if (!dateStr) return "Date TBD";
+
+                            try {
+                              let date;
+                              if (dateStr.includes("-")) {
+                                // YYYY-MM-DD format - parse as local date
+                                const [year, month, day] = dateStr
+                                  .split("-")
+                                  .map(Number);
+                                date = new Date(year, month - 1, day);
+                              } else {
+                                date = new Date(dateStr);
+                              }
+
+                              // Validate date
+                              if (isNaN(date.getTime())) return "Date TBD";
+
+                              return date.toLocaleDateString("en-US", {
                                 weekday: "short",
                                 month: "short",
                                 day: "numeric",
-                              })
-                            : safeBooking.scheduled_date
-                              ? (() => {
-                                  // Handle YYYY-MM-DD format properly
-                                  const dateStr = safeBooking.scheduled_date;
-                                  let date;
-
-                                  if (dateStr && dateStr.includes("-")) {
-                                    // YYYY-MM-DD format - parse as local date
-                                    const [year, month, day] =
-                                      dateStr.split("-");
-                                    date = new Date(
-                                      parseInt(year),
-                                      parseInt(month) - 1,
-                                      parseInt(day),
-                                    );
-                                  } else if (dateStr) {
-                                    date = new Date(dateStr);
-                                  } else {
-                                    return "Date TBD";
-                                  }
-
-                                  return date.toLocaleDateString("en-US", {
-                                    weekday: "short",
-                                    month: "short",
-                                    day: "numeric",
-                                  });
-                                })()
-                              : "Date TBD"}
+                              });
+                            } catch (error) {
+                              console.error(
+                                "Error parsing date:",
+                                dateStr,
+                                error,
+                              );
+                              return "Date TBD";
+                            }
+                          })()}
                         </p>
                         <p className="text-xs text-green-600">
                           {safeBooking.pickupTime ||
