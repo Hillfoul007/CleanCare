@@ -293,9 +293,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="min-w-0 flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-white truncate">
-                My Bookings
-              </h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-white truncate">My Bookings</h1>
               <p className="text-green-100 text-xs sm:text-sm">
                 {bookings.length}{" "}
                 {bookings.length === 1 ? "booking" : "bookings"} found
@@ -343,11 +341,13 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
             </CardContent>
           </Card>
         ) : (
-          bookings.map((booking: any, index) => (
-            <Card
-              key={index}
-              className="border-0 shadow-xl rounded-2xl overflow-hidden bg-white/95 backdrop-blur-sm hover:shadow-2xl transition-all duration-300"
-            >
+          bookings.map((booking: any, index) => {
+            try {
+              return (
+                <Card
+                  key={booking.id || index}
+                  className="border-0 shadow-xl rounded-2xl overflow-hidden bg-white/95 backdrop-blur-sm hover:shadow-2xl transition-all duration-300"
+                >
               <CardHeader className="pb-3 p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                   <div className="flex-1 min-w-0">
@@ -397,10 +397,11 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                       Service Address
                     </p>
                     <p className="text-sm text-gray-600 leading-relaxed">
-                      {typeof booking.address === "string"
+                      {typeof booking.address === 'string'
                         ? booking.address
                         : booking.address?.fullAddress ||
-                          `${booking.address?.flatNo || ""} ${booking.address?.street || ""}, ${booking.address?.village || ""}, ${booking.address?.city || ""} ${booking.address?.pincode || ""}`.trim()}
+                          `${booking.address?.flatNo || ''} ${booking.address?.street || ''}, ${booking.address?.village || ''}, ${booking.address?.city || ''} ${booking.address?.pincode || ''}`.trim()
+                      }
                     </p>
                   </div>
                 </div>
@@ -423,9 +424,10 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                       Additional Notes
                     </p>
                     <p className="text-sm text-gray-600">
-                      {typeof booking.additional_details === "string"
+                      {typeof booking.additional_details === 'string'
                         ? booking.additional_details
-                        : JSON.stringify(booking.additional_details)}
+                        : JSON.stringify(booking.additional_details)
+                      }
                     </p>
                   </div>
                 )}
