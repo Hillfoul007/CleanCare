@@ -441,12 +441,22 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
               const sanitizeServices = (services: any) => {
                 if (!Array.isArray(services)) return [];
+
+                // Calculate individual service price based on total
+                const totalAmount =
+                  booking.totalAmount ||
+                  booking.total_price ||
+                  booking.final_amount ||
+                  0;
+                const serviceCount = services.length || 1;
+                const defaultPrice = Math.round(totalAmount / serviceCount);
+
                 return services.map((service, index) => {
                   if (typeof service === "string") {
                     return {
                       name: service,
                       quantity: 1,
-                      price: 0,
+                      price: defaultPrice,
                       id: `service_${index}`,
                     };
                   }
@@ -465,14 +475,14 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           ? service.price
                           : typeof service.amount === "number"
                             ? service.amount
-                            : 0,
+                            : defaultPrice,
                       id: service.id || `service_${index}`,
                     };
                   }
                   return {
                     name: String(service) || "Unknown Service",
                     quantity: 1,
-                    price: 0,
+                    price: defaultPrice,
                     id: `service_${index}`,
                   };
                 });
