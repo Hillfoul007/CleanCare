@@ -1,5 +1,5 @@
 services:
-  # Backend API Service
+  # ✅ Backend API Service (Express + MongoDB)
   - type: web
     name: cleancare-pro-api
     env: node
@@ -28,11 +28,9 @@ services:
       - key: ALLOWED_ORIGINS
         value: https://cleancare-pro.onrender.com
 
-  # Frontend Static Site (Vite)
-  - type: web
+  # ✅ Frontend Static Site (Vite)
+  - type: static
     name: cleancare-pro-frontend
-    env: static
-    staticSite: true
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     pullRequestPreviewsEnabled: false
@@ -48,22 +46,23 @@ services:
       - key: VITE_APP_URL
         value: https://cleancare-pro.onrender.com
 
+# 🔐 Shared Secrets Group
 envVarGroups:
   - name: cleancare-secrets
     envVars:
       - key: MONGODB_URI
-        value: # Your MongoDB connection string
+        value: # Your MongoDB URI
       - key: MONGODB_USERNAME
-        value: # Your MongoDB username
+        value: # MongoDB username
       - key: MONGODB_PASSWORD
-        value: # Your MongoDB password
+        value: # MongoDB password
       - key: MONGODB_CLUSTER
-        value: # Your MongoDB cluster URL
+        value: # MongoDB cluster
       - key: DVHOSTING_API_KEY
-        value: # Your DVHosting API key
+        value: # DVHosting API key
       - key: JWT_SECRET
-        value: # Your JWT secret (32+ random characters)
+        value: # JWT secret
       - key: VITE_DVHOSTING_API_KEY
-        value: # Your DVHosting API key
+        value: # DVHosting for frontend
       - key: VITE_GOOGLE_MAPS_API_KEY
-        value: # Your Google Maps API key
+        value: # Google Maps API key
