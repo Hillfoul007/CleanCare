@@ -219,7 +219,7 @@ const sendSMS = async (phone, otp) => {
 
     // Fallback to simulation mode in development
     if (process.env.NODE_ENV === "development") {
-      log("Falling back to simulation mode due to Fast2SMS network error");
+      log("Falling back to simulation mode due to DVHosting network error");
       await new Promise((resolve) => setTimeout(resolve, 100));
       return {
         success: true,
