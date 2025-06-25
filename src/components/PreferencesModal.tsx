@@ -201,8 +201,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="push-notifications">Push Notifications</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="push-notifications"
+                  className="text-sm font-medium leading-tight"
+                >
+                  Push Notifications
+                </Label>
                 <Switch
                   id="push-notifications"
                   checked={preferences.notifications.push}
