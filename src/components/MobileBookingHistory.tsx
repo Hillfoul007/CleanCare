@@ -370,6 +370,59 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                     : booking.additional_details
                       ? JSON.stringify(booking.additional_details)
                       : "",
+                pickupDate:
+                  typeof booking.pickupDate === "string"
+                    ? booking.pickupDate
+                    : "",
+                deliveryDate:
+                  typeof booking.deliveryDate === "string"
+                    ? booking.deliveryDate
+                    : "",
+                scheduled_date:
+                  typeof booking.scheduled_date === "string"
+                    ? booking.scheduled_date
+                    : "",
+                pickupTime:
+                  typeof booking.pickupTime === "string"
+                    ? booking.pickupTime
+                    : "",
+                deliveryTime:
+                  typeof booking.deliveryTime === "string"
+                    ? booking.deliveryTime
+                    : "",
+                scheduled_time:
+                  typeof booking.scheduled_time === "string"
+                    ? booking.scheduled_time
+                    : "",
+                address:
+                  typeof booking.address === "string"
+                    ? booking.address
+                    : booking.address?.fullAddress || "",
+                totalAmount:
+                  typeof booking.totalAmount === "number"
+                    ? booking.totalAmount
+                    : 0,
+                total_price:
+                  typeof booking.total_price === "number"
+                    ? booking.total_price
+                    : 0,
+                final_amount:
+                  typeof booking.final_amount === "number"
+                    ? booking.final_amount
+                    : 0,
+                discount_amount:
+                  typeof booking.discount_amount === "number"
+                    ? booking.discount_amount
+                    : 0,
+                payment_status:
+                  typeof booking.payment_status === "string"
+                    ? booking.payment_status
+                    : "pending",
+                paymentStatus:
+                  typeof booking.paymentStatus === "string"
+                    ? booking.paymentStatus
+                    : "pending",
+                charges_breakdown: booking.charges_breakdown || {},
               };
 
               return (
