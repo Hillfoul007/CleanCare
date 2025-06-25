@@ -532,7 +532,8 @@ export class BookingService {
         localStorage.getItem("user_bookings") || "[]",
       );
       const bookingIndex = allBookings.findIndex(
-        (booking: BookingDetails) => booking.id === bookingId,
+        (booking: BookingDetails) =>
+          booking.id === bookingId || (booking as any)._id === bookingId,
       );
 
       if (bookingIndex === -1) {
