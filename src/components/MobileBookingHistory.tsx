@@ -55,6 +55,8 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
   const [refreshing, setRefreshing] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [addingServicesBooking, setAddingServicesBooking] = useState(null);
+  const [showAddServicesModal, setShowAddServicesModal] = useState(false);
 
   const loadBookings = async () => {
     if (!currentUser?.id && !currentUser?._id && !currentUser?.phone) {
