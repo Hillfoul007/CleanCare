@@ -216,18 +216,22 @@ const ApiConnectionTest: React.FC = () => {
                 <Server className="h-4 w-4" />
                 View Backend
               </a>
-            </Button>
-          )}
-        </div>
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="text-xs"
+              >
+                <a
+                  href={`${import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}/health`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Test Health
+                </a>
+              </Button>
+            </div>
+          </div>
 
-        <div className="text-xs text-gray-500 space-y-1">
-          <p>🔧 Backend: https://auth-back-ula7.onrender.com</p>
-          <p>📊 Health: /health</p>
-          <p>🧪 API Test: /api/test</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-export default ApiConnectionTest;
+          <div className="bg-gray-50 p-3 rounded text-xs text-gray-600">
+            <p>🔧 Backend: {import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}</p>
