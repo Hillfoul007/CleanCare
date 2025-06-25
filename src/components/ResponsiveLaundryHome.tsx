@@ -857,12 +857,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
           onSuccess={handleAuthSuccess}
         />
 
-        {/* Booking History Modal */}
-        <EnhancedBookingHistoryModal
-          isOpen={showBookingHistory}
-          onClose={() => setShowBookingHistory(false)}
-          currentUser={currentUser}
-        />
+        {/* Removed local booking history modal - using main navigation */}
 
         {/* Debug Panel */}
         <DebugPanel
