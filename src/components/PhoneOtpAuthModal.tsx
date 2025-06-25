@@ -448,7 +448,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name">Name (Optional)</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
                   type="text"
