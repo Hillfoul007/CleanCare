@@ -24,7 +24,7 @@ export class Fast2SmsService {
       }
 
       // Call backend API instead of Fast2SMS directly to avoid CORS issues
-      const response = await fetch("/api/otp-auth/send-otp", {
+      const response = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,7 +62,7 @@ export class Fast2SmsService {
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
 
       // Call backend API for OTP verification
-      const response = await fetch("/api/otp-auth/verify-otp", {
+      const response = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -124,7 +124,7 @@ export class Fast2SmsService {
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
 
       // Call backend API for OTP verification with user name
-      const response = await fetch("/api/otp-auth/verify-otp", {
+      const response = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
