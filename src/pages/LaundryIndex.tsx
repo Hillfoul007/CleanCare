@@ -315,11 +315,14 @@ const LaundryIndex = () => {
   };
 
   const handleViewBookings = () => {
-    if (!isLoggedIn) {
+    console.log("handleViewBookings called:", { currentUser, isLoggedIn });
+    if (!currentUser) {
       // Show auth modal for bookings access
+      console.log("No currentUser, showing auth");
       setCurrentView("auth");
       return;
     }
+    console.log("Navigating to bookings view");
     setCurrentView("bookings");
   };
 
