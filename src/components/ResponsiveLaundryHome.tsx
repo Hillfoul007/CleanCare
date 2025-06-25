@@ -193,7 +193,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   };
 
   const handleLogout = () => {
-    fast2smsService.logout();
+    // DVHosting SMS service doesn't have logout method - user logout handled at app level
     if (onLogout) {
       onLogout();
     }
