@@ -425,7 +425,24 @@ export class BookingService {
         );
       }
     } catch (error) {
-      console.warn("⚠️ Backend sync failed:", error);
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          console.warn("⚠️ Backend sync timed out for booking:", booking.id);
+        } else if (error.message.includes("Failed to fetch")) {
+          console.warn(
+            "⚠️ Network error - backend sync failed for booking:",
+            booking.id,
+          );
+        } else {
+          console.warn(
+            "⚠️ Backend sync failed for booking:",
+            booking.id,
+            error.message,
+          );
+        }
+      } else {
+        console.warn("⚠️ Unknown error during backend sync:", error);
+      }
       // Could implement retry logic here if needed
     }
   }
