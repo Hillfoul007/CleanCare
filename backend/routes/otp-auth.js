@@ -185,20 +185,35 @@ const sendSMS = async (phone, otp) => {
       const responseText = await response.text();
       log(`SMS sent successfully via DVHosting: ${responseText}`);
 
-      // DVHosting typically returns simple text response
-      // Success responses usually contain "success" or similar text
-      if (
-        responseText.toLowerCase().includes("success") ||
-        responseText.toLowerCase().includes("sent")
-      ) {
-        return { success: true, message: "OTP sent successfully" };
-      } else {
-        log(`DVHosting API error: ${responseText}`);
-        return {
-          success: false,
-          error: responseText || "Failed to send SMS",
-        };
+      try {
+        // Try to parse as JSON first (DVHosting v4 returns JSON)
+        const result = JSON.parse(responseText);
+        if (result.return === true || result.success === true) {
+          return {
+            success: true,
+            message: "OTP sent successfully",
+            data: { request_id: result.request_id }
+          };
+        } else {
+          log(`DVHosting API error: ${JSON.stringify(result)}`);
+          return {
+            success: false,
+            error: result.message || "Failed to send SMS",
+          };
+        }
+      } catch (parseError) {
+        // Fallback to text parsing if not JSON
+        if (responseText.toLowerCase().includes('success') || responseText.toLowerCase().includes('sent')) {
+          return { success: true, message: "OTP sent successfully" };
+        } else {
+          log(`DVHosting API error: ${responseText}`);
+          return {
+            success: false,
+            error: responseText || "Failed to send SMS",
+          };
+        }
       }
+    }
     } else {
       const errorText = await response.text();
       log(`DVHosting HTTP error: ${response.status} - ${errorText}`);
