@@ -103,19 +103,26 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setIsLoading(true);
     setError("");
 
+    console.log("PhoneOtpAuthModal: Sending OTP to", formData.phone);
+
     try {
       const result = await fast2smsService.sendSmsOTP(
         formData.phone,
         formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
       );
 
+      console.log("PhoneOtpAuthModal: OTP send result", result);
+
       if (result.success) {
         setSuccess(result.message || "OTP sent to your phone!");
         setCurrentStep("otp");
+        console.log("PhoneOtpAuthModal: Switched to OTP step");
       } else {
         setError(result.error || "Failed to send OTP");
+        console.error("PhoneOtpAuthModal: OTP send failed", result.error);
       }
     } catch (error: any) {
+      console.error("PhoneOtpAuthModal: Exception during OTP send", error);
       setError(error.message || "Failed to send OTP");
     } finally {
       setIsLoading(false);
