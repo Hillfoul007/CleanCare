@@ -305,7 +305,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
           <Button
             onClick={refreshBookings}
             variant="ghost"
-            className="text-white hover:bg-white/10 p-2 sm:p-3 rounded-xl flex-shrink-0"
+            className="text-white hover:bg-white/20 p-2 sm:p-3 rounded-xl flex-shrink-0"
             disabled={refreshing}
           >
             <RefreshCw
@@ -316,7 +316,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       </div>
 
       {/* Bookings List */}
-      <div className="px-3 sm:px-4 py-4 space-y-3 sm:space-y-4 overflow-x-hidden">
+      <div className="px-3 sm:px-4 py-4 space-y-3 sm:space-y-4 overflow-x-hidden bg-white/10 backdrop-blur-sm rounded-t-3xl mt-2">
         {loading ? (
           <Card className="max-w-md mx-auto">
             <CardContent className="text-center py-8 sm:py-12">
