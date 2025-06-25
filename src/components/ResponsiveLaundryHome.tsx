@@ -56,7 +56,6 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showBookingHistory, setShowBookingHistory] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const dvhostingSmsService = DVHostingSmsService.getInstance();
   const [selectedCategory, setSelectedCategory] = useState("all");
