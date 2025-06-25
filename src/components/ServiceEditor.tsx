@@ -78,11 +78,11 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
 
   // Update parent when services change
   useEffect(() => {
-    const serviceStrings = services.map((service) =>
-      service.quantity > 1
-        ? `${service.name} (x${service.quantity})`
-        : service.name,
-    );
+    const serviceStrings = services.map((service) => ({
+      name: service.name,
+      quantity: service.quantity,
+      price: service.price,
+    }));
     onServicesChange(serviceStrings);
 
     const totalPrice = services.reduce(
