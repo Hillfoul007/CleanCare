@@ -386,14 +386,24 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           >
                             <div className="flex-1">
                               <p className="font-medium text-gray-900 text-sm">
-                                {service.name || service.service}
+                                {typeof service === "object"
+                                  ? service.name ||
+                                    service.service ||
+                                    "Unknown Service"
+                                  : service || "Unknown Service"}
                               </p>
                               <p className="text-xs text-gray-600">
-                                Qty: {service.quantity || 1}
+                                Qty:{" "}
+                                {typeof service === "object"
+                                  ? service.quantity || 1
+                                  : 1}
                               </p>
                             </div>
                             <p className="font-semibold text-blue-600">
-                              ₹{service.price || service.amount}
+                              ₹
+                              {typeof service === "object"
+                                ? service.price || service.amount || 0
+                                : 0}
                             </p>
                           </div>
                         ))}
