@@ -64,7 +64,15 @@ export class Fast2SmsService {
             phone: cleanPhone,
           }),
         },
-      );
+      ).catch((error) => {
+        // Handle fetch errors in hosted environments
+        console.log("Fast2SMS: Fetch error in hosted environment:", error);
+        if (isBuilderEnv) {
+          console.log("Fast2SMS: Using simulation mode for hosted environment");
+          return null; // Will trigger simulation mode below
+        }
+        throw error;
+      });
 
       if (response.ok) {
         const contentType = response.headers.get("content-type");
