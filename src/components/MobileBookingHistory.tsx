@@ -56,23 +56,29 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
   const loadBookings = async () => {
     if (!currentUser?.id && !currentUser?._id && !currentUser?.phone) {
+      console.log("No user ID found for loading bookings");
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
+      const bookingService = BookingService.getInstance();
       const userId = currentUser.id || currentUser._id || currentUser.phone;
-      const { data, error } =
-        await adaptiveBookingHelpers.getUserBookings(userId);
 
-      if (error) {
-        console.error("Error loading bookings:", error);
+      console.log("Loading bookings for user:", userId);
+      const response = await bookingService.getUserBookings(userId);
+
+      if (response.success && response.bookings) {
+        console.log("Bookings loaded successfully:", response.bookings.length);
+        setBookings(response.bookings);
       } else {
-        setBookings(data || []);
+        console.log("No bookings found or error:", response.error);
+        setBookings([]);
       }
     } catch (error) {
       console.error("Error loading bookings:", error);
+      setBookings([]);
     } finally {
       setLoading(false);
     }
