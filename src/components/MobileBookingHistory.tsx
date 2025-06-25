@@ -367,10 +367,10 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6">
                 {/* Date & Time */}
-                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
-                  <Calendar className="h-5 w-5 text-blue-600" />
+                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl border border-green-100">
+                  <Calendar className="h-5 w-5 text-green-600" />
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">
                       {new Date(booking.scheduled_date).toLocaleDateString(
@@ -383,15 +383,15 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                         },
                       )}
                     </p>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-green-600">
                       at {booking.scheduled_time}
                     </p>
                   </div>
                 </div>
 
                 {/* Address */}
-                <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                  <MapPin className="h-5 w-5 text-gray-600 mt-0.5" />
+                <div className="flex items-start gap-3 p-3 bg-green-50/50 rounded-xl border border-green-100/50">
+                  <MapPin className="h-5 w-5 text-green-600 mt-0.5" />
                   <div className="flex-1">
                     <p className="font-medium text-gray-900 mb-1">
                       Service Address
