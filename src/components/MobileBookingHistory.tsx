@@ -55,7 +55,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
 
   const loadBookings = async () => {
-    if (!currentUser?._id && !currentUser?.id) {
+    if (!currentUser?.id && !currentUser?._id && !currentUser?.phone) {
       setLoading(false);
       return;
     }
