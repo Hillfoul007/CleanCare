@@ -381,9 +381,15 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
               const sanitizeServices = (services: any) => {
                 if (!Array.isArray(services)) return [];
-                return services.map((service) => {
-                  if (typeof service === "string")
-                    return { name: service, quantity: 1, price: 0 };
+                return services.map((service, index) => {
+                  if (typeof service === "string") {
+                    return {
+                      name: service,
+                      quantity: 1,
+                      price: 0,
+                      id: `service_${index}`,
+                    };
+                  }
                   if (typeof service === "object" && service) {
                     return {
                       name: sanitizeValue(
@@ -400,9 +406,15 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           : typeof service.amount === "number"
                             ? service.amount
                             : 0,
+                      id: service.id || `service_${index}`,
                     };
                   }
-                  return { name: "Unknown Service", quantity: 1, price: 0 };
+                  return {
+                    name: String(service) || "Unknown Service",
+                    quantity: 1,
+                    price: 0,
+                    id: `service_${index}`,
+                  };
                 });
               };
 
