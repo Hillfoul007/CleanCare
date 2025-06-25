@@ -3,11 +3,12 @@
 
 export class ExotelMissedCallService {
   private static instance: ExotelMissedCallService;
-  private apiBaseUrl = "http://localhost:3001/api";
-  private exotelApiKey = "167d729f5b001e209d3d3a72f05a70e495d57a098ea95be3";
-  private exotelToken = "2687edec8c421775bbc3986e35bace9f2482a6cec3103bd9";
-  private exotelNumber = "095-138-86363";
-  private exotelPin = "9717-6191-83";
+  private apiBaseUrl =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
+  private exotelApiKey = import.meta.env.VITE_EXOTEL_API_KEY || "";
+  private exotelToken = import.meta.env.VITE_EXOTEL_TOKEN || "";
+  private exotelNumber = import.meta.env.VITE_EXOTEL_NUMBER || "";
+  private exotelPin = import.meta.env.VITE_EXOTEL_PIN || "";
 
   public static getInstance(): ExotelMissedCallService {
     if (!ExotelMissedCallService.instance) {
