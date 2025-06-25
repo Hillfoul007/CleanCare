@@ -28,6 +28,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
   onClose,
   booking,
   onSave,
+  mode = "edit",
 }) => {
   const [formData, setFormData] = useState({
     scheduled_date: booking?.scheduled_date
