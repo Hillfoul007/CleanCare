@@ -770,7 +770,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           </>
                         )}
 
-                        {booking.status === "completed" && (
+                        {safeBooking.status === "completed" && (
                           <Button
                             variant="outline"
                             className="col-span-2 rounded-xl border-2 border-amber-200 hover:bg-amber-50 text-amber-600 font-medium py-3"
@@ -792,7 +792,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                               // Store current booking ID for adding services
                               localStorage.setItem(
                                 "add_services_to_booking",
-                                booking.id || booking._id,
+                                safeBooking.id || safeBooking._id,
                               );
                               onBack();
                             } else {
@@ -800,7 +800,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                               window.location.href = "/";
                             }
                           }}
-                          aria-label={`Add more services to booking ${booking.service || "Home Service"}`}
+                          aria-label={`Add more services to booking ${safeBooking.service || "Home Service"}`}
                         >
                           <Plus className="mr-2 h-4 w-4" />
                           Add More Services
