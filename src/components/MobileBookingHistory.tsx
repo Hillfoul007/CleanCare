@@ -403,19 +403,19 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                 </div>
 
                 {/* Price */}
-                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
+                <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
                   <DollarSign className="h-5 w-5 text-green-600" />
                   <div className="flex-1">
                     <p className="font-medium text-gray-900">Total Amount</p>
                     <p className="text-2xl font-bold text-green-600">
-                      ${booking.final_amount || booking.total_price}
+                      ₹{booking.final_amount || booking.total_price}
                     </p>
                   </div>
                 </div>
 
                 {/* Additional Details */}
                 {booking.additional_details && (
-                  <div className="p-3 bg-yellow-50 rounded-xl">
+                  <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
                     <p className="font-medium text-gray-900 mb-1">
                       Additional Notes
                     </p>
