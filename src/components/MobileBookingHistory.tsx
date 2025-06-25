@@ -137,24 +137,12 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
   const cancelBooking = async (bookingId: string) => {
     try {
       console.log("🔄 Attempting to cancel booking:", bookingId);
+      console.log(
+        "📋 Current bookings:",
+        bookings.map((b) => ({ id: b.id || b._id, status: b.status })),
+      );
 
-      // Use BookingService for cancellation
-      const bookingService = BookingService.getInstance();
-      const result = await bookingService.cancelBooking(bookingId);
-
-      console.log("📋 Cancellation result:", result);
-
-      if (!result.success) {
-        addNotification(
-          createErrorNotification(
-            "Cancellation Failed",
-            result.error || "Failed to cancel booking",
-          ),
-        );
-        return;
-      }
-
-      // Update local state immediately
+      // Update local state immediately for better UX
       const updatedBookings = bookings.map((booking: any) => {
         const matches = booking.id === bookingId || booking._id === bookingId;
         console.log(
@@ -174,17 +162,36 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       );
       setBookings(updatedBookings);
 
-      addNotification(
-        createSuccessNotification(
-          "Booking Cancelled",
-          "Your booking has been cancelled successfully!",
-        ),
-      );
+      // Use BookingService for cancellation
+      const bookingService = BookingService.getInstance();
+      const result = await bookingService.cancelBooking(bookingId);
 
-      // Refresh bookings to get updated data from backend
-      setTimeout(() => refreshBookings(), 1000);
+      console.log("📋 Cancellation result:", result);
+
+      if (result.success) {
+        addNotification(
+          createSuccessNotification(
+            "Booking Cancelled",
+            "Your booking has been cancelled successfully!",
+          ),
+        );
+
+        // Refresh to get latest data
+        await refreshBookings();
+      } else {
+        // Revert local state if backend failed
+        setBookings(bookings);
+        addNotification(
+          createErrorNotification(
+            "Cancellation Failed",
+            result.error || "Failed to cancel booking",
+          ),
+        );
+      }
     } catch (error) {
       console.error("Error cancelling booking:", error);
+      // Revert local state on error
+      setBookings(bookings);
       addNotification(
         createErrorNotification(
           "Cancellation Failed",
