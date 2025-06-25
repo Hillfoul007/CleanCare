@@ -62,7 +62,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
     try {
       setLoading(true);
-      const userId = currentUser._id || currentUser.id;
+      const userId = currentUser.id || currentUser._id || currentUser.phone;
       const { data, error } =
         await adaptiveBookingHelpers.getUserBookings(userId);
 
