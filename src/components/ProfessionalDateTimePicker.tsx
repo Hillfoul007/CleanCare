@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CalendarIcon, Clock } from "lucide-react";
 import { format, addDays, isSameDay, isToday, isTomorrow } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -41,97 +48,39 @@ const ProfessionalDateTimePicker: React.FC<ProfessionalDateTimePickerProps> = ({
     return dates;
   };
 
-  // Generate time slots
+  // Generate time slots with 1-hour intervals
   const generateTimeSlots = () => {
     const slots = [];
     const now = new Date();
     const currentHour = now.getHours();
-    const currentMinutes = now.getMinutes();
 
-    // Morning slots (8 AM - 12 PM)
-    const morningSlots = [];
-    for (let hour = 8; hour < 12; hour++) {
-      for (let minutes = 0; minutes < 60; minutes += 30) {
-        const timeString = `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
-        const displayTime = format(
-          new Date(`2000-01-01T${timeString}`),
-          "h:mm a",
-        );
+    // Generate slots from 8 AM to 9 PM (1-hour intervals)
+    for (let hour = 8; hour <= 21; hour++) {
+      const timeString = `${hour.toString().padStart(2, "0")}:00`;
+      const displayTime = format(
+        new Date(`2000-01-01T${timeString}`),
+        "h:mm a",
+      );
 
-        // Skip past times for today
-        const isDisabled =
-          selectedDate &&
-          isToday(selectedDate) &&
-          (hour < currentHour ||
-            (hour === currentHour && minutes <= currentMinutes));
+      // Skip past times for today
+      const isDisabled =
+        selectedDate && isToday(selectedDate) && hour <= currentHour;
 
-        if (!isDisabled) {
-          morningSlots.push({
-            value: displayTime,
-            label: displayTime,
-            period: "morning",
-          });
-        }
+      if (!isDisabled) {
+        let period = "Morning";
+        if (hour >= 12 && hour < 17) period = "Afternoon";
+        if (hour >= 17) period = "Evening";
+
+        slots.push({
+          value: displayTime,
+          label: displayTime,
+          period,
+          groupLabel: `${displayTime} (${period})`,
+        });
       }
     }
 
-    // Afternoon slots (12 PM - 5 PM)
-    const afternoonSlots = [];
-    for (let hour = 12; hour < 17; hour++) {
-      for (let minutes = 0; minutes < 60; minutes += 30) {
-        const timeString = `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
-        const displayTime = format(
-          new Date(`2000-01-01T${timeString}`),
-          "h:mm a",
-        );
-
-        const isDisabled =
-          selectedDate &&
-          isToday(selectedDate) &&
-          (hour < currentHour ||
-            (hour === currentHour && minutes <= currentMinutes));
-
-        if (!isDisabled) {
-          afternoonSlots.push({
-            value: displayTime,
-            label: displayTime,
-            period: "afternoon",
-          });
-        }
-      }
-    }
-
-    // Evening slots (5 PM - 9 PM)
-    const eveningSlots = [];
-    for (let hour = 17; hour < 21; hour++) {
-      for (let minutes = 0; minutes < 60; minutes += 30) {
-        const timeString = `${hour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
-        const displayTime = format(
-          new Date(`2000-01-01T${timeString}`),
-          "h:mm a",
-        );
-
-        const isDisabled =
-          selectedDate &&
-          isToday(selectedDate) &&
-          (hour < currentHour ||
-            (hour === currentHour && minutes <= currentMinutes));
-
-        if (!isDisabled) {
-          eveningSlots.push({
-            value: displayTime,
-            label: displayTime,
-            period: "evening",
-          });
-        }
-      }
-    }
-
-    return {
-      morning: morningSlots,
-      afternoon: afternoonSlots,
-      evening: eveningSlots,
-    };
+    return slots;
   };
 
   const dates = generateDates();
@@ -170,91 +119,25 @@ const ProfessionalDateTimePicker: React.FC<ProfessionalDateTimePickerProps> = ({
         </div>
       </div>
 
-      {/* Time Selection */}
+      {/* Time Selection Dropdown */}
       {selectedDate && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Label className="text-sm font-medium flex items-center gap-2">
             <Clock className="h-4 w-4" />
             Select Time
           </Label>
-
-          {/* Morning Slots */}
-          {timeSlots.morning.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-600">Morning</h4>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                {timeSlots.morning.map((slot) => (
-                  <Button
-                    key={slot.value}
-                    variant={
-                      selectedTime === slot.value ? "default" : "outline"
-                    }
-                    onClick={() => onTimeChange(slot.value)}
-                    className={cn(
-                      "h-10 text-sm hover:scale-105 transition-transform",
-                      selectedTime === slot.value
-                        ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
-                        : "hover:border-green-300 hover:bg-green-50",
-                    )}
-                  >
-                    {slot.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Afternoon Slots */}
-          {timeSlots.afternoon.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-600">Afternoon</h4>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                {timeSlots.afternoon.map((slot) => (
-                  <Button
-                    key={slot.value}
-                    variant={
-                      selectedTime === slot.value ? "default" : "outline"
-                    }
-                    onClick={() => onTimeChange(slot.value)}
-                    className={cn(
-                      "h-10 text-sm hover:scale-105 transition-transform",
-                      selectedTime === slot.value
-                        ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
-                        : "hover:border-green-300 hover:bg-green-50",
-                    )}
-                  >
-                    {slot.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Evening Slots */}
-          {timeSlots.evening.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-600">Evening</h4>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
-                {timeSlots.evening.map((slot) => (
-                  <Button
-                    key={slot.value}
-                    variant={
-                      selectedTime === slot.value ? "default" : "outline"
-                    }
-                    onClick={() => onTimeChange(slot.value)}
-                    className={cn(
-                      "h-10 text-sm hover:scale-105 transition-transform",
-                      selectedTime === slot.value
-                        ? "bg-green-600 hover:bg-green-700 text-white border-green-600"
-                        : "hover:border-green-300 hover:bg-green-50",
-                    )}
-                  >
-                    {slot.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
+          <Select value={selectedTime} onValueChange={onTimeChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Choose pickup time" />
+            </SelectTrigger>
+            <SelectContent>
+              {timeSlots.map((slot) => (
+                <SelectItem key={slot.value} value={slot.value}>
+                  {slot.groupLabel}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
     </div>
