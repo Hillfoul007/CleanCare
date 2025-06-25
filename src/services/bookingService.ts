@@ -277,25 +277,8 @@ export class BookingService {
       id: backendBooking._id || backendBooking.id,
       userId: backendBooking.customer_id,
       services: backendBooking.services?.map(
-        (serviceName: string, index: number) => ({
-          id: `service_${index}`,
-          name: serviceName,
-          category: backendBooking.service_type || "home-service",
-          price: Math.round(
-            (backendBooking.total_price || 0) /
-              (backendBooking.services?.length || 1),
-          ),
-          quantity: 1,
-        }),
-      ) || [
-        {
-          id: "service_0",
-          name: backendBooking.service || "Home Service",
-          category: backendBooking.service_type || "home-service",
-          price: backendBooking.total_price || 0,
-          quantity: 1,
-        },
-      ],
+        (serviceName: string) => serviceName,
+      ) || [backendBooking.service || "Home Service"],
       totalAmount:
         backendBooking.total_price || backendBooking.final_amount || 0,
       status: backendBooking.status || "pending",
