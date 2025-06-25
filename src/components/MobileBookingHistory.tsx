@@ -318,16 +318,16 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
       {/* Bookings List */}
       <div className="px-3 sm:px-4 py-4 space-y-3 sm:space-y-4 overflow-x-hidden bg-white/10 backdrop-blur-sm rounded-t-3xl mt-2">
         {loading ? (
-          <Card className="max-w-md mx-auto">
+          <Card className="max-w-md mx-auto bg-white/90 backdrop-blur-sm border-0 shadow-lg">
             <CardContent className="text-center py-8 sm:py-12">
-              <RefreshCw className="h-8 w-8 text-blue-500 mx-auto mb-4 animate-spin" />
-              <p className="text-gray-600">Loading your bookings...</p>
+              <RefreshCw className="h-8 w-8 text-green-500 mx-auto mb-4 animate-spin" />
+              <p className="text-gray-700">Loading your bookings...</p>
             </CardContent>
           </Card>
         ) : bookings.length === 0 ? (
-          <Card className="max-w-md mx-auto">
+          <Card className="max-w-md mx-auto bg-white/90 backdrop-blur-sm border-0 shadow-lg">
             <CardContent className="text-center py-8 sm:py-12 px-4">
-              <Calendar className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
+              <Calendar className="h-12 w-12 sm:h-16 sm:w-16 text-green-500 mx-auto mb-4" />
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                 No Bookings Yet
               </h3>
@@ -336,7 +336,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
               </p>
               <Button
                 onClick={onBack}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 w-full py-3 rounded-xl text-sm sm:text-base"
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 w-full py-3 rounded-xl text-sm sm:text-base shadow-lg"
               >
                 Book a Service
               </Button>
