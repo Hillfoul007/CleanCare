@@ -132,7 +132,7 @@ export class DVHostingSmsService {
           }
         } catch (parseError) {
           // In hosted environments, call DVHosting API directly
-          if (isBuilderEnv) {
+          if (isHostedEnv) {
             console.log(
               "DVHosting SMS: JSON parse failed, calling DVHosting API directly",
             );
