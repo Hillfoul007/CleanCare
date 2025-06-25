@@ -25,7 +25,7 @@ import {
 import { laundryServices, LaundryService } from "@/data/laundryServices";
 import { OTPAuthService } from "@/services/otpAuthService";
 import EnhancedAddressForm from "./EnhancedAddressForm";
-import DateTimePicker from "./DateTimePicker";
+import ProfessionalDateTimePicker from "./ProfessionalDateTimePicker";
 
 interface LaundryCartProps {
   onBack: () => void;
@@ -479,7 +479,7 @@ Confirm this booking?`;
 
             <div className="space-y-2">
               <Label>Pickup Schedule *</Label>
-              <DateTimePicker
+              <ProfessionalDateTimePicker
                 selectedDate={selectedDate}
                 selectedTime={selectedTime}
                 onDateChange={setSelectedDate}
