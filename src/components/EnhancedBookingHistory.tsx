@@ -36,7 +36,7 @@ import {
   User,
 } from "lucide-react";
 import { bookingHelpers } from "@/integrations/mongodb/client";
-import DateTimePicker from "./DateTimePicker";
+import ProfessionalDateTimePicker from "./ProfessionalDateTimePicker";
 
 interface BookingHistoryProps {
   currentUser?: any;
@@ -360,7 +360,7 @@ const EnhancedBookingHistory: React.FC<BookingHistoryProps> = ({
                             <Input value={booking.service} disabled />
                           </div>
 
-                          <DateTimePicker
+                          <ProfessionalDateTimePicker
                             selectedDate={editForm.scheduled_date}
                             selectedTime={editForm.scheduled_time}
                             onDateChange={(date) =>
