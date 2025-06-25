@@ -209,7 +209,7 @@ const ApiConnectionTest: React.FC = () => {
           {allConnected && (
             <Button className="flex items-center gap-2" asChild>
               <a
-                href="https://auth-back-ula7.onrender.com/health"
+                href={`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || "http://localhost:3001"}/health`}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -218,16 +218,9 @@ const ApiConnectionTest: React.FC = () => {
               </a>
             </Button>
           )}
-        </div>
 
-        <div className="text-xs text-gray-500 space-y-1">
-          <p>🔧 Backend: https://auth-back-ula7.onrender.com</p>
-          <p>📊 Health: /health</p>
-          <p>🧪 API Test: /api/test</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-export default ApiConnectionTest;
+          <div className="bg-gray-50 p-3 rounded text-xs text-gray-600">
+            <p>🔧 Backend: {import.meta.env.VITE_API_BASE_URL || "http://localhost:3001"}</p>
+            <p>📊 Health: /health</p>
+            <p>🧪 API Test: /api/test</p>
+          </div>

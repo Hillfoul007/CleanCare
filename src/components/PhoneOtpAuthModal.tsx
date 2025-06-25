@@ -17,7 +17,7 @@ import {
   MessageSquare,
   X,
 } from "lucide-react";
-import { TwilioSmsService } from "@/services/twilioSmsService";
+import { Fast2SmsService } from "@/services/fast2smsService";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PhoneOtpAuthModalProps {
@@ -31,11 +31,70 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const [hasError, setHasError] = React.useState(false);
+
+  // Error boundary effect
+  React.useEffect(() => {
+    const handleError = (error: ErrorEvent) => {
+      console.error("PhoneOtpAuthModal: Global error caught", error);
+      setHasError(true);
+    };
+
+    window.addEventListener("error", handleError);
+    return () => window.removeEventListener("error", handleError);
+  }, []);
+
+  if (hasError) {
+    return (
+      <div className="fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full">
+          <h3 className="text-lg font-medium text-red-600 mb-2">
+            Something went wrong
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Please close this dialog and try again.
+          </p>
+          <Button
+            onClick={() => {
+              setHasError(false);
+              onClose();
+            }}
+            className="w-full"
+          >
+            Close
+          </Button>
+        </div>
+      </div>
+    );
+  }
   const [currentStep, setCurrentStep] = useState<"phone" | "otp">("phone");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const isMobile = useIsMobile();
+  const [isMobile, setIsMobile] = React.useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
+  // Simple and reliable mobile detection
+  React.useEffect(() => {
+    const checkMobile = () => {
+      const width = window.innerWidth;
+      const mobile = width < 768;
+      setIsMobile(mobile);
+      console.log("PhoneOtpAuthModal mobile detection:", {
+        width,
+        mobile,
+        userAgent: navigator.userAgent.includes("Mobile"),
+      });
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -43,7 +102,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     name: "",
   });
 
-  const twilioService = TwilioSmsService.getInstance();
+  const fast2smsService = Fast2SmsService.getInstance();
 
   const resetForm = () => {
     setFormData({
@@ -61,7 +120,15 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     return phoneRegex.test(phone);
   };
 
-  const handleSendOTP = async () => {
+  const handleSendOTP = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    if (!formData.name || formData.name.trim().length === 0) {
+      setError("Please enter your full name");
+      return;
+    }
+
     if (!formData.phone) {
       setError("Please enter your phone number");
       return;
@@ -77,26 +144,41 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setIsLoading(true);
     setError("");
 
+    console.log("PhoneOtpAuthModal: Sending OTP to", formData.phone);
+
     try {
-      const result = await twilioService.sendSmsOTP(
+      const result = await fast2smsService.sendSmsOTP(
         formData.phone,
         formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
       );
 
+      console.log("PhoneOtpAuthModal: OTP send result", result);
+
       if (result.success) {
         setSuccess(result.message || "OTP sent to your phone!");
         setCurrentStep("otp");
+        console.log("PhoneOtpAuthModal: Switched to OTP step");
       } else {
         setError(result.error || "Failed to send OTP");
+        console.error("PhoneOtpAuthModal: OTP send failed", result.error);
       }
     } catch (error: any) {
-      setError(error.message || "Failed to send OTP");
+      console.error("PhoneOtpAuthModal: Exception during OTP send", error);
+      console.error("PhoneOtpAuthModal: Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+      });
+      setError(error.message || "Failed to send OTP. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleVerifyOTP = async () => {
+  const handleVerifyOTP = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     if (!formData.otp) {
       setError("Please enter the OTP");
       return;
@@ -111,7 +193,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setError("");
 
     try {
-      const result = await twilioService.verifySmsOTP(
+      const result = await fast2smsService.verifySmsOTP(
         formData.phone,
         formData.otp,
         formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
@@ -144,13 +226,9 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     onClose();
   };
 
-  console.log("PhoneOtpAuthModal render:", { isOpen, currentStep });
+  console.log("PhoneOtpAuthModal render:", { isOpen, currentStep, isMobile });
 
   if (!isOpen) return null;
-
-  console.log("PhoneOtpAuthModal: isOpen=", isOpen, "isMobile=", isMobile);
-
-  // Use the mobile state that's already being managed
 
   if (isMobile) {
     // Mobile-specific modal implementation
@@ -184,7 +262,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
                 <form onSubmit={handleSendOTP} className="space-y-4">
                   <div>
                     <Label htmlFor="name" className="text-sm font-medium">
-                      Full Name
+                      Full Name *
                     </Label>
                     <Input
                       id="name"

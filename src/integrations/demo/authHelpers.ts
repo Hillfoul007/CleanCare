@@ -34,7 +34,7 @@ export const demoAuthHelpers = {
       {
         id: "demo-user-1",
         email: "demo@user.com",
-        password: "demo123",
+        password: process.env.DEMO_PASSWORD || "demouser",
         name: "Demo User",
         full_name: "Demo User",
         phone: "+1234567890",
@@ -43,7 +43,7 @@ export const demoAuthHelpers = {
       {
         id: "demo-user-2",
         email: "test@test.com",
-        password: "test123",
+        password: process.env.DEMO_PASSWORD || "testuser",
         name: "Test User",
         full_name: "Test User",
         phone: "+1987654321",
@@ -52,7 +52,7 @@ export const demoAuthHelpers = {
       {
         id: "demo-pro-1",
         email: "pro@demo.com",
-        password: "pro123",
+        password: process.env.DEMO_PASSWORD || "demopro",
         name: "Demo Pro",
         full_name: "Demo Pro",
         phone: "+1555666777",

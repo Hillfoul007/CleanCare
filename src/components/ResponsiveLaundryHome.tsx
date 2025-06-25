@@ -24,6 +24,7 @@ import {
 import {
   laundryServices,
   getPopularServices,
+  getSortedServices,
   searchServices,
   LaundryService,
 } from "@/data/laundryServices";
@@ -33,7 +34,8 @@ import UserMenuDropdown from "./UserMenuDropdown";
 import DebugPanel from "./DebugPanel";
 import ConnectionStatus from "./ConnectionStatus";
 import NotificationPanel from "./NotificationPanel";
-import { TwilioSmsService } from "@/services/twilioSmsService";
+import { Fast2SmsService } from "@/services/fast2smsService";
+import { saveCartData, getCartData } from "@/utils/formPersistence";
 
 interface ResponsiveLaundryHomeProps {
   currentUser?: any;
@@ -56,12 +58,22 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showBookingHistory, setShowBookingHistory] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
-  const twilioService = TwilioSmsService.getInstance();
+  const fast2smsService = Fast2SmsService.getInstance();
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [cart, setCart] = useState<{ [key: string]: number }>({});
+  const [cart, setCart] = useState<{ [key: string]: number }>(() => {
+    // Load cart from localStorage on initialization
+    return getCartData();
+  });
   const [deliveryTime, setDeliveryTime] = useState("2-3 hours");
   const [isMobile, setIsMobile] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (Object.keys(cart).length > 0) {
+      saveCartData(cart);
+    }
+  }, [cart]);
 
   // Simplified mobile detection
   useEffect(() => {
@@ -154,10 +166,17 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
     if (searchQuery) {
       services = searchServices(searchQuery);
     } else if (selectedCategory === "all") {
-      services = getPopularServices();
+      services = getSortedServices();
     } else {
       const category = laundryServices.find((c) => c.id === selectedCategory);
-      services = category ? category.services : [];
+      services = category
+        ? category.services.sort((a, b) => {
+            // Sort by popular first, then alphabetically
+            if (a.popular && !b.popular) return -1;
+            if (!a.popular && b.popular) return 1;
+            return a.name.localeCompare(b.name);
+          })
+        : [];
     }
 
     return services;
@@ -174,7 +193,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   };
 
   const handleLogout = () => {
-    twilioService.logout();
+    fast2smsService.logout();
     if (onLogout) {
       onLogout();
     }
@@ -395,7 +414,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
           {getFilteredServices().length === 0 ? (
             <EmptyStateCard />
           ) : (
-            <div className="grid grid-cols-2 gap-3 pb-20">
+            <div className="grid grid-cols-1 gap-4 pb-20">
               {getFilteredServices().map((service) => {
                 const quantity = cart[service.id] || 0;
 

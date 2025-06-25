@@ -36,7 +36,7 @@ import {
   User,
 } from "lucide-react";
 import { bookingHelpers } from "@/integrations/mongodb/client";
-import DateTimePicker from "./DateTimePicker";
+import ProfessionalDateTimePicker from "./ProfessionalDateTimePicker";
 
 interface BookingHistoryProps {
   currentUser?: any;
@@ -145,8 +145,7 @@ const EnhancedBookingHistory: React.FC<BookingHistoryProps> = ({
 
     try {
       const API_BASE_URL =
-        import.meta.env.VITE_API_BASE_URL ||
-        "https://auth-back-ula7.onrender.com/api";
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api";
 
       // Call backend API to update booking
       const response = await fetch(
@@ -360,7 +359,7 @@ const EnhancedBookingHistory: React.FC<BookingHistoryProps> = ({
                             <Input value={booking.service} disabled />
                           </div>
 
-                          <DateTimePicker
+                          <ProfessionalDateTimePicker
                             selectedDate={editForm.scheduled_date}
                             selectedTime={editForm.scheduled_time}
                             onDateChange={(date) =>

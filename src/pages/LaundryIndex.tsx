@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ResponsiveLaundryHome from "../components/ResponsiveLaundryHome";
 import LaundryCart from "../components/LaundryCart";
 import MobileBookingHistory from "../components/MobileBookingHistory";
-import { TwilioSmsService } from "../services/twilioSmsService";
+import { Fast2SmsService } from "../services/fast2smsService";
 import PushNotificationService from "../services/pushNotificationService";
 import { useNotifications } from "@/contexts/NotificationContext";
 import {
@@ -17,7 +17,7 @@ const LaundryIndex = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentLocation, setCurrentLocation] = useState("");
 
-  const authService = TwilioSmsService.getInstance();
+  const authService = Fast2SmsService.getInstance();
   const pushService = PushNotificationService.getInstance();
 
   // Initialize PWA and check auth state
@@ -50,7 +50,7 @@ const LaundryIndex = () => {
 
   const checkAuthState = async () => {
     try {
-      // Check if user is logged in via Twilio SMS
+      // Check if user is logged in via Fast2SMS
       if (authService.isAuthenticated()) {
         const user = authService.getCurrentUser();
         if (user) {
@@ -101,8 +101,30 @@ const LaundryIndex = () => {
         }
       },
       (error) => {
-        console.error("Geolocation error:", error);
-        setCurrentLocation("Enable location access");
+        console.error("Geolocation error:", {
+          code: error.code,
+          message: error.message,
+          PERMISSION_DENIED: error.PERMISSION_DENIED,
+          POSITION_UNAVAILABLE: error.POSITION_UNAVAILABLE,
+          TIMEOUT: error.TIMEOUT,
+        });
+
+        let locationMessage = "Enable location access";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            locationMessage = "Location access denied";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            locationMessage = "Location unavailable";
+            break;
+          case error.TIMEOUT:
+            locationMessage = "Location request timeout";
+            break;
+          default:
+            locationMessage = "Enable location access";
+        }
+
+        setCurrentLocation(locationMessage);
       },
       {
         enableHighAccuracy: false, // Less accurate but faster

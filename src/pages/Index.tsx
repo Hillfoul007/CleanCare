@@ -217,8 +217,27 @@ const Index = () => {
         }
       },
       (err) => {
-        console.log("Geolocation permission denied or failed:", err);
-        setCurrentLocation("Location access denied");
+        console.log("Geolocation error:", {
+          code: err.code,
+          message: err.message,
+        });
+
+        let locationMessage = "Location access denied";
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            locationMessage = "Location access denied";
+            break;
+          case err.POSITION_UNAVAILABLE:
+            locationMessage = "Location unavailable";
+            break;
+          case err.TIMEOUT:
+            locationMessage = "Location request timeout";
+            break;
+          default:
+            locationMessage = "Location detection failed";
+        }
+
+        setCurrentLocation(locationMessage);
       },
       {
         enableHighAccuracy: true,

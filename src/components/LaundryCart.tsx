@@ -24,8 +24,14 @@ import {
 } from "lucide-react";
 import { laundryServices, LaundryService } from "@/data/laundryServices";
 import { OTPAuthService } from "@/services/otpAuthService";
+import {
+  saveBookingFormData,
+  getBookingFormData,
+  saveCartData,
+  getCartData,
+} from "@/utils/formPersistence";
 import EnhancedAddressForm from "./EnhancedAddressForm";
-import DateTimePicker from "./DateTimePicker";
+import ProfessionalDateTimePicker from "./ProfessionalDateTimePicker";
 
 interface LaundryCartProps {
   onBack: () => void;
@@ -54,6 +60,36 @@ const LaundryCart: React.FC<LaundryCartProps> = ({
   } | null>(null);
 
   const authService = OTPAuthService.getInstance();
+
+  // Load saved form data on component mount
+  useEffect(() => {
+    const savedFormData = getBookingFormData();
+
+    if (savedFormData.selectedDate) setSelectedDate(savedFormData.selectedDate);
+    if (savedFormData.selectedTime) setSelectedTime(savedFormData.selectedTime);
+    if (savedFormData.additionalDetails)
+      setSpecialInstructions(savedFormData.additionalDetails);
+    if (savedFormData.couponCode) setCouponCode(savedFormData.couponCode);
+    if (savedFormData.appliedCoupon)
+      setAppliedCoupon(savedFormData.appliedCoupon);
+  }, []);
+
+  // Auto-save form data when it changes
+  useEffect(() => {
+    saveBookingFormData({
+      selectedDate,
+      selectedTime,
+      additionalDetails: specialInstructions,
+      couponCode,
+      appliedCoupon,
+    });
+  }, [
+    selectedDate,
+    selectedTime,
+    specialInstructions,
+    couponCode,
+    appliedCoupon,
+  ]);
 
   // Load cart from localStorage
   useEffect(() => {
@@ -479,7 +515,7 @@ Confirm this booking?`;
 
             <div className="space-y-2">
               <Label>Pickup Schedule *</Label>
-              <DateTimePicker
+              <ProfessionalDateTimePicker
                 selectedDate={selectedDate}
                 selectedTime={selectedTime}
                 onDateChange={setSelectedDate}
@@ -503,59 +539,7 @@ Confirm this booking?`;
           </CardContent>
         </Card>
 
-        {/* Coupon Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              🎟️ Apply Coupon
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {!appliedCoupon ? (
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input
-                  placeholder="Enter coupon code (e.g., FIRST10)"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  className="flex-1"
-                />
-                <Button
-                  onClick={applyCoupon}
-                  variant="outline"
-                  disabled={!couponCode.trim()}
-                  className="px-6 sm:w-auto w-full"
-                >
-                  Apply
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex items-center gap-2">
-                  <span className="text-green-700 font-medium">
-                    ✓ {appliedCoupon.code}
-                  </span>
-                  <span className="text-sm text-green-600">
-                    ({appliedCoupon.discount}% off)
-                  </span>
-                </div>
-                <Button
-                  onClick={removeCoupon}
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-600 hover:text-red-700"
-                >
-                  Remove
-                </Button>
-              </div>
-            )}
-
-            <div className="text-xs text-gray-600">
-              Try: FIRST10 (10% off), SAVE20 (20% off), WELCOME5 (5% off)
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Bill Summary */}
+        {/* Bill Summary with Coupon */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Bill Summary</CardTitle>
@@ -571,9 +555,52 @@ Confirm this booking?`;
               <span>₹{getDeliveryCharge()}</span>
             </div>
 
+            {/* Compact Coupon Section */}
+            <div className="py-2 border-t border-gray-100">
+              {!appliedCoupon ? (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Coupon code"
+                    value={couponCode}
+                    onChange={(e) =>
+                      setCouponCode(e.target.value.toUpperCase())
+                    }
+                    className="flex-1 h-8 text-sm"
+                  />
+                  <Button
+                    onClick={applyCoupon}
+                    variant="outline"
+                    disabled={!couponCode.trim()}
+                    className="h-8 px-3 text-sm"
+                  >
+                    Apply
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="text-green-700 font-medium text-sm">
+                      ✓ {appliedCoupon.code}
+                    </span>
+                    <span className="text-xs text-green-600">
+                      ({appliedCoupon.discount}% off)
+                    </span>
+                  </div>
+                  <Button
+                    onClick={removeCoupon}
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-green-600 hover:bg-green-100"
+                  >
+                    ✕
+                  </Button>
+                </div>
+              )}
+            </div>
+
             {appliedCoupon && (
               <div className="flex justify-between text-green-600">
-                <span>Coupon Discount ({appliedCoupon.discount}%)</span>
+                <span>Coupon Discount</span>
                 <span>-₹{getCouponDiscount()}</span>
               </div>
             )}

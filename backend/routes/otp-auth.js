@@ -155,33 +155,78 @@ const isValidIndianPhone = (phone) => {
   return isValid;
 };
 
-// Enhanced SMS sending with better simulation
+// Enhanced SMS sending using Fast2SMS API
 const sendSMS = async (phone, otp) => {
   try {
     log(
       `📱 SMS to ${phone}: Your CleanCare Pro OTP is ${otp}. Valid for 5 minutes.`,
     );
 
-    // Simulate SMS delay
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    // Check if API key is configured
+    const apiKey = process.env.FAST2SMS_API_KEY;
+    if (!apiKey) {
+      log("Fast2SMS API key not configured, using simulation mode");
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return { success: true, message: "OTP sent (simulation mode)" };
+    }
 
-    // In production, integrate with SMS service:
-    /*
-    const twilio = require('twilio');
-    const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_TOKEN);
+    // Prepare message
+    const message = `Your CleanCare Pro OTP is ${otp}. Valid for 5 minutes. Do not share this code.`;
+    const encodedMessage = encodeURIComponent(message);
 
-    const message = await client.messages.create({
-      body: `Your CleanCare Pro OTP is ${otp}. Valid for 5 minutes. Do not share this code.`,
-      from: process.env.TWILIO_PHONE,
-      to: `+91${phone}`
+    // Fast2SMS API endpoint for OTP
+    const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${otp}&flash=0&numbers=${phone}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "cache-control": "no-cache",
+      },
     });
 
-    log(`SMS sent successfully via Twilio: ${message.sid}`);
-    */
+    if (response.ok) {
+      const result = await response.json();
+      log(`SMS sent successfully via Fast2SMS: ${JSON.stringify(result)}`);
 
-    return { success: true };
+      // Check if the API response indicates success
+      if (result.return === true || result.request_id) {
+        return { success: true, data: result };
+      } else {
+        log(`Fast2SMS API error: ${JSON.stringify(result)}`);
+        return {
+          success: false,
+          error: result.message || "Failed to send SMS",
+        };
+      }
+    } else {
+      const errorText = await response.text();
+      log(`Fast2SMS HTTP error: ${response.status} - ${errorText}`);
+
+      // Fallback to simulation mode in development
+      if (process.env.NODE_ENV === "development") {
+        log("Falling back to simulation mode due to Fast2SMS error");
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        return {
+          success: true,
+          message: "OTP sent (simulation mode - Fast2SMS failed)",
+        };
+      }
+
+      return { success: false, error: `HTTP ${response.status}: ${errorText}` };
+    }
   } catch (error) {
     log(`SMS sending failed: ${error.message}`);
+
+    // Fallback to simulation mode in development
+    if (process.env.NODE_ENV === "development") {
+      log("Falling back to simulation mode due to Fast2SMS network error");
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return {
+        success: true,
+        message: "OTP sent (simulation mode - network error)",
+      };
+    }
+
     return { success: false, error: error.message };
   }
 };
