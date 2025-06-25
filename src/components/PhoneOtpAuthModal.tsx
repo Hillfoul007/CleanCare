@@ -147,7 +147,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     console.log("PhoneOtpAuthModal: Sending OTP to", formData.phone);
 
     try {
-      const result = await fast2smsService.sendSmsOTP(
+      const result = await dvhostingSmsService.sendSmsOTP(
         formData.phone,
         formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
       );
