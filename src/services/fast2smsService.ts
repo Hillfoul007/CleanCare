@@ -134,20 +134,29 @@ export class Fast2SmsService {
     try {
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
 
+      // Detect Builder.io environment and use absolute URL
+      const isBuilderEnv =
+        window.location.hostname.includes("builder.codes") ||
+        document.querySelector("[data-loc]") !== null;
+      const baseUrl = isBuilderEnv ? "http://localhost:3001" : "";
+
       // Call backend API for OTP verification
-      const response = await fetch(`/api/auth/verify-otp?t=${Date.now()}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-          Expires: "0",
+      const response = await fetch(
+        `${baseUrl}/api/auth/verify-otp?t=${Date.now()}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+            Expires: "0",
+          },
+          body: JSON.stringify({
+            phone: cleanPhone,
+            otp: otp,
+          }),
         },
-        body: JSON.stringify({
-          phone: cleanPhone,
-          otp: otp,
-        }),
-      });
+      );
 
       if (response.ok) {
         const result = await response.json();
