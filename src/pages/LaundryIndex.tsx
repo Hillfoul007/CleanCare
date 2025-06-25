@@ -289,7 +289,7 @@ const LaundryIndex = () => {
     addNotification(
       createSuccessNotification(
         "Welcome!",
-        `Hello ${user.full_name}, you're now logged in.`,
+        `Hello ${user.name || user.phone}, you're now logged in.`,
       ),
     );
   };
