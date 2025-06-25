@@ -24,10 +24,13 @@ export class Fast2SmsService {
       }
 
       // Call backend API instead of Fast2SMS directly to avoid CORS issues
-      const response = await fetch("/api/auth/send-otp", {
+      const response = await fetch(`/api/auth/send-otp?t=${Date.now()}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
         },
         body: JSON.stringify({
           phone: cleanPhone,
