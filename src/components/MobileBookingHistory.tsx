@@ -34,6 +34,7 @@ import {
   RefreshCw,
   Star,
   ArrowLeft,
+  Plus,
 } from "lucide-react";
 import { BookingService } from "@/services/bookingService";
 import EditBookingModal from "./EditBookingModal";
