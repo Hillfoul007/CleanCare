@@ -283,7 +283,7 @@ const LaundryIndex = () => {
     setCurrentUser(user);
     setIsLoggedIn(true);
     setCurrentView("home");
-    console.log("✅ User logged in successfully:", user.full_name);
+    console.log("✅ User logged in successfully:", user.name || user.phone);
 
     // Add success notification
     addNotification(
