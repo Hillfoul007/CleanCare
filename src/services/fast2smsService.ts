@@ -224,12 +224,16 @@ export class Fast2SmsService {
     try {
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
 
-      // Detect Builder.io environment and use absolute URL
+      // Detect Builder.io environment and use appropriate URL
       const isBuilderEnv =
         window.location.hostname.includes("builder.codes") ||
         window.location.hostname.includes("fly.dev") ||
         document.querySelector("[data-loc]") !== null;
-      const baseUrl = isBuilderEnv ? "http://localhost:3001" : "";
+
+      // Use environment variable for API base URL, with fallback
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+      const baseUrl = isBuilderEnv ? apiBaseUrl.replace("/api", "") : "";
 
       // Call backend API for OTP verification with user name
       const response = await fetch(
