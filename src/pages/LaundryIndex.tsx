@@ -17,7 +17,7 @@ const LaundryIndex = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentLocation, setCurrentLocation] = useState("");
 
-  const authService = Fast2SmsService.getInstance();
+  const authService = DVHostingSmsService.getInstance();
   const pushService = PushNotificationService.getInstance();
 
   // Initialize PWA and check auth state
