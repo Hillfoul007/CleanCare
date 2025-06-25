@@ -205,6 +205,38 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
         // Save user authentication to localStorage for persistence
         dvhostingSmsService.setCurrentUser(result.user);
 
+        // Also save user to database via UserService
+        try {
+          const { UserService } = await import("@/services/userService");
+          const userService = UserService.getInstance();
+          await userService.saveUser({
+            phone: result.user.phone,
+            name: result.user.name || `User ${result.user.phone.slice(-4)}`,
+            email: "",
+            preferences: {
+              notifications: {
+                push: true,
+                sms: true,
+                email: true,
+                orderUpdates: true,
+                promotions: false,
+              },
+              privacy: { shareData: false, profileVisibility: "private" },
+              communication: {
+                language: "english",
+                communicationMethod: "sms",
+              },
+              theme: { darkMode: false, colorScheme: "green" },
+            },
+            addresses: [],
+            createdAt: result.user.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+          console.log("✅ User saved to database after OTP verification");
+        } catch (userSaveError) {
+          console.warn("⚠️ Failed to save user to database:", userSaveError);
+        }
+
         onSuccess(result.user);
         onClose();
         resetForm();
