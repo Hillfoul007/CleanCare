@@ -56,7 +56,7 @@ const LaundryIndex = () => {
         if (user) {
           setCurrentUser(user);
           setIsLoggedIn(true);
-          console.log("✅ User already logged in:", user.full_name);
+          console.log("✅ User already logged in:", user.name || user.phone);
         } else {
           setIsLoggedIn(false);
           console.log("ℹ️ No authenticated user found");
@@ -283,13 +283,13 @@ const LaundryIndex = () => {
     setCurrentUser(user);
     setIsLoggedIn(true);
     setCurrentView("home");
-    console.log("✅ User logged in successfully:", user.full_name);
+    console.log("✅ User logged in successfully:", user.name || user.phone);
 
     // Add success notification
     addNotification(
       createSuccessNotification(
         "Welcome!",
-        `Hello ${user.full_name}, you're now logged in.`,
+        `Hello ${user.name || user.phone}, you're now logged in.`,
       ),
     );
   };
@@ -315,7 +315,7 @@ const LaundryIndex = () => {
   };
 
   const handleViewBookings = () => {
-    if (!isLoggedIn) {
+    if (!currentUser) {
       // Show auth modal for bookings access
       setCurrentView("auth");
       return;

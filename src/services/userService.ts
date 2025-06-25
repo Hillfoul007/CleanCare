@@ -123,10 +123,44 @@ export class UserService {
     updates: Partial<UserData>,
   ): Promise<UserData | null> {
     try {
-      const existingUser = await this.getUser(phone);
+      let existingUser = await this.getUser(phone);
+
+      // If user doesn't exist, create a basic user profile
       if (!existingUser) {
-        console.error("User not found for update:", phone);
-        return null;
+        console.log("User not found, creating new user for update:", phone);
+        const newUser: UserData = {
+          phone,
+          name: updates.name || `User ${phone.slice(-4)}`,
+          email: updates.email || "",
+          preferences: {
+            notifications: {
+              email: true,
+              sms: true,
+              push: true,
+            },
+            privacy: {
+              shareData: false,
+              profileVisibility: "private",
+            },
+            communication: {
+              language: "english",
+              communicationMethod: "sms",
+            },
+            theme: {
+              darkMode: false,
+              colorScheme: "green",
+            },
+          },
+          addresses: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        existingUser = await this.saveUser(newUser);
+        if (!existingUser) {
+          console.error("Failed to create new user for update:", phone);
+          return null;
+        }
       }
 
       const updatedUser = {

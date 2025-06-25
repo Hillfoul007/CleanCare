@@ -25,51 +25,52 @@ export class DVHostingSmsService {
         throw new Error("Invalid Indian phone number");
       }
 
-      // Detect Builder.io environment and use appropriate URL
-      const isBuilderEnv =
+      // Detect hosted environment (Builder.io, fly.dev, etc.)
+      const isHostedEnv =
         window.location.hostname.includes("builder.codes") ||
         window.location.hostname.includes("fly.dev") ||
         document.querySelector("[data-loc]") !== null;
 
-      // Use environment variable for API base URL, with fallback
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-      const baseUrl = isBuilderEnv ? apiBaseUrl.replace("/api", "") : "";
-
       console.log("DVHosting SMS: Environment detection:", {
-        isBuilderEnv,
-        baseUrl,
-        apiBaseUrl,
+        isHostedEnv,
         hostname: window.location.hostname,
         hasDataLoc: !!document.querySelector("[data-loc]"),
-        finalUrl: `${baseUrl}/api/auth/send-otp`,
       });
 
-      // Call backend API instead of DVHosting directly to avoid CORS issues
-      const response = await fetch(
-        `${baseUrl}/api/auth/send-otp?t=${Date.now()}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-            Expires: "0",
-          },
-          body: JSON.stringify({
-            phone: cleanPhone,
-          }),
+      // In hosted environments, skip backend API and use direct/simulation mode
+      if (isHostedEnv) {
+        console.log(
+          "DVHosting SMS: Hosted environment detected, using direct API call",
+        );
+        return await this.sendDirectDVHostingOTP(cleanPhone);
+      }
+
+      // For local development, try backend API first
+      const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+
+      console.log("DVHosting SMS: Local environment, trying backend API:", {
+        apiBaseUrl,
+        finalUrl: `/api/auth/send-otp`,
+      });
+
+      // Call backend API for local development
+      const response = await fetch(`/api/auth/send-otp?t=${Date.now()}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
         },
-      ).catch((error) => {
-        // Handle fetch errors in hosted environments
-        console.log("DVHosting SMS: Fetch error in hosted environment:", error);
-        if (isBuilderEnv) {
-          console.log(
-            "DVHosting SMS: Using simulation mode for hosted environment",
-          );
-          return null; // Will trigger simulation mode below
-        }
-        throw error;
+        body: JSON.stringify({
+          phone: cleanPhone,
+        }),
+      }).catch((error) => {
+        // Handle fetch errors in local development
+        console.log("DVHosting SMS: Backend API error:", error);
+        console.log("DVHosting SMS: Falling back to direct API call");
+        return null; // Will trigger direct API call below
       });
 
       // Handle direct DVHosting API call for hosted environments without backend
@@ -192,34 +193,55 @@ export class DVHostingSmsService {
     try {
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
 
-      // Detect Builder.io environment and use appropriate URL
-      const isBuilderEnv =
+      // Detect hosted environment
+      const isHostedEnv =
         window.location.hostname.includes("builder.codes") ||
         window.location.hostname.includes("fly.dev") ||
         document.querySelector("[data-loc]") !== null;
 
-      // Use environment variable for API base URL, with fallback
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-      const baseUrl = isBuilderEnv ? apiBaseUrl.replace("/api", "") : "";
+      // In hosted environments, use local verification
+      if (isHostedEnv) {
+        console.log(
+          "DVHosting SMS: Hosted environment, using local verification",
+        );
+        const storedData = this.otpStorage.get(cleanPhone);
 
-      // Call backend API for OTP verification
-      const response = await fetch(
-        `${baseUrl}/api/auth/verify-otp?t=${Date.now()}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-            Expires: "0",
-          },
-          body: JSON.stringify({
-            phone: cleanPhone,
-            otp: otp,
-          }),
+        if (!storedData) {
+          console.log("❌ No OTP found for phone:", cleanPhone);
+          return false;
+        }
+
+        if (Date.now() > storedData.expiresAt) {
+          console.log("❌ OTP expired for phone:", cleanPhone);
+          this.otpStorage.delete(cleanPhone);
+          return false;
+        }
+
+        if (storedData.otp === otp) {
+          console.log("✅ OTP verified successfully (hosted environment)");
+          this.otpStorage.delete(cleanPhone);
+          this.currentPhone = "";
+          return true;
+        } else {
+          console.log("❌ Invalid OTP (hosted environment)");
+          return false;
+        }
+      }
+
+      // For local development, try backend API
+      const response = await fetch(`/api/auth/verify-otp?t=${Date.now()}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
         },
-      ).catch((error) => {
+        body: JSON.stringify({
+          phone: cleanPhone,
+          otp: otp,
+        }),
+      }).catch((error) => {
         // Handle fetch errors in hosted environments
         console.log(
           "DVHosting SMS: Verification fetch error in hosted environment:",
@@ -318,50 +340,94 @@ export class DVHostingSmsService {
     try {
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
 
-      // Detect Builder.io environment and use appropriate URL
-      const isBuilderEnv =
+      // Detect hosted environment
+      const isHostedEnv =
         window.location.hostname.includes("builder.codes") ||
         window.location.hostname.includes("fly.dev") ||
         document.querySelector("[data-loc]") !== null;
 
-      // Use environment variable for API base URL, with fallback
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-      const baseUrl = isBuilderEnv ? apiBaseUrl.replace("/api", "") : "";
+      console.log("DVHosting SMS: verifySmsOTP environment detection:", {
+        isHostedEnv,
+        hostname: window.location.hostname,
+      });
 
-      // Call backend API for OTP verification with user name
-      const response = await fetch(
-        `${baseUrl}/api/auth/verify-otp?t=${Date.now()}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-            Expires: "0",
-          },
-          body: JSON.stringify({
+      // In hosted environments, use local verification
+      if (isHostedEnv) {
+        console.log(
+          "DVHosting SMS: Using local SMS verification for hosted environment",
+        );
+        const storedData = this.otpStorage.get(cleanPhone);
+
+        if (!storedData) {
+          console.log("❌ No OTP found for phone:", cleanPhone);
+          return {
+            success: false,
+            error: "No OTP found or expired",
+            message: "Please request a new OTP",
+          };
+        }
+
+        if (Date.now() > storedData.expiresAt) {
+          console.log("❌ OTP expired for phone:", cleanPhone);
+          this.otpStorage.delete(cleanPhone);
+          return {
+            success: false,
+            error: "OTP has expired",
+            message: "Please request a new OTP",
+          };
+        }
+
+        if (storedData.otp === otp) {
+          console.log("✅ SMS OTP verified successfully (hosted environment)");
+          this.otpStorage.delete(cleanPhone);
+          this.currentPhone = "";
+
+          const mockUser = {
+            id: `user_${cleanPhone}`,
             phone: cleanPhone,
-            otp: otp,
             name:
               name && name.trim()
                 ? name.trim()
                 : `User ${cleanPhone.slice(-4)}`,
-          }),
-        },
-      ).catch((error) => {
-        // Handle fetch errors in hosted environments
-        console.log(
-          "DVHosting SMS: SMS verification fetch error in hosted environment:",
-          error,
-        );
-        if (isBuilderEnv) {
-          console.log(
-            "DVHosting SMS: Using local SMS verification for hosted environment",
-          );
-          return null; // Will trigger local verification below
+            isVerified: true,
+            createdAt: new Date().toISOString(),
+          };
+
+          return {
+            success: true,
+            user: mockUser,
+            message: "OTP verified successfully",
+          };
+        } else {
+          console.log("❌ Invalid SMS OTP (hosted environment)");
+          return {
+            success: false,
+            error: "Invalid OTP",
+            message: "Please check your OTP and try again",
+          };
         }
-        throw error;
+      }
+
+      // For local development, try backend API
+      const response = await fetch(`/api/auth/verify-otp?t=${Date.now()}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+        body: JSON.stringify({
+          phone: cleanPhone,
+          otp: otp,
+          name:
+            name && name.trim() ? name.trim() : `User ${cleanPhone.slice(-4)}`,
+        }),
+      }).catch((error) => {
+        // Handle fetch errors in local development
+        console.log("DVHosting SMS: Backend API error:", error);
+        console.log("DVHosting SMS: Falling back to local verification");
+        return null; // Will trigger local verification below
       });
 
       // Handle local verification for hosted environments without backend
@@ -553,6 +619,66 @@ export class DVHostingSmsService {
 
   getCurrentPhone(): string {
     return this.currentPhone;
+  }
+
+  // Authentication persistence methods
+  isAuthenticated(): boolean {
+    try {
+      const token = localStorage.getItem("cleancare_auth_token");
+      const user = this.getCurrentUser();
+      return !!(token && user);
+    } catch (error) {
+      console.error("Error checking authentication:", error);
+      return false;
+    }
+  }
+
+  getCurrentUser(): any | null {
+    try {
+      const userStr = localStorage.getItem("current_user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        // Verify user data is valid
+        if (user && user.phone) {
+          return user;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error("Error getting current user:", error);
+      return null;
+    }
+  }
+
+  setCurrentUser(user: any, token?: string): void {
+    try {
+      if (user) {
+        localStorage.setItem("current_user", JSON.stringify(user));
+        if (token) {
+          localStorage.setItem("cleancare_auth_token", token);
+        } else {
+          // Generate a simple token if none provided
+          localStorage.setItem(
+            "cleancare_auth_token",
+            `phone_token_${Date.now()}_${user.phone}`,
+          );
+        }
+        console.log("✅ User authentication saved to localStorage");
+      }
+    } catch (error) {
+      console.error("Error setting current user:", error);
+    }
+  }
+
+  logout(): void {
+    try {
+      localStorage.removeItem("current_user");
+      localStorage.removeItem("cleancare_auth_token");
+      this.currentPhone = "";
+      console.log("✅ User logged out successfully");
+    } catch (error) {
+      console.error("Error during logout:", error);
+    }
   }
 }
 

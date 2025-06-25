@@ -17,6 +17,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { WhatsAppOTPService } from "@/services/whatsappOtpService";
+import { DVHostingSmsService } from "@/services/dvhostingSmsService";
 
 interface WhatsAppAuthModalProps {
   isOpen: boolean;
@@ -116,6 +117,11 @@ const WhatsAppAuthModal: React.FC<WhatsAppAuthModalProps> = ({
 
       if (result.success && result.user) {
         setSuccess("Login successful!");
+
+        // Save user authentication to localStorage for persistence
+        const authService = DVHostingSmsService.getInstance();
+        authService.setCurrentUser(result.user);
+
         onSuccess(result.user);
         onClose();
         resetForm();
@@ -177,7 +183,7 @@ const WhatsAppAuthModal: React.FC<WhatsAppAuthModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name">Name (Optional)</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
                   type="text"

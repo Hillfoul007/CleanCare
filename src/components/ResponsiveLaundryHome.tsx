@@ -56,7 +56,6 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showBookingHistory, setShowBookingHistory] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
   const dvhostingSmsService = DVHostingSmsService.getInstance();
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -201,7 +200,8 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
 
   const handleViewBookings = () => {
     if (currentUser) {
-      setShowBookingHistory(true);
+      // Use parent navigation to go to bookings view
+      onViewBookings();
     } else {
       setShowAuthModal(true);
     }
@@ -321,8 +321,11 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                 <Button
                   onClick={() => {
                     setShowMobileMenu(false);
-                    if (currentUser) onViewBookings();
-                    else handleLogin();
+                    if (currentUser) {
+                      onViewBookings();
+                    } else {
+                      handleLogin();
+                    }
                   }}
                   variant="ghost"
                   className="w-full justify-start text-gray-700"
@@ -520,22 +523,35 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
                   {getCartItemCount()} item{getCartItemCount() > 1 ? "s" : ""}
                 </span>
               </div>
-
-              <div className="text-right">
-                <div className="font-bold">₹{getCartTotal()}</div>
-                <div className="text-xs opacity-90">View Cart</div>
-              </div>
+              <span className="text-xs bg-white/20 px-2 py-1 rounded">
+                View Cart
+              </span>
             </Button>
           </div>
         )}
 
-        {/* Authentication Modal - Mobile */}
+        {/* Empty State */}
+        {!getPopularServices().length && (
+          <div className="text-center py-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Welcome to CleanCare Pro
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Your trusted home services partner
+            </p>
+            <Button
+              onClick={handleBookService}
+              className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 px-8 py-3 rounded-xl text-lg font-medium"
+            >
+              Get Started
+            </Button>
+          </div>
+        )}
+
+        {/* Auth Modal */}
         <PhoneOtpAuthModal
           isOpen={showAuthModal}
-          onClose={() => {
-            console.log("PhoneOtpAuthModal onClose called (mobile)");
-            setShowAuthModal(false);
-          }}
+          onClose={() => setShowAuthModal(false)}
           onSuccess={handleAuthSuccess}
         />
       </div>
@@ -841,12 +857,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
           onSuccess={handleAuthSuccess}
         />
 
-        {/* Booking History Modal */}
-        <EnhancedBookingHistoryModal
-          isOpen={showBookingHistory}
-          onClose={() => setShowBookingHistory(false)}
-          currentUser={currentUser}
-        />
+        {/* Removed local booking history modal - using main navigation */}
 
         {/* Debug Panel */}
         <DebugPanel

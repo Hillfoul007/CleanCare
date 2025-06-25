@@ -66,21 +66,8 @@ const SavedAddressesModal: React.FC<SavedAddressesModalProps> = ({
       if (saved) {
         setAddresses(JSON.parse(saved));
       } else {
-        // Add a default demo address
-        const demoAddress: SavedAddress = {
-          id: Date.now().toString(),
-          label: "Home",
-          type: "home",
-          flatHouseNo: "A-123",
-          street: "Green Valley Street",
-          landmark: "Near City Mall",
-          village: "Sector 21",
-          city: "Gurugram",
-          pincode: "122018",
-          isDefault: true,
-        };
-        setAddresses([demoAddress]);
-        saveAddresses([demoAddress]);
+        // Start with no saved addresses - they will be added when user places orders
+        setAddresses([]);
       }
     } catch (error) {
       console.error("Error loading saved addresses:", error);
@@ -245,14 +232,17 @@ const SavedAddressesModal: React.FC<SavedAddressesModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto mx-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            Saved Addresses
+          <DialogTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <span className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Saved Addresses
+            </span>
             <Button
               onClick={() => setShowAddressForm(true)}
               size="sm"
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 self-start sm:self-auto"
             >
               <Plus className="h-4 w-4 mr-1" />
               Add Address
@@ -279,12 +269,14 @@ const SavedAddressesModal: React.FC<SavedAddressesModalProps> = ({
                 key={address.id}
                 className={address.isDefault ? "ring-2 ring-green-500" : ""}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-2">
                         {getAddressTypeIcon(address.type)}
-                        <span className="font-medium">{address.label}</span>
+                        <span className="font-medium text-sm sm:text-base">
+                          {address.label}
+                        </span>
                         {address.isDefault && (
                           <Badge variant="secondary" className="text-xs">
                             <Star className="h-3 w-3 mr-1" />

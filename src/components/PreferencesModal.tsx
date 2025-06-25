@@ -124,18 +124,43 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
       );
       if (success) {
         setPreferences(newPreferences);
+        // Also save to localStorage as backup
+        try {
+          localStorage.setItem(
+            `preferences_${currentUser.phone}`,
+            JSON.stringify(newPreferences),
+          );
+        } catch (localError) {
+          console.warn(
+            "Failed to save preferences to localStorage:",
+            localError,
+          );
+        }
         toast({
           title: "Success",
           description: "Preferences saved successfully",
         });
       } else {
-        throw new Error("Failed to save preferences");
+        // If UserService fails, try localStorage only
+        try {
+          localStorage.setItem(
+            `preferences_${currentUser.phone}`,
+            JSON.stringify(newPreferences),
+          );
+          setPreferences(newPreferences);
+          toast({
+            title: "Success",
+            description: "Preferences saved locally",
+          });
+        } catch (localError) {
+          throw new Error("Failed to save preferences");
+        }
       }
     } catch (error) {
       console.error("Error saving preferences:", error);
       toast({
         title: "Error",
-        description: "Failed to save preferences",
+        description: "Failed to save preferences. Please try again.",
         variant: "destructive",
       });
     }
@@ -158,9 +183,9 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto mx-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-xl font-semibold">
             <Shield className="h-5 w-5" />
             Preferences
           </DialogTitle>
@@ -176,8 +201,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="push-notifications">Push Notifications</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="push-notifications"
+                  className="text-sm font-medium leading-tight"
+                >
+                  Push Notifications
+                </Label>
                 <Switch
                   id="push-notifications"
                   checked={preferences.notifications.push}
@@ -187,8 +217,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="sms-notifications">SMS Notifications</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="sms-notifications"
+                  className="text-sm font-medium leading-tight"
+                >
+                  SMS Notifications
+                </Label>
                 <Switch
                   id="sms-notifications"
                   checked={preferences.notifications.sms}
@@ -198,8 +233,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="email-notifications">Email Notifications</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="email-notifications"
+                  className="text-sm font-medium leading-tight"
+                >
+                  Email Notifications
+                </Label>
                 <Switch
                   id="email-notifications"
                   checked={preferences.notifications.email}
@@ -209,8 +249,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="order-updates">Order Updates</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="order-updates"
+                  className="text-sm font-medium leading-tight"
+                >
+                  Order Updates
+                </Label>
                 <Switch
                   id="order-updates"
                   checked={preferences.notifications.orderUpdates}
@@ -220,8 +265,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="promotions">Promotional Offers</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="promotions"
+                  className="text-sm font-medium leading-tight"
+                >
+                  Promotional Offers
+                </Label>
                 <Switch
                   id="promotions"
                   checked={preferences.notifications.promotions}
@@ -242,15 +292,17 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="preferred-time">Preferred Time Slot</Label>
+              <div className="space-y-2">
+                <Label htmlFor="preferred-time" className="text-sm font-medium">
+                  Preferred Time Slot
+                </Label>
                 <Select
                   value={preferences.scheduling.preferredTimeSlot}
                   onValueChange={(value) =>
                     updatePreference("scheduling", "preferredTimeSlot", value)
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -285,8 +337,11 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 </Select>
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="auto-rebook">
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="auto-rebook"
+                  className="text-sm font-medium leading-tight"
+                >
                   Auto-rebook regular services
                 </Label>
                 <Switch

@@ -114,7 +114,8 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
                   <div className="flex items-center">
                     <User className="w-4 h-4 text-gray-500 mr-3" />
                     <span className="font-medium">
-                      {currentUser?.profile?.full_name ||
+                      {currentUser?.name ||
+                        currentUser?.profile?.full_name ||
                         currentUser?.email ||
                         "Customer"}
                     </span>
@@ -308,8 +309,6 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
                       `✅ Confirm Booking - $${pricing.finalAmount.toFixed(2)}`
                     )}
                   </Button>
-
-                  
 
                   <Button
                     variant="outline"

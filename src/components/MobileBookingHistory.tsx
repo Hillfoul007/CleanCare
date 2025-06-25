@@ -34,8 +34,9 @@ import {
   RefreshCw,
   Star,
   ArrowLeft,
+  Plus,
 } from "lucide-react";
-import { adaptiveBookingHelpers } from "@/integrations/adaptive/bookingHelpers";
+import { BookingService } from "@/services/bookingService";
 import EditBookingModal from "./EditBookingModal";
 
 interface MobileBookingHistoryProps {
@@ -55,24 +56,30 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
 
   const loadBookings = async () => {
-    if (!currentUser?._id && !currentUser?.id) {
+    if (!currentUser?.id && !currentUser?._id && !currentUser?.phone) {
+      console.log("No user ID found for loading bookings");
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
-      const userId = currentUser._id || currentUser.id;
-      const { data, error } =
-        await adaptiveBookingHelpers.getUserBookings(userId);
+      const bookingService = BookingService.getInstance();
+      const userId = currentUser.id || currentUser._id || currentUser.phone;
 
-      if (error) {
-        console.error("Error loading bookings:", error);
+      console.log("Loading bookings for user:", userId);
+      const response = await bookingService.getUserBookings(userId);
+
+      if (response.success && response.bookings) {
+        console.log("Bookings loaded successfully:", response.bookings.length);
+        setBookings(response.bookings);
       } else {
-        setBookings(data || []);
+        console.log("No bookings found or error:", response.error);
+        setBookings([]);
       }
     } catch (error) {
       console.error("Error loading bookings:", error);
+      setBookings([]);
     } finally {
       setLoading(false);
     }
@@ -274,21 +281,23 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-green-400 via-green-500 to-green-600 overflow-x-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-slate-900 to-blue-900 text-white p-4 rounded-b-3xl mb-6">
+      <div className="bg-gradient-to-r from-green-500 to-green-600 p-4 sm:p-6 shadow-sm">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
             <Button
               onClick={onBack || (() => window.history.back())}
               variant="ghost"
-              className="text-white hover:bg-white/10 p-2 rounded-xl"
+              className="text-white hover:bg-white/20 p-2 rounded-xl flex-shrink-0"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold">My Bookings</h1>
-              <p className="text-blue-200 text-sm">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-white truncate">
+                My Bookings
+              </h1>
+              <p className="text-green-100 text-xs sm:text-sm">
                 {bookings.length}{" "}
                 {bookings.length === 1 ? "booking" : "bookings"} found
               </p>
@@ -297,185 +306,375 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
           <Button
             onClick={refreshBookings}
             variant="ghost"
-            className="text-white hover:bg-white/10 p-3 rounded-xl"
+            className="text-white hover:bg-white/20 p-2 sm:p-3 rounded-xl flex-shrink-0"
             disabled={refreshing}
           >
             <RefreshCw
-              className={`h-5 w-5 ${refreshing ? "animate-spin" : ""}`}
+              className={`h-4 w-4 sm:h-5 sm:w-5 ${refreshing ? "animate-spin" : ""}`}
             />
           </Button>
         </div>
       </div>
 
       {/* Bookings List */}
-      <div className="px-4 space-y-4">
-        {bookings.length === 0 ? (
-          <Card className="max-w-md mx-auto">
-            <CardContent className="text-center py-12">
-              <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+      <div className="px-3 sm:px-4 py-4 space-y-3 sm:space-y-4 overflow-x-hidden bg-white/10 backdrop-blur-sm rounded-t-3xl mt-2">
+        {loading ? (
+          <Card className="max-w-md mx-auto bg-white/90 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="text-center py-8 sm:py-12">
+              <RefreshCw className="h-8 w-8 text-green-500 mx-auto mb-4 animate-spin" />
+              <p className="text-gray-700">Loading your bookings...</p>
+            </CardContent>
+          </Card>
+        ) : bookings.length === 0 ? (
+          <Card className="max-w-md mx-auto bg-white/90 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="text-center py-8 sm:py-12 px-4">
+              <Calendar className="h-12 w-12 sm:h-16 sm:w-16 text-green-500 mx-auto mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                 No Bookings Yet
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-sm sm:text-base text-gray-600 mb-6">
                 Start by booking your first service!
               </p>
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 w-full py-3 rounded-xl">
+              <Button
+                onClick={onBack}
+                className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 w-full py-3 rounded-xl text-sm sm:text-base shadow-lg"
+              >
                 Book a Service
               </Button>
             </CardContent>
           </Card>
         ) : (
-          bookings.map((booking: any, index) => (
-            <Card
-              key={index}
-              className="border-0 shadow-lg rounded-2xl overflow-hidden"
-            >
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg font-bold text-gray-900 mb-1">
-                      {booking.service || "Home Service"}
-                    </CardTitle>
-                    <p className="text-sm text-gray-600">
-                      by {booking.provider_name || "HomeServices Pro"}
-                    </p>
-                  </div>
-                  <Badge
-                    className={`${getStatusColor(booking.status)} border font-medium`}
-                  >
-                    {getStatusIcon(booking.status)}
-                    <span className="ml-1 capitalize">{booking.status}</span>
-                  </Badge>
-                </div>
-              </CardHeader>
+          bookings.map((booking: any, index) => {
+            try {
+              return (
+                <Card
+                  key={booking.id || index}
+                  className="border-0 shadow-xl rounded-2xl overflow-hidden bg-white/95 backdrop-blur-sm hover:shadow-2xl transition-all duration-300"
+                >
+                  <CardHeader className="pb-3 p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-base sm:text-lg font-bold text-gray-900 mb-1 truncate">
+                          {booking.service || "Home Service"}
+                        </CardTitle>
+                        <p className="text-xs sm:text-sm text-green-600 truncate font-medium">
+                          by {booking.provider_name || "HomeServices Pro"}
+                        </p>
+                      </div>
+                      <Badge
+                        className={`${getStatusColor(booking.status)} border font-medium`}
+                      >
+                        {getStatusIcon(booking.status)}
+                        <span className="ml-1 capitalize">
+                          {booking.status}
+                        </span>
+                      </Badge>
+                    </div>
+                  </CardHeader>
 
-              <CardContent className="space-y-4">
-                {/* Date & Time */}
-                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">
-                      {new Date(booking.scheduled_date).toLocaleDateString(
-                        "en-US",
-                        {
-                          weekday: "long",
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        },
-                      )}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      at {booking.scheduled_time}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Address */}
-                <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl">
-                  <MapPin className="h-5 w-5 text-gray-600 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900 mb-1">
-                      Service Address
-                    </p>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {booking.address}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Price */}
-                <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl">
-                  <DollarSign className="h-5 w-5 text-green-600" />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">Total Amount</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      ${booking.final_amount || booking.total_price}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Additional Details */}
-                {booking.additional_details && (
-                  <div className="p-3 bg-yellow-50 rounded-xl">
-                    <p className="font-medium text-gray-900 mb-1">
-                      Additional Notes
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {booking.additional_details}
-                    </p>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex gap-3 pt-2 flex-wrap">
-                  {booking.status === "completed" && (
-                    <Button
-                      variant="outline"
-                      className="flex-1 min-w-[120px] rounded-xl border-2 border-yellow-200 hover:bg-yellow-50"
-                    >
-                      <Star className="mr-2 h-4 w-4" />
-                      Rate Service
-                    </Button>
-                  )}
-
-                  {canEditBooking(booking) && (
-                    <Button
-                      variant="outline"
-                      onClick={() => handleEditBooking(booking)}
-                      className="flex-1 min-w-[120px] rounded-xl border-2 border-green-200 hover:bg-green-50 text-green-600"
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </Button>
-                  )}
-
-                  {canCancelBooking(booking) && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="flex-1 min-w-[120px] rounded-xl border-2 border-red-200 hover:bg-red-50 text-red-600"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Cancel
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-2xl">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Cancel Booking?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. You may be charged a
-                            cancellation fee depending on the cancellation
-                            policy.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-xl">
-                            Keep Booking
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => cancelBooking(booking._id)}
-                            className="bg-red-600 hover:bg-red-700 rounded-xl"
+                  <CardContent className="space-y-4 p-4 sm:p-6">
+                    {/* Booked Services */}
+                    {booking.services && booking.services.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-900 text-sm">
+                          Booked Services
+                        </h4>
+                        {booking.services.map((service: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100"
                           >
-                            Yes, Cancel
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900 text-sm">
+                                {service.name || service.service}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                Qty: {service.quantity || 1}
+                              </p>
+                            </div>
+                            <p className="font-semibold text-blue-600">
+                              ₹{service.price || service.amount}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
-                  <Button
-                    variant="outline"
-                    className="flex-1 min-w-[120px] rounded-xl border-2 border-blue-200 hover:bg-blue-50"
-                  >
-                    <Phone className="mr-2 h-4 w-4" />
-                    Contact
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                    {/* Pickup & Delivery Slots */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3 bg-green-50 rounded-xl border border-green-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="h-4 w-4 text-green-600" />
+                          <span className="font-medium text-gray-900 text-sm">
+                            Pickup
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-900">
+                          {booking.pickupDate
+                            ? new Date(booking.pickupDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )
+                            : booking.scheduled_date
+                              ? new Date(
+                                  booking.scheduled_date,
+                                ).toLocaleDateString("en-US", {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                })
+                              : "Date TBD"}
+                        </p>
+                        <p className="text-xs text-green-600">
+                          {booking.pickupTime ||
+                            booking.scheduled_time ||
+                            "Time TBD"}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="h-4 w-4 text-emerald-600" />
+                          <span className="font-medium text-gray-900 text-sm">
+                            Delivery
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-900">
+                          {booking.deliveryDate
+                            ? new Date(booking.deliveryDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )
+                            : "Date TBD"}
+                        </p>
+                        <p className="text-xs text-emerald-600">
+                          {booking.deliveryTime || "Time TBD"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Address */}
+                    <div className="flex items-start gap-3 p-3 bg-green-50/50 rounded-xl border border-green-100/50">
+                      <MapPin className="h-5 w-5 text-green-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 mb-1">
+                          Service Address
+                        </p>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          {typeof booking.address === "string"
+                            ? booking.address
+                            : booking.address?.fullAddress ||
+                              `${booking.address?.flatNo || ""} ${booking.address?.street || ""}, ${booking.address?.village || ""}, ${booking.address?.city || ""} ${booking.address?.pincode || ""}`.trim()}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Price Breakdown */}
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-gray-900 text-sm">
+                        Price Breakdown
+                      </h4>
+
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 p-4">
+                        {/* Service Total */}
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-sm text-gray-600">
+                            Services Total
+                          </span>
+                          <span className="font-medium">
+                            ₹
+                            {booking.totalAmount ||
+                              booking.total_price ||
+                              booking.final_amount ||
+                              0}
+                          </span>
+                        </div>
+
+                        {/* Discount if applicable */}
+                        {booking.discount_amount &&
+                          booking.discount_amount > 0 && (
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm text-green-600">
+                                Discount
+                              </span>
+                              <span className="font-medium text-green-600">
+                                -₹{booking.discount_amount}
+                              </span>
+                            </div>
+                          )}
+
+                        {/* Tax if applicable */}
+                        {booking.charges_breakdown?.tax_amount && (
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm text-gray-600">Tax</span>
+                            <span className="font-medium">
+                              ₹{booking.charges_breakdown.tax_amount}
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="border-t border-green-200 pt-2">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold text-gray-900">
+                              Total Amount
+                            </span>
+                            <span className="text-xl font-bold text-green-600">
+                              ₹
+                              {booking.final_amount ||
+                                booking.totalAmount ||
+                                booking.total_price ||
+                                0}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="text-xs text-gray-500">
+                              Payment Status
+                            </span>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                (booking.payment_status ||
+                                  booking.paymentStatus) === "paid"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {(
+                                booking.payment_status ||
+                                booking.paymentStatus ||
+                                "pending"
+                              ).toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Additional Details */}
+                    {booking.additional_details && (
+                      <div className="p-3 bg-amber-50 rounded-xl border border-amber-200">
+                        <p className="font-medium text-gray-900 mb-1">
+                          Additional Notes
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {typeof booking.additional_details === "string"
+                            ? booking.additional_details
+                            : JSON.stringify(booking.additional_details)}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Comprehensive Actions */}
+                    <div className="space-y-3 pt-3">
+                      {/* Primary Actions Row */}
+                      <div className="grid grid-cols-2 gap-3">
+                        {(booking.status === "pending" ||
+                          booking.status === "confirmed") && (
+                          <>
+                            <Button
+                              variant="outline"
+                              onClick={() => handleEditBooking(booking)}
+                              className="flex-1 rounded-xl border-2 border-green-200 hover:bg-green-50 text-green-600 font-medium py-3"
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit Order
+                            </Button>
+
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className="flex-1 rounded-xl border-2 border-red-200 hover:bg-red-50 text-red-600 font-medium py-3"
+                                >
+                                  <XCircle className="mr-2 h-4 w-4" />
+                                  Cancel
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Cancel Booking
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to cancel this
+                                    booking? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>
+                                    Keep Booking
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() =>
+                                      handleCancelBooking(booking.id)
+                                    }
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Yes, Cancel
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </>
+                        )}
+
+                        {booking.status === "completed" && (
+                          <Button
+                            variant="outline"
+                            className="col-span-2 rounded-xl border-2 border-amber-200 hover:bg-amber-50 text-amber-600 font-medium py-3"
+                          >
+                            <Star className="mr-2 h-4 w-4" />
+                            Rate & Review Service
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Secondary Actions Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <Button
+                          variant="ghost"
+                          className="rounded-xl border border-blue-200 hover:bg-blue-50 text-blue-600 font-medium py-3"
+                          onClick={() => {
+                            /* Add more services logic */
+                          }}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add More Services
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          className="rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-medium py-3"
+                        >
+                          <Phone className="mr-2 h-4 w-4" />
+                          Contact Support
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            } catch (error) {
+              console.error("Error rendering booking:", error, booking);
+              return (
+                <Card
+                  key={booking.id || index}
+                  className="border-0 shadow-lg rounded-2xl overflow-hidden bg-red-50"
+                >
+                  <CardContent className="text-center py-8">
+                    <p className="text-red-600">Error loading booking</p>
+                  </CardContent>
+                </Card>
+              );
+            }
+          })
         )}
       </div>
 

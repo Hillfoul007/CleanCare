@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { ExotelMissedCallService } from "@/services/exotelMissedCallService";
 import { ResendEmailService } from "@/services/resendEmailService";
+import { DVHostingSmsService } from "@/services/dvhostingSmsService";
 import { deviceDetection, DeviceInfo } from "@/utils/deviceDetection";
 
 interface AdaptiveAuthModalProps {
@@ -187,6 +188,11 @@ const AdaptiveAuthModal: React.FC<AdaptiveAuthModalProps> = ({
 
       if (result.success && result.user) {
         setSuccess("Login successful!");
+
+        // Save user authentication to localStorage for persistence
+        const authService = DVHostingSmsService.getInstance();
+        authService.setCurrentUser(result.user);
+
         onSuccess(result.user);
         onClose();
         resetForm();
@@ -320,7 +326,7 @@ const AdaptiveAuthModal: React.FC<AdaptiveAuthModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name">Name (Optional)</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
                   type="text"
@@ -407,7 +413,7 @@ const AdaptiveAuthModal: React.FC<AdaptiveAuthModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="name">Name (Optional)</Label>
+                <Label htmlFor="name">Name</Label>
                 <Input
                   id="name"
                   type="text"
