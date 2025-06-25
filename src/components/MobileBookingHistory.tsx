@@ -35,7 +35,7 @@ import {
   Star,
   ArrowLeft,
 } from "lucide-react";
-import { adaptiveBookingHelpers } from "@/integrations/adaptive/bookingHelpers";
+import { BookingService } from "@/services/bookingService";
 import EditBookingModal from "./EditBookingModal";
 
 interface MobileBookingHistoryProps {
