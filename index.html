@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="CleanCare Pro" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="fast2sms" content="Ra0DFfgNTPzaOwBAFpfvhTObIJ1qmVtN">
+    <meta name="fast2sms" content="Ra0DFfgNTPzaOwBAFpfvhTObIJ1qmVtN" />
 
     <!-- Manifest -->
     <link rel="manifest" href="/manifest.json" />
@@ -61,15 +61,27 @@
     <!-- Register Service Worker -->
     <script>
       if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("/sw.js")
-            .then((registration) => {
-              console.log("SW registered: ", registration);
-            })
-            .catch((registrationError) => {
-              console.log("SW registration failed: ", registrationError);
-            });
+        window.addEventListener("load", async () => {
+          try {
+            // Unregister existing service workers first
+            const registrations =
+              await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+              await registration.unregister();
+              console.log("SW unregistered: ", registration);
+            }
+
+            // Register new service worker
+            const registration =
+              await navigator.serviceWorker.register("/sw.js");
+            console.log("SW registered: ", registration);
+
+            // Wait for it to activate
+            await navigator.serviceWorker.ready;
+            console.log("SW ready");
+          } catch (error) {
+            console.log("SW registration failed: ", error);
+          }
         });
       }
     </script>
