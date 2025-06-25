@@ -629,7 +629,9 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           Service Address
                         </p>
                         <p className="text-sm text-gray-600 leading-relaxed">
-                          {safeBooking.address || "Address not provided"}
+                          <SafeText>
+                            {safeBooking.address || "Address not provided"}
+                          </SafeText>
                         </p>
                       </div>
                     </div>
