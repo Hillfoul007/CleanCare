@@ -1,4 +1,4 @@
-const CACHE_NAME = "cleancare-v1";
+const CACHE_NAME = "cleancare-v2";
 const urlsToCache = [
   "/",
   "/static/js/bundle.js",
