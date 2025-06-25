@@ -642,9 +642,20 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                           Additional Notes
                         </p>
                         <p className="text-sm text-gray-600">
-                          {typeof booking.additional_details === "string"
-                            ? booking.additional_details
-                            : JSON.stringify(booking.additional_details)}
+                          {(() => {
+                            if (
+                              typeof booking.additional_details === "string"
+                            ) {
+                              return booking.additional_details;
+                            }
+                            if (
+                              typeof booking.additional_details === "object" &&
+                              booking.additional_details
+                            ) {
+                              return JSON.stringify(booking.additional_details);
+                            }
+                            return "No additional details";
+                          })()}
                         </p>
                       </div>
                     )}
