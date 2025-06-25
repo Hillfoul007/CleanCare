@@ -11,20 +11,9 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: MONGODB_URI
-        fromGroup: cleancare-secrets
-      - key: MONGODB_USERNAME
-        fromGroup: cleancare-secrets
-      - key: MONGODB_PASSWORD
-        fromGroup: cleancare-secrets
-      - key: MONGODB_CLUSTER
-        fromGroup: cleancare-secrets
+      - fromGroup: cleancare-secrets
       - key: MONGODB_DATABASE
         value: cleancare_pro
-      - key: DVHOSTING_API_KEY
-        fromGroup: cleancare-secrets
-      - key: JWT_SECRET
-        fromGroup: cleancare-secrets
       - key: ALLOWED_ORIGINS
         value: https://cleancare-pro-frontend.onrender.com
 
@@ -36,12 +25,9 @@ services:
     staticPublishPath: frontend/dist
     pullRequestPreviewsEnabled: false
     envVars:
+      - fromGroup: cleancare-secrets
       - key: VITE_API_BASE_URL
         value: https://cleancare-pro-api.onrender.com/api
-      - key: VITE_DVHOSTING_API_KEY
-        fromGroup: cleancare-secrets
-      - key: VITE_GOOGLE_MAPS_API_KEY
-        fromGroup: cleancare-secrets
       - key: VITE_APP_NAME
         value: CleanCare Pro
       - key: VITE_APP_URL
