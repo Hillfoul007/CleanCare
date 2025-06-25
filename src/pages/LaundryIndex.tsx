@@ -50,7 +50,7 @@ const LaundryIndex = () => {
 
   const checkAuthState = async () => {
     try {
-      // Check if user is logged in via Twilio SMS
+      // Check if user is logged in via Fast2SMS
       if (authService.isAuthenticated()) {
         const user = authService.getCurrentUser();
         if (user) {
