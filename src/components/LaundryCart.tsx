@@ -526,7 +526,9 @@ Confirm this booking?`;
                   <Input
                     placeholder="Coupon code"
                     value={couponCode}
-                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    onChange={(e) =>
+                      setCouponCode(e.target.value.toUpperCase())
+                    }
                     className="flex-1 h-8 text-sm"
                   />
                   <Button
@@ -571,10 +573,6 @@ Confirm this booking?`;
 
             <div className="flex justify-between font-semibold text-lg">
               <span>Total</span>
-              <span className="text-green-600">₹{getTotal()}</span>
-            </div>
-          </CardContent>
-        </Card>
               <span className="text-green-600">₹{getTotal()}</span>
             </div>
           </CardContent>
