@@ -47,27 +47,48 @@ export class Fast2SmsService {
 
       if (response.ok) {
         const contentType = response.headers.get("content-type");
-        console.log("Response content type:", contentType);
+        console.log(
+          "Fast2SMS: Response status:",
+          response.status,
+          "Content-Type:",
+          contentType,
+        );
 
-        if (!contentType || !contentType.includes("application/json")) {
-          const textContent = await response.text();
+        // Get response text first to inspect it
+        const responseText = await response.text();
+        console.log("Fast2SMS: Raw response:", responseText.substring(0, 300));
+
+        // Check if response looks like JSON
+        if (
+          !responseText.trim().startsWith("{") &&
+          !responseText.trim().startsWith("[")
+        ) {
           console.error(
-            "❌ Expected JSON but got:",
-            contentType,
-            textContent.substring(0, 200),
+            "❌ Expected JSON but got non-JSON content:",
+            responseText.substring(0, 200),
           );
           return false;
         }
 
-        const result = await response.json();
-        console.log("✅ OTP sent successfully:", result);
+        try {
+          const result = JSON.parse(responseText);
+          console.log("✅ OTP sent successfully:", result);
 
-        if (result.success) {
-          // Store phone for verification
-          this.currentPhone = cleanPhone;
-          return true;
-        } else {
-          console.error("❌ Backend API error:", result);
+          if (result.success) {
+            // Store phone for verification
+            this.currentPhone = cleanPhone;
+            return true;
+          } else {
+            console.error("❌ Backend API error:", result);
+            return false;
+          }
+        } catch (parseError) {
+          console.error(
+            "❌ Failed to parse JSON response:",
+            parseError,
+            "Raw text:",
+            responseText.substring(0, 200),
+          );
           return false;
         }
       } else {
