@@ -90,8 +90,14 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
 
   const refreshBookings = async () => {
     setRefreshing(true);
-    await loadBookings();
-    setRefreshing(false);
+    try {
+      // Force reload from backend/localStorage
+      await loadBookings();
+    } catch (error) {
+      console.error("Error refreshing bookings:", error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   useEffect(() => {
