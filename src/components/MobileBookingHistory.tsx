@@ -273,12 +273,6 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
     );
   }
 
-  console.log("MobileBookingHistory render:", {
-    currentUser,
-    bookings,
-    loading,
-  });
-
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Header */}
