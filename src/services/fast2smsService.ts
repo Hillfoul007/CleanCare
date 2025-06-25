@@ -2,6 +2,7 @@ export class Fast2SmsService {
   private static instance: Fast2SmsService;
   private apiKey: string;
   private currentPhone: string = "";
+  private storedOTP: string = "";
 
   constructor() {
     this.apiKey = import.meta.env.VITE_FAST2SMS_API_KEY || "";
@@ -11,6 +12,13 @@ export class Fast2SmsService {
     } else {
       console.log("✅ Fast2SMS service initialized");
     }
+  }
+
+  static getInstance(): Fast2SmsService {
+    if (!Fast2SmsService.instance) {
+      Fast2SmsService.instance = new Fast2SmsService();
+    }
+    return Fast2SmsService.instance;
   }
 
   async sendOTP(phoneNumber: string): Promise<boolean> {
