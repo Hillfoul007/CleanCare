@@ -70,7 +70,10 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     return phoneRegex.test(phone);
   };
 
-  const handleSendOTP = async () => {
+  const handleSendOTP = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     if (!formData.phone) {
       setError("Please enter your phone number");
       return;
@@ -105,7 +108,10 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     }
   };
 
-  const handleVerifyOTP = async () => {
+  const handleVerifyOTP = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     if (!formData.otp) {
       setError("Please enter the OTP");
       return;
