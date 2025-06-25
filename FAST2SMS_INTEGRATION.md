@@ -160,3 +160,14 @@ For Fast2SMS API issues, refer to:
 - Fast2SMS Support: https://www.fast2sms.com/contact
 
 For implementation issues, check the console logs which include detailed debugging information.
+
+## Additional Fixes
+
+### Geolocation Error Handling
+
+Fixed improper geolocation error logging that was showing "[object GeolocationPositionError]":
+
+- Updated error handlers in LaundryIndex.tsx and GoogleMapsNavigation.tsx
+- Added proper error code and message extraction
+- Created geolocationUtils.ts for consistent error handling across the app
+- Users now see meaningful error messages like "Location access denied" instead of object references
