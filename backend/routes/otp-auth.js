@@ -171,7 +171,8 @@ const sendSMS = async (phone, otp) => {
     }
 
     // DVHosting SMS API endpoint (v4 for GET requests with API key in URL)
-    const url = `https://dvhosting.in/api-sms-v4.php?api_key=${apiKey}&number=${phone}&otp=${otp}`;
+    // Format similar to Fast2SMS: authorization, route, variables_values, numbers
+    const url = `https://dvhosting.in/api-sms-v4.php?authorization=${apiKey}&route=otp&variables_values=${otp}&numbers=${phone}`;
 
     const response = await fetch(url, {
       method: "GET",
