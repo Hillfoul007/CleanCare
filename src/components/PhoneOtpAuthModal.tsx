@@ -43,16 +43,16 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
       const width = window.innerWidth;
       const mobile = width < 768;
       setIsMobile(mobile);
-      console.log("PhoneOtpAuthModal mobile detection:", {
+      console.log('PhoneOtpAuthModal mobile detection:', {
         width,
         mobile,
-        userAgent: navigator.userAgent.includes("Mobile"),
+        userAgent: navigator.userAgent.includes('Mobile')
       });
     };
 
     checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   const [formData, setFormData] = useState({
@@ -168,15 +168,13 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     onClose();
   };
 
-  console.log("PhoneOtpAuthModal render:", { isOpen, currentStep });
+  console.log("PhoneOtpAuthModal render:", { isOpen, currentStep, isMobile });
 
   if (!isOpen) return null;
 
-  console.log("PhoneOtpAuthModal: isOpen=", isOpen, "isMobile=", isMobile);
-
-  // Use the mobile state that's already being managed
-
-  if (isMobile) {
+  // Add error boundary for mobile rendering
+  try {
+    if (isMobile) {
     // Mobile-specific modal implementation
     return (
       <div className="fixed inset-0 z-[1000] bg-black/50 flex items-center justify-center p-4">
