@@ -217,8 +217,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="sms-notifications">SMS Notifications</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="sms-notifications"
+                  className="text-sm font-medium leading-tight"
+                >
+                  SMS Notifications
+                </Label>
                 <Switch
                   id="sms-notifications"
                   checked={preferences.notifications.sms}
@@ -228,8 +233,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="email-notifications">Email Notifications</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="email-notifications"
+                  className="text-sm font-medium leading-tight"
+                >
+                  Email Notifications
+                </Label>
                 <Switch
                   id="email-notifications"
                   checked={preferences.notifications.email}
@@ -239,8 +249,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="order-updates">Order Updates</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="order-updates"
+                  className="text-sm font-medium leading-tight"
+                >
+                  Order Updates
+                </Label>
                 <Switch
                   id="order-updates"
                   checked={preferences.notifications.orderUpdates}
@@ -250,8 +265,13 @@ const PreferencesModal: React.FC<PreferencesModalProps> = ({
                 />
               </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="promotions">Promotional Offers</Label>
+              <div className="flex items-center justify-between gap-4">
+                <Label
+                  htmlFor="promotions"
+                  className="text-sm font-medium leading-tight"
+                >
+                  Promotional Offers
+                </Label>
                 <Switch
                   id="promotions"
                   checked={preferences.notifications.promotions}
