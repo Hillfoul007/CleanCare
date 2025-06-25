@@ -391,6 +391,63 @@ export class Fast2SmsService {
         throw error;
       });
 
+      // Handle local verification for hosted environments without backend
+      if (!response) {
+        console.log(
+          "Fast2SMS: Using local SMS verification - no backend available",
+        );
+        const storedData = this.otpStorage.get(cleanPhone);
+
+        if (!storedData) {
+          console.log("❌ No OTP found for phone:", cleanPhone);
+          return {
+            success: false,
+            error: "No OTP found or expired",
+            message: "Please request a new OTP",
+          };
+        }
+
+        if (Date.now() > storedData.expiresAt) {
+          console.log("❌ OTP expired for phone:", cleanPhone);
+          this.otpStorage.delete(cleanPhone);
+          return {
+            success: false,
+            error: "OTP has expired",
+            message: "Please request a new OTP",
+          };
+        }
+
+        if (storedData.otp === otp) {
+          console.log("✅ SMS OTP verified successfully (local verification)");
+          this.otpStorage.delete(cleanPhone);
+          this.currentPhone = "";
+
+          const mockUser = {
+            id: `user_${cleanPhone}`,
+            phone: cleanPhone,
+            name:
+              name && name.trim()
+                ? name.trim()
+                : `User ${cleanPhone.slice(-4)}`,
+            isVerified: true,
+            createdAt: new Date().toISOString(),
+          };
+
+          return {
+            success: true,
+            user: mockUser,
+            message: "OTP verified successfully",
+          };
+        } else {
+          console.log("❌ Invalid SMS OTP (local verification)");
+          return {
+            success: false,
+            error: "Invalid OTP",
+            message: "Please check your OTP and try again",
+          };
+        }
+      }
+
       if (response.ok) {
         // Get response text first to inspect it
         const responseText = await response.text();
