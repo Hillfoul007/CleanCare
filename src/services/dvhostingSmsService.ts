@@ -72,19 +72,12 @@ export class DVHostingSmsService {
         throw error;
       });
 
-      // Handle simulation mode for hosted environments without backend
+      // Handle direct DVHosting API call for hosted environments without backend
       if (!response) {
         console.log(
-          "DVHosting SMS: Using simulation mode - no backend available",
+          "DVHosting SMS: No backend available, calling DVHosting API directly",
         );
-        // Simulate successful OTP sending
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        console.log("✅ OTP sent (simulation mode - hosted environment)");
-        this.otpStorage.set(cleanPhone, {
-          otp: Math.floor(100000 + Math.random() * 900000).toString(),
-          expiresAt: Date.now() + 5 * 60 * 1000,
-        });
-        return true;
+        return await this.sendDirectDVHostingOTP(cleanPhone);
       }
 
       if (response.ok) {
