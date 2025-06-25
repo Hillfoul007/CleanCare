@@ -208,7 +208,6 @@ export class DVHostingSmsService {
           errorMessage = errorData.message || errorMessage;
           console.error("❌ Backend API error:", response.status, errorData);
         } catch (parseError) {
-          const errorText = await response.text();
           console.error("❌ Backend HTTP error:", response.status, errorText);
         }
         return false;
