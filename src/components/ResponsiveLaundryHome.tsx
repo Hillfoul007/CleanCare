@@ -867,6 +867,13 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
           onClose={() => setShowDebugPanel(false)}
         />
 
+        {/* Booking Debug Panel */}
+        <BookingDebugPanel
+          currentUser={currentUser}
+          isOpen={showBookingDebugPanel}
+          onClose={() => setShowBookingDebugPanel(false)}
+        />
+
         {/* Connection Status */}
         <ConnectionStatus />
       </div>
