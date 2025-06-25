@@ -246,7 +246,20 @@ export class Fast2SmsService {
             otp: otp,
           }),
         },
-      );
+      ).catch((error) => {
+        // Handle fetch errors in hosted environments
+        console.log(
+          "Fast2SMS: Verification fetch error in hosted environment:",
+          error,
+        );
+        if (isBuilderEnv) {
+          console.log(
+            "Fast2SMS: Using local verification for hosted environment",
+          );
+          return null; // Will trigger local verification below
+        }
+        throw error;
+      });
 
       if (response.ok) {
         const result = await response.json();
