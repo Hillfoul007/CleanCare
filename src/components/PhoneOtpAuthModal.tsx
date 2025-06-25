@@ -17,7 +17,7 @@ import {
   MessageSquare,
   X,
 } from "lucide-react";
-import { Fast2SmsService } from "@/services/fast2smsService";
+import { DVHostingSmsService } from "@/services/dvhostingSmsService";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PhoneOtpAuthModalProps {
@@ -102,7 +102,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     name: "",
   });
 
-  const fast2smsService = Fast2SmsService.getInstance();
+  const dvhostingSmsService = DVHostingSmsService.getInstance();
 
   const resetForm = () => {
     setFormData({
@@ -147,7 +147,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     console.log("PhoneOtpAuthModal: Sending OTP to", formData.phone);
 
     try {
-      const result = await fast2smsService.sendSmsOTP(
+      const result = await dvhostingSmsService.sendSmsOTP(
         formData.phone,
         formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
       );
@@ -193,10 +193,10 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setError("");
 
     try {
-      const result = await fast2smsService.verifySmsOTP(
+      const result = await dvhostingSmsService.verifySmsOTP(
         formData.phone,
         formData.otp,
-        formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
+        formData.name,
       );
 
       if (result.success && result.user) {

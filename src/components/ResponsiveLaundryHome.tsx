@@ -34,7 +34,7 @@ import UserMenuDropdown from "./UserMenuDropdown";
 import DebugPanel from "./DebugPanel";
 import ConnectionStatus from "./ConnectionStatus";
 import NotificationPanel from "./NotificationPanel";
-import { Fast2SmsService } from "@/services/fast2smsService";
+import { DVHostingSmsService } from "@/services/dvhostingSmsService";
 import { saveCartData, getCartData } from "@/utils/formPersistence";
 
 interface ResponsiveLaundryHomeProps {
@@ -58,7 +58,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showBookingHistory, setShowBookingHistory] = useState(false);
   const [showDebugPanel, setShowDebugPanel] = useState(false);
-  const fast2smsService = Fast2SmsService.getInstance();
+  const dvhostingSmsService = DVHostingSmsService.getInstance();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [cart, setCart] = useState<{ [key: string]: number }>(() => {
     // Load cart from localStorage on initialization
@@ -193,7 +193,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
   };
 
   const handleLogout = () => {
-    fast2smsService.logout();
+    // DVHosting SMS service doesn't have logout method - user logout handled at app level
     if (onLogout) {
       onLogout();
     }

@@ -155,7 +155,7 @@ const isValidIndianPhone = (phone) => {
   return isValid;
 };
 
-// Enhanced SMS sending using Fast2SMS API
+// Enhanced SMS sending using DVHosting SMS API
 const sendSMS = async (phone, otp) => {
   try {
     log(
@@ -163,52 +163,70 @@ const sendSMS = async (phone, otp) => {
     );
 
     // Check if API key is configured
-    const apiKey = process.env.FAST2SMS_API_KEY;
+    const apiKey = process.env.DVHOSTING_API_KEY;
     if (!apiKey) {
-      log("Fast2SMS API key not configured, using simulation mode");
+      log("DVHosting API key not configured, using simulation mode");
       await new Promise((resolve) => setTimeout(resolve, 100));
       return { success: true, message: "OTP sent (simulation mode)" };
     }
 
-    // Prepare message
-    const message = `Your CleanCare Pro OTP is ${otp}. Valid for 5 minutes. Do not share this code.`;
-    const encodedMessage = encodeURIComponent(message);
-
-    // Fast2SMS API endpoint for OTP
-    const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${apiKey}&route=otp&variables_values=${otp}&flash=0&numbers=${phone}`;
+    // DVHosting SMS API endpoint (v4 for GET requests with API key in URL)
+    // Format similar to Fast2SMS: authorization, route, variables_values, numbers
+    const url = `https://dvhosting.in/api-sms-v4.php?authorization=${apiKey}&route=otp&variables_values=${otp}&numbers=${phone}`;
 
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        "cache-control": "no-cache",
+        "Content-Type": "application/json",
       },
     });
 
     if (response.ok) {
-      const result = await response.json();
-      log(`SMS sent successfully via Fast2SMS: ${JSON.stringify(result)}`);
+      const responseText = await response.text();
+      log(`SMS sent successfully via DVHosting: ${responseText}`);
 
-      // Check if the API response indicates success
-      if (result.return === true || result.request_id) {
-        return { success: true, data: result };
-      } else {
-        log(`Fast2SMS API error: ${JSON.stringify(result)}`);
-        return {
-          success: false,
-          error: result.message || "Failed to send SMS",
-        };
+      try {
+        // Try to parse as JSON first (DVHosting v4 returns JSON)
+        const result = JSON.parse(responseText);
+        if (result.return === true || result.success === true) {
+          return {
+            success: true,
+            message: "OTP sent successfully",
+            data: { request_id: result.request_id },
+          };
+        } else {
+          log(`DVHosting API error: ${JSON.stringify(result)}`);
+          return {
+            success: false,
+            error: result.message || "Failed to send SMS",
+          };
+        }
+      } catch (parseError) {
+        // Fallback to text parsing if not JSON
+        if (
+          responseText.toLowerCase().includes("success") ||
+          responseText.toLowerCase().includes("sent")
+        ) {
+          return { success: true, message: "OTP sent successfully" };
+        } else {
+          log(`DVHosting API error: ${responseText}`);
+          return {
+            success: false,
+            error: responseText || "Failed to send SMS",
+          };
+        }
       }
     } else {
       const errorText = await response.text();
-      log(`Fast2SMS HTTP error: ${response.status} - ${errorText}`);
+      log(`DVHosting HTTP error: ${response.status} - ${errorText}`);
 
       // Fallback to simulation mode in development
       if (process.env.NODE_ENV === "development") {
-        log("Falling back to simulation mode due to Fast2SMS error");
+        log("Falling back to simulation mode due to DVHosting error");
         await new Promise((resolve) => setTimeout(resolve, 100));
         return {
           success: true,
-          message: "OTP sent (simulation mode - Fast2SMS failed)",
+          message: "OTP sent (simulation mode - DVHosting failed)",
         };
       }
 
@@ -219,7 +237,7 @@ const sendSMS = async (phone, otp) => {
 
     // Fallback to simulation mode in development
     if (process.env.NODE_ENV === "development") {
-      log("Falling back to simulation mode due to Fast2SMS network error");
+      log("Falling back to simulation mode due to DVHosting network error");
       await new Promise((resolve) => setTimeout(resolve, 100));
       return {
         success: true,

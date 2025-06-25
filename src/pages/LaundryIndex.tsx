@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ResponsiveLaundryHome from "../components/ResponsiveLaundryHome";
 import LaundryCart from "../components/LaundryCart";
 import MobileBookingHistory from "../components/MobileBookingHistory";
-import { Fast2SmsService } from "../services/fast2smsService";
+import { DVHostingSmsService } from "../services/dvhostingSmsService";
 import PushNotificationService from "../services/pushNotificationService";
 import { useNotifications } from "@/contexts/NotificationContext";
 import {
@@ -17,7 +17,7 @@ const LaundryIndex = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentLocation, setCurrentLocation] = useState("");
 
-  const authService = Fast2SmsService.getInstance();
+  const authService = DVHostingSmsService.getInstance();
   const pushService = PushNotificationService.getInstance();
 
   // Initialize PWA and check auth state
