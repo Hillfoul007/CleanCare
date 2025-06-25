@@ -501,7 +501,7 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                               >
                                 <div className="flex-1">
                                   <p className="font-medium text-gray-900 text-sm">
-                                    {service.name}
+                                    <SafeText>{service.name}</SafeText>
                                   </p>
                                   <p className="text-xs text-gray-600">
                                     Qty: {service.quantity}
