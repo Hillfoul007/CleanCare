@@ -381,18 +381,18 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                       <div className="flex-1 min-w-0">
                         <CardTitle className="text-base sm:text-lg font-bold text-gray-900 mb-1 truncate">
-                          {booking.service || "Home Service"}
+                          {safeBooking.service}
                         </CardTitle>
                         <p className="text-xs sm:text-sm text-green-600 truncate font-medium">
-                          by {booking.provider_name || "HomeServices Pro"}
+                          by {safeBooking.provider_name}
                         </p>
                       </div>
                       <Badge
-                        className={`${getStatusColor(booking.status)} border font-medium`}
+                        className={`${getStatusColor(safeBooking.status)} border font-medium`}
                       >
-                        {getStatusIcon(booking.status)}
+                        {getStatusIcon(safeBooking.status)}
                         <span className="ml-1 capitalize">
-                          {booking.status}
+                          {safeBooking.status}
                         </span>
                       </Badge>
                     </div>
