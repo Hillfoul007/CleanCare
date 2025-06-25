@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ResponsiveLaundryHome from "../components/ResponsiveLaundryHome";
 import LaundryCart from "../components/LaundryCart";
 import MobileBookingHistory from "../components/MobileBookingHistory";
-import { Fast2SmsService } from "../services/fast2smsService";
+import { DVHostingSmsService } from "../services/dvhostingSmsService";
 import PushNotificationService from "../services/pushNotificationService";
 import { useNotifications } from "@/contexts/NotificationContext";
 import {
