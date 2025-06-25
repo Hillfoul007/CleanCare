@@ -176,6 +176,57 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
     await cancelBooking(bookingId);
   };
 
+  const handleAddServices = (booking: any) => {
+    setAddingServicesBooking(booking);
+    setShowAddServicesModal(true);
+  };
+
+  const handleSaveAddedServices = async (updatedBooking: any) => {
+    try {
+      // Update the booking with new services
+      const { data, error } = await adaptiveBookingHelpers.updateBooking(
+        updatedBooking._id || updatedBooking.id,
+        updatedBooking,
+      );
+
+      if (error) {
+        addNotification(
+          createErrorNotification(
+            "Update Failed",
+            `Failed to add services: ${error.message}`,
+          ),
+        );
+        return;
+      }
+
+      // Update the bookings list
+      const updatedBookings = bookings.map((booking: any) =>
+        (booking._id || booking.id) ===
+        (updatedBooking._id || updatedBooking.id)
+          ? updatedBooking
+          : booking,
+      );
+
+      setBookings(updatedBookings);
+      setShowAddServicesModal(false);
+      setAddingServicesBooking(null);
+      addNotification(
+        createSuccessNotification(
+          "Services Added",
+          "Services have been added to your booking successfully!",
+        ),
+      );
+    } catch (error) {
+      console.error("Error adding services:", error);
+      addNotification(
+        createErrorNotification(
+          "Update Failed",
+          "Failed to add services. Please try again.",
+        ),
+      );
+    }
+  };
+
   const canCancelBooking = (booking: any) => {
     const bookingDate = new Date(booking.scheduled_date);
     const now = new Date();
