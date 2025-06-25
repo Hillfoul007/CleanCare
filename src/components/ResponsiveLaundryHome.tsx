@@ -201,7 +201,8 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
 
   const handleViewBookings = () => {
     if (currentUser) {
-      setShowBookingHistory(true);
+      // Use parent navigation to go to bookings view
+      onViewBookings();
     } else {
       setShowAuthModal(true);
     }
