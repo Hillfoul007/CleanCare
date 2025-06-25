@@ -193,34 +193,55 @@ export class DVHostingSmsService {
     try {
       const cleanPhone = phoneNumber.replace(/^\+91/, "");
 
-      // Detect Builder.io environment and use appropriate URL
-      const isBuilderEnv =
+      // Detect hosted environment
+      const isHostedEnv =
         window.location.hostname.includes("builder.codes") ||
         window.location.hostname.includes("fly.dev") ||
         document.querySelector("[data-loc]") !== null;
 
-      // Use environment variable for API base URL, with fallback
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-      const baseUrl = isBuilderEnv ? apiBaseUrl.replace("/api", "") : "";
+      // In hosted environments, use local verification
+      if (isHostedEnv) {
+        console.log(
+          "DVHosting SMS: Hosted environment, using local verification",
+        );
+        const storedData = this.otpStorage.get(cleanPhone);
 
-      // Call backend API for OTP verification
-      const response = await fetch(
-        `${baseUrl}/api/auth/verify-otp?t=${Date.now()}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-            Expires: "0",
-          },
-          body: JSON.stringify({
-            phone: cleanPhone,
-            otp: otp,
-          }),
+        if (!storedData) {
+          console.log("❌ No OTP found for phone:", cleanPhone);
+          return false;
+        }
+
+        if (Date.now() > storedData.expiresAt) {
+          console.log("❌ OTP expired for phone:", cleanPhone);
+          this.otpStorage.delete(cleanPhone);
+          return false;
+        }
+
+        if (storedData.otp === otp) {
+          console.log("✅ OTP verified successfully (hosted environment)");
+          this.otpStorage.delete(cleanPhone);
+          this.currentPhone = "";
+          return true;
+        } else {
+          console.log("❌ Invalid OTP (hosted environment)");
+          return false;
+        }
+      }
+
+      // For local development, try backend API
+      const response = await fetch(`/api/auth/verify-otp?t=${Date.now()}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
         },
-      ).catch((error) => {
+        body: JSON.stringify({
+          phone: cleanPhone,
+          otp: otp,
+        }),
+      }).catch((error) => {
         // Handle fetch errors in hosted environments
         console.log(
           "DVHosting SMS: Verification fetch error in hosted environment:",
