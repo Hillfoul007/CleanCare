@@ -372,23 +372,90 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                   </CardHeader>
 
                   <CardContent className="space-y-4 p-4 sm:p-6">
-                    {/* Date & Time */}
-                    <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl border border-green-100">
-                      <Calendar className="h-5 w-5 text-green-600" />
-                      <div className="flex-1">
-                        <p className="font-medium text-gray-900">
-                          {new Date(booking.scheduled_date).toLocaleDateString(
-                            "en-US",
-                            {
-                              weekday: "long",
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            },
-                          )}
+                    {/* Booked Services */}
+                    {booking.services && booking.services.length > 0 && (
+                      <div className="space-y-3">
+                        <h4 className="font-semibold text-gray-900 text-sm">
+                          Booked Services
+                        </h4>
+                        {booking.services.map((service: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-100"
+                          >
+                            <div className="flex-1">
+                              <p className="font-medium text-gray-900 text-sm">
+                                {service.name || service.service}
+                              </p>
+                              <p className="text-xs text-gray-600">
+                                Qty: {service.quantity || 1}
+                              </p>
+                            </div>
+                            <p className="font-semibold text-blue-600">
+                              ₹{service.price || service.amount}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Pickup & Delivery Slots */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="p-3 bg-green-50 rounded-xl border border-green-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="h-4 w-4 text-green-600" />
+                          <span className="font-medium text-gray-900 text-sm">
+                            Pickup
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-900">
+                          {booking.pickupDate
+                            ? new Date(booking.pickupDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )
+                            : booking.scheduled_date
+                              ? new Date(
+                                  booking.scheduled_date,
+                                ).toLocaleDateString("en-US", {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                })
+                              : "Date TBD"}
                         </p>
-                        <p className="text-sm text-green-600">
-                          at {booking.scheduled_time}
+                        <p className="text-xs text-green-600">
+                          {booking.pickupTime ||
+                            booking.scheduled_time ||
+                            "Time TBD"}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="h-4 w-4 text-emerald-600" />
+                          <span className="font-medium text-gray-900 text-sm">
+                            Delivery
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-900">
+                          {booking.deliveryDate
+                            ? new Date(booking.deliveryDate).toLocaleDateString(
+                                "en-US",
+                                {
+                                  weekday: "short",
+                                  month: "short",
+                                  day: "numeric",
+                                },
+                              )
+                            : "Date TBD"}
+                        </p>
+                        <p className="text-xs text-emerald-600">
+                          {booking.deliveryTime || "Time TBD"}
                         </p>
                       </div>
                     </div>
