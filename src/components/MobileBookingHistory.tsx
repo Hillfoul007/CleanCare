@@ -420,13 +420,30 @@ const MobileBookingHistory: React.FC<MobileBookingHistoryProps> = ({
                                 },
                               )
                             : booking.scheduled_date
-                              ? new Date(
-                                  booking.scheduled_date,
-                                ).toLocaleDateString("en-US", {
-                                  weekday: "short",
-                                  month: "short",
-                                  day: "numeric",
-                                })
+                              ? (() => {
+                                  // Handle YYYY-MM-DD format properly
+                                  const dateStr = booking.scheduled_date;
+                                  let date;
+
+                                  if (dateStr.includes("-")) {
+                                    // YYYY-MM-DD format - parse as local date
+                                    const [year, month, day] =
+                                      dateStr.split("-");
+                                    date = new Date(
+                                      parseInt(year),
+                                      parseInt(month) - 1,
+                                      parseInt(day),
+                                    );
+                                  } else {
+                                    date = new Date(dateStr);
+                                  }
+
+                                  return date.toLocaleDateString("en-US", {
+                                    weekday: "short",
+                                    month: "short",
+                                    day: "numeric",
+                                  });
+                                })()
                               : "Date TBD"}
                         </p>
                         <p className="text-xs text-green-600">
