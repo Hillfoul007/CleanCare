@@ -75,21 +75,42 @@ const isValidPhone = (p) => /^(91)?[6-9]\d{9}$/.test(cleanPhone(p));
 
 const sendSMS = async (phone, otp) => {
   const apiKey = process.env.DVHOSTING_API_KEY;
-  if (!apiKey) return { success: true, message: "Simulation mode" };
+  if (!apiKey) {
+    return { success: true, message: "Simulation mode (no API key)" };
+  }
 
   const url = `https://dvhosting.in/api-sms-v4.php?authorization=${apiKey}&route=otp&variables_values=${otp}&numbers=${phone}`;
-  const res = await fetch(url);
-  const text = await res.text();
-  if (!text || text.trim() === "") {
-    return { success: false, error: "Empty response from DVHosting" };
-  }
   try {
-    const json = JSON.parse(text);
-    return json.return || json.success ? { success: true } : { success: false, error: json.message };
-  } catch {
-    return /success/i.test(text) ? { success: true } : { success: false, error: text };
+    const res = await fetch(url);
+    const contentType = res.headers.get("content-type");
+    const text = await res.text();
+
+    if (!text || text.trim() === "") {
+      console.error("DVHosting: Empty response body");
+      return { success: false, error: "Empty response from DVHosting" };
+    }
+
+    if (contentType && contentType.includes("application/json")) {
+      const json = JSON.parse(text);
+      if (json.return === true || json.success === true) {
+        return { success: true, message: "OTP sent" };
+      } else {
+        return { success: false, error: json.message || "Failed to send OTP" };
+      }
+    }
+
+    // Fallback: try parsing manually from plain text
+    if (/success|sent/i.test(text)) {
+      return { success: true, message: "OTP sent" };
+    }
+
+    return { success: false, error: text };
+  } catch (error) {
+    console.error("DVHosting SMS error:", error.message);
+    return { success: false, error: error.message };
   }
 };
+
 
 const generateToken = (uid) => jwt.sign({ userId: uid, iat: Date.now() }, process.env.JWT_SECRET, { expiresIn: "30d" });
 const validateRequest = (fields) => (req, res, next) => {
