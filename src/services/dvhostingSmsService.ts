@@ -774,6 +774,19 @@ export class DVHostingSmsService {
       return null;
     }
   }
+
+  /**
+   * Get current user's MongoDB ID for booking association
+   */
+  getCurrentUserMongoId(): string | null {
+    try {
+      const user = this.getCurrentUser();
+      return user?._id || user?.id || null;
+    } catch (error) {
+      this.log("⚠️ Error getting user MongoDB ID:", error);
+      return null;
+    }
+  }
 }
 
 export default DVHostingSmsService;
