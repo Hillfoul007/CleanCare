@@ -154,7 +154,6 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
       }
     } catch (error: any) {
       setError(error.message || "Failed to send OTP. Please try again.");
-    }
     } finally {
       setIsLoading(false);
     }
@@ -245,8 +244,6 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     resetForm();
     onClose();
   };
-
-
 
   if (!isOpen) return null;
 
