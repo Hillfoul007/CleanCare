@@ -534,29 +534,24 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
         </div>
 
         {/* Floating Cart Button - Mobile */}
-        <div className="fixed bottom-4 left-4 right-4 z-50">
-          <Button
-            onClick={onViewCart}
-            className={`w-full text-white rounded-xl py-3 flex items-center justify-between shadow-lg transition-all ${
-              getCartItemCount() > 0
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-gray-600 hover:bg-gray-700"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="h-4 w-4" />
-              <span className="font-semibold text-sm">
-                {getCartItemCount() > 0
-                  ? `${getCartItemCount()} item${getCartItemCount() > 1 ? "s" : ""}`
-                  : "Cart Empty"}
+        {getCartItemCount() > 0 && (
+          <div className="fixed bottom-4 left-4 right-4 z-50">
+            <Button
+              onClick={onViewCart}
+              className="w-full bg-green-600 hover:bg-green-700 text-white rounded-xl py-3 flex items-center justify-between shadow-lg"
+            >
+              <div className="flex items-center gap-2">
+                <ShoppingBag className="h-4 w-4" />
+                <span className="font-semibold text-sm">
+                  {getCartItemCount()} item{getCartItemCount() > 1 ? "s" : ""}
+                </span>
+              </div>
+              <span className="text-xs bg-white/20 px-2 py-1 rounded">
+                View Cart
               </span>
-            </div>
-            <span className="text-xs bg-white/20 px-2 py-1 rounded">
-              View Cart
-            </span>
-          </Button>
-        </div>
-
+            </Button>
+          </div>
+        )}
         {/* Empty State */}
         {!getPopularServices().length && (
           <div className="text-center py-8">
