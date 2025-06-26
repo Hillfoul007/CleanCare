@@ -10,7 +10,7 @@ require("dotenv").config();
 const { connectDB } = require("./config/database");
 
 // Import routes
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/otp-auth");
 const bookingRoutes = require("./routes/bookings");
 const riderRoutes = require("./routes/riders");
 const locationRoutes = require("./routes/location");
