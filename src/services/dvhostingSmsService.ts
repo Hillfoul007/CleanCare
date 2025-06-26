@@ -3,9 +3,18 @@ export class DVHostingSmsService {
   private currentPhone: string = "";
   private otpStorage: Map<string, { otp: string; expiresAt: number }> =
     new Map();
+  private readonly debugMode = import.meta.env.DEV; // Only log in development
 
   constructor() {
-    console.log("✅ DVHosting SMS service initialized");
+    if (this.debugMode) {
+      console.log("✅ DVHosting SMS service initialized");
+    }
+  }
+
+  private log(...args: any[]) {
+    if (this.debugMode) {
+      console.log(...args);
+    }
   }
 
   static getInstance(): DVHostingSmsService {
@@ -31,7 +40,7 @@ export class DVHostingSmsService {
         window.location.hostname.includes("fly.dev") ||
         document.querySelector("[data-loc]") !== null;
 
-      console.log("DVHosting SMS: Environment detection:", {
+      this.log("DVHosting SMS: Environment detection:", {
         isHostedEnv,
         hostname: window.location.hostname,
         hasDataLoc: !!document.querySelector("[data-loc]"),
@@ -39,7 +48,7 @@ export class DVHostingSmsService {
 
       // In hosted environments, skip backend API and use direct/simulation mode
       if (isHostedEnv) {
-        console.log(
+        this.log(
           "DVHosting SMS: Hosted environment detected, using direct API call",
         );
         return await this.sendDirectDVHostingOTP(cleanPhone);
@@ -49,9 +58,9 @@ export class DVHostingSmsService {
       const apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
-      console.log("DVHosting SMS: Local environment, trying backend API:", {
+      this.log("DVHosting SMS: Local environment, trying backend API:", {
         apiBaseUrl,
-        finalUrl: `/api/auth/send-otp`,
+        endpoint: "/api/otp/send",
       });
 
       // Call backend API for local development
@@ -120,7 +129,7 @@ export class DVHostingSmsService {
 
         try {
           const result = JSON.parse(responseText);
-          console.log("✅ OTP sent successfully:", result);
+          this.log("✅ OTP sent successfully:", result);
 
           if (result.success) {
             // Store phone for verification
@@ -378,24 +387,33 @@ export class DVHostingSmsService {
         }
 
         if (storedData.otp === otp) {
-          console.log("✅ SMS OTP verified successfully (hosted environment)");
+          this.log("✅ SMS OTP verified successfully (hosted environment)");
           this.otpStorage.delete(cleanPhone);
           this.currentPhone = "";
 
-          const mockUser = {
-            id: `user_${cleanPhone}`,
-            phone: cleanPhone,
-            name:
-              name && name.trim()
-                ? name.trim()
-                : `User ${cleanPhone.slice(-4)}`,
-            isVerified: true,
-            createdAt: new Date().toISOString(),
-          };
+          // Try to restore user from backend first
+          let user = await this.restoreUserFromBackend(cleanPhone);
+
+          if (!user) {
+            // Create new user if not found in backend
+            user = {
+              id: `user_${cleanPhone}`,
+              phone: cleanPhone,
+              name:
+                name && name.trim()
+                  ? name.trim()
+                  : `User ${cleanPhone.slice(-4)}`,
+              isVerified: true,
+              createdAt: new Date().toISOString(),
+            };
+
+            // Save new user to backend
+            await this.saveUserToBackend(user);
+          }
 
           return {
             success: true,
-            user: mockUser,
+            user: user,
             message: "OTP verified successfully",
           };
         } else {
@@ -513,7 +531,7 @@ export class DVHostingSmsService {
 
         try {
           const result = JSON.parse(responseText);
-          console.log("✅ SMS OTP verification result:", result);
+          this.log("✅ SMS OTP verification result:", result);
 
           if (result.success) {
             return {
@@ -675,9 +693,126 @@ export class DVHostingSmsService {
       localStorage.removeItem("current_user");
       localStorage.removeItem("cleancare_auth_token");
       this.currentPhone = "";
-      console.log("✅ User logged out successfully");
+      this.log("✅ User logged out successfully");
     } catch (error) {
       console.error("Error during logout:", error);
+    }
+  }
+
+  /**
+   * Save user to MongoDB backend for persistence across sessions
+   */
+  async saveUserToBackend(user: any): Promise<boolean> {
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
+
+      // Prepare user data for backend
+      const userData = {
+        phone: user.phone,
+        full_name: user.name || `User ${user.phone.slice(-4)}`,
+        email: user.email || "",
+        user_type: "customer",
+        is_verified: true,
+        phone_verified: true,
+        preferences: user.preferences || {},
+      };
+
+      this.log("📤 Saving user to backend:", userData);
+
+      const response = await fetch(`${apiBaseUrl}/auth/save-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("cleancare_auth_token")}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        this.log("✅ User saved to backend successfully");
+        return true;
+      } else {
+        this.log("⚠️ Backend user save failed:", response.status);
+        return false;
+      }
+    } catch (error) {
+      this.log("⚠️ Backend user save error:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Restore user session from backend on login
+   */
+  async restoreUserFromBackend(phone: string): Promise<any | null> {
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
+
+      this.log("🔄 Restoring user from backend:", phone);
+
+      const response = await fetch(`${apiBaseUrl}/auth/get-user-by-phone`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.user) {
+          this.log("✅ User restored from backend");
+          return result.user;
+        }
+      }
+
+      this.log("⚠️ User not found in backend");
+      return null;
+    } catch (error) {
+      this.log("⚠️ Backend user restore error:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Get current user's MongoDB ID for booking association
+   */
+  getCurrentUserMongoId(): string | null {
+    try {
+      const user = this.getCurrentUser();
+      return user?._id || user?.id || null;
+    } catch (error) {
+      this.log("⚠️ Error getting user MongoDB ID:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Restore user session from backend if available
+   * Call this on app startup to restore user data after logout
+   */
+  async restoreSession(): Promise<boolean> {
+    try {
+      const localUser = this.getCurrentUser();
+      if (!localUser || !localUser.phone) {
+        return false;
+      }
+
+      // Try to get fresh user data from backend
+      const backendUser = await this.restoreUserFromBackend(localUser.phone);
+      if (backendUser) {
+        // Update local storage with fresh backend data
+        this.setCurrentUser(backendUser);
+        this.log("✅ Session restored from backend");
+        return true;
+      }
+
+      this.log("ℹ️ Session restore: using local data");
+      return true;
+    } catch (error) {
+      this.log("⚠️ Session restore failed:", error);
+      return false;
     }
   }
 }

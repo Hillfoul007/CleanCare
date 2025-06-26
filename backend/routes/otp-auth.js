@@ -27,7 +27,8 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
     validate: {
-      validator: (v) => !v || /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v),
+      validator: (v) =>
+        !v || /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(v),
       message: "Please enter a valid email address",
     },
   },
@@ -61,15 +62,20 @@ class OTPManager {
     const expiry = new Date(Date.now() + minutes * 60 * 1000);
     this.otpStore.set(phone, { otp, expiry, attempts: 0 });
   }
-  get(phone) { return this.otpStore.get(phone); }
-  delete(phone) { return this.otpStore.delete(phone); }
+  get(phone) {
+    return this.otpStore.get(phone);
+  }
+  delete(phone) {
+    return this.otpStore.delete(phone);
+  }
   incrementAttempts(phone) {
     if (this.otpStore.has(phone)) this.otpStore.get(phone).attempts++;
   }
 }
 const otpManager = new OTPManager();
 
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+const generateOTP = () =>
+  Math.floor(100000 + Math.random() * 900000).toString();
 const cleanPhone = (p) => p?.replace(/\D/g, "");
 const isValidPhone = (p) => /^(91)?[6-9]\d{9}$/.test(cleanPhone(p));
 
@@ -85,27 +91,39 @@ const sendSMS = async (phone, otp) => {
   }
   try {
     const json = JSON.parse(text);
-    return json.return || json.success ? { success: true } : { success: false, error: json.message };
+    return json.return || json.success
+      ? { success: true }
+      : { success: false, error: json.message };
   } catch {
-    return /success/i.test(text) ? { success: true } : { success: false, error: text };
+    return /success/i.test(text)
+      ? { success: true }
+      : { success: false, error: text };
   }
 };
 
-const generateToken = (uid) => jwt.sign({ userId: uid, iat: Date.now() }, process.env.JWT_SECRET, { expiresIn: "30d" });
+const generateToken = (uid) =>
+  jwt.sign({ userId: uid, iat: Date.now() }, process.env.JWT_SECRET, {
+    expiresIn: "30d",
+  });
 const validateRequest = (fields) => (req, res, next) => {
   const missing = fields.filter((f) => !req.body[f]);
-  if (missing.length) return res.status(400).json({ success: false, message: `Missing: ${missing.join(", ")}` });
+  if (missing.length)
+    return res
+      .status(400)
+      .json({ success: false, message: `Missing: ${missing.join(", ")}` });
   next();
 };
 
 // Routes
 router.post("/send-otp", validateRequest(["phone"]), async (req, res) => {
   const phone = cleanPhone(req.body.phone);
-  if (!isValidPhone(phone)) return res.status(400).json({ success: false, message: "Invalid phone" });
+  if (!isValidPhone(phone))
+    return res.status(400).json({ success: false, message: "Invalid phone" });
   const otp = generateOTP();
   otpManager.store(phone, otp);
   const sms = await sendSMS(phone, otp);
-  if (!sms.success) return res.status(500).json({ success: false, message: sms.error });
+  if (!sms.success)
+    return res.status(500).json({ success: false, message: sms.error });
 
   res.setHeader("Content-Type", "application/json");
   return res.status(200).json({
@@ -115,37 +133,173 @@ router.post("/send-otp", validateRequest(["phone"]), async (req, res) => {
   });
 });
 
-router.post("/verify-otp", validateRequest(["phone", "otp"]), async (req, res) => {
-  const phone = cleanPhone(req.body.phone);
-  const otp = req.body.otp;
-  const name = req.body.name;
-  const data = otpManager.get(phone);
-  if (!data || new Date() > data.expiry) return res.status(400).json({ success: false, message: "OTP expired or not found" });
-  if (data.attempts >= 3) return res.status(400).json({ success: false, message: "Too many attempts" });
-  if (data.otp !== otp) {
-    otpManager.incrementAttempts(phone);
-    return res.status(400).json({ success: false, message: "Invalid OTP" });
-  }
-  otpManager.delete(phone);
+router.post(
+  "/verify-otp",
+  validateRequest(["phone", "otp"]),
+  async (req, res) => {
+    const phone = cleanPhone(req.body.phone);
+    const otp = req.body.otp;
+    const name = req.body.name;
+    const data = otpManager.get(phone);
+    if (!data || new Date() > data.expiry)
+      return res
+        .status(400)
+        .json({ success: false, message: "OTP expired or not found" });
+    if (data.attempts >= 3)
+      return res
+        .status(400)
+        .json({ success: false, message: "Too many attempts" });
+    if (data.otp !== otp) {
+      otpManager.incrementAttempts(phone);
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
+    }
+    otpManager.delete(phone);
 
-  let user = await User.findOne({ phone });
-  if (!user) {
-    if (!name) return res.status(400).json({ success: false, message: "Name required" });
-    user = new User({ phone, name, isVerified: true });
-  } else {
-    user.isVerified = true;
-    if (!user.name && name) user.name = name;
-  }
-  await user.save();
+    let user = await User.findOne({ phone });
+    if (!user) {
+      if (!name)
+        return res
+          .status(400)
+          .json({ success: false, message: "Name required" });
+      user = new User({ phone, name, isVerified: true });
+    } else {
+      user.isVerified = true;
+      if (!user.name && name) user.name = name;
+    }
+    await user.save();
 
-  const token = generateToken(user._id);
-  res.setHeader("Content-Type", "application/json");
-  res.status(200).json({ success: true, message: "Verified", data: { user, token, expiresIn: 2592000 } });
+    const token = generateToken(user._id);
+    res.setHeader("Content-Type", "application/json");
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Verified",
+        data: { user, token, expiresIn: 2592000 },
+      });
+  },
+);
+
+// Save user data (for frontend persistence)
+router.post("/save-user", async (req, res) => {
+  try {
+    const {
+      phone,
+      full_name,
+      email,
+      user_type = "customer",
+      is_verified = true,
+      phone_verified = true,
+      preferences = {},
+    } = req.body;
+
+    if (!phone) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Phone number is required" });
+    }
+
+    const cleanedPhone = cleanPhone(phone);
+    if (!isValidPhone(cleanedPhone)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid phone number" });
+    }
+
+    let user = await User.findOne({ phone: cleanedPhone });
+
+    if (!user) {
+      // Create new user
+      user = new User({
+        phone: cleanedPhone,
+        name: full_name || `User ${cleanedPhone.slice(-4)}`,
+        email: email || "",
+        isVerified: is_verified,
+      });
+    } else {
+      // Update existing user
+      if (full_name) user.name = full_name;
+      if (email) user.email = email;
+      user.isVerified = is_verified;
+      user.lastLogin = new Date();
+    }
+
+    await user.save();
+    log("User saved/updated:", user.phone);
+
+    res.setHeader("Content-Type", "application/json");
+    res.status(200).json({
+      success: true,
+      message: "User saved successfully",
+      user: {
+        _id: user._id,
+        phone: user.phone,
+        name: user.name,
+        email: user.email,
+        isVerified: user.isVerified,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+    });
+  } catch (error) {
+    log("Error saving user:", error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
+
+// Get user by phone number
+router.post("/get-user-by-phone", async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    if (!phone) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Phone number is required" });
+    }
+
+    const cleanedPhone = cleanPhone(phone);
+    const user = await User.findOne({ phone: cleanedPhone });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    res.setHeader("Content-Type", "application/json");
+    res.status(200).json({
+      success: true,
+      user: {
+        _id: user._id,
+        phone: user.phone,
+        name: user.name,
+        email: user.email,
+        isVerified: user.isVerified,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        lastLogin: user.lastLogin,
+      },
+    });
+  } catch (error) {
+    log("Error fetching user:", error.message);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
 router.get("/health", (req, res) => {
   res.setHeader("Content-Type", "application/json");
-  res.status(200).json({ success: true, status: "healthy", timestamp: new Date().toISOString() });
+  res
+    .status(200)
+    .json({
+      success: true,
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+    });
 });
 
 module.exports = router;

@@ -1,4 +1,5 @@
 import MongoDBService from "./mongodbService";
+import { DVHostingSmsService } from "./dvhostingSmsService";
 
 export interface BookingDetails {
   id: string;
@@ -47,6 +48,48 @@ export class BookingService {
   }
 
   /**
+   * Get the current user's proper MongoDB ID for booking association
+   */
+  private async getCurrentUserIdForBooking(): Promise<string> {
+    const authService = DVHostingSmsService.getInstance();
+    const currentUser = authService.getCurrentUser();
+
+    if (!currentUser) {
+      throw new Error("No authenticated user found");
+    }
+
+    // If we already have a MongoDB ID, use it
+    if (currentUser._id) {
+      return currentUser._id;
+    }
+
+    // If we only have phone number, try to resolve MongoDB ID
+    if (currentUser.phone) {
+      try {
+        const response = await fetch(`/api/auth/get-user-by-phone`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: currentUser.phone }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result.user && result.user._id) {
+            // Update local user data with MongoDB ID
+            authService.setCurrentUser(result.user);
+            return result.user._id;
+          }
+        }
+      } catch (error) {
+        console.warn("Failed to resolve user MongoDB ID:", error);
+      }
+    }
+
+    // Fallback to phone number as user ID
+    return currentUser.phone || currentUser.id || "anonymous";
+  }
+
+  /**
    * Create a new booking
    */
   async createBooking(
@@ -55,11 +98,23 @@ export class BookingService {
     try {
       console.log("📝 Creating new booking:", bookingData);
 
+      // Get proper user ID for MongoDB association
+      let resolvedUserId: string;
+
+      if (bookingData.userId) {
+        resolvedUserId = bookingData.userId;
+      } else {
+        // Get current user's MongoDB ID
+        resolvedUserId = await this.getCurrentUserIdForBooking();
+        console.log("✅ Resolved user ID for booking:", resolvedUserId);
+      }
+
       // Generate booking ID
       const bookingId = `booking_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
       const booking: BookingDetails = {
         ...bookingData,
+        userId: resolvedUserId, // Use resolved user ID
         id: bookingId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -101,6 +156,23 @@ export class BookingService {
         success: false,
         error:
           error instanceof Error ? error.message : "Failed to create booking",
+      };
+    }
+  }
+
+  /**
+   * Get current user's bookings (with automatic user ID resolution)
+   */
+  async getCurrentUserBookings(): Promise<BookingResponse> {
+    try {
+      const userId = await this.getCurrentUserIdForBooking();
+      return this.getUserBookings(userId);
+    } catch (error) {
+      console.error("Failed to get current user bookings:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to get bookings",
       };
     }
   }

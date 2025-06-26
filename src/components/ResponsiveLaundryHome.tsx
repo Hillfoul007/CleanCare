@@ -119,9 +119,6 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
         (isTouchDevice && width <= 1024);
 
       setIsMobile(isMobileDevice);
-      console.log(
-        `Mobile detection: width=${width}, userAgent=${isMobileUserAgent}, viewport=${isMobileViewport}, touch=${isTouchDevice}, final=${isMobileDevice}`,
-      );
     };
 
     checkScreenSize();

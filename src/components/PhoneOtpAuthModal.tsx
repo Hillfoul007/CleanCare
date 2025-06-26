@@ -72,30 +72,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [isMobile, setIsMobile] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      return window.innerWidth < 768;
-    }
-    return false;
-  });
-
-  // Simple and reliable mobile detection
-  React.useEffect(() => {
-    const checkMobile = () => {
-      const width = window.innerWidth;
-      const mobile = width < 768;
-      setIsMobile(mobile);
-      console.log("PhoneOtpAuthModal mobile detection:", {
-        width,
-        mobile,
-        userAgent: navigator.userAgent.includes("Mobile"),
-      });
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const isMobile = useIsMobile();
 
   const [formData, setFormData] = useState({
     phone: "",
@@ -145,31 +122,19 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setIsLoading(true);
     setError("");
 
-    console.log("PhoneOtpAuthModal: Sending OTP to", formData.phone);
-
     try {
       const result = await dvhostingSmsService.sendSmsOTP(
         formData.phone,
         formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
       );
 
-      console.log("PhoneOtpAuthModal: OTP send result", result);
-
       if (result.success) {
         setSuccess(result.message || "OTP sent to your phone!");
         setCurrentStep("otp");
-        console.log("PhoneOtpAuthModal: Switched to OTP step");
       } else {
         setError(result.error || "Failed to send OTP");
-        console.error("PhoneOtpAuthModal: OTP send failed", result.error);
       }
     } catch (error: any) {
-      console.error("PhoneOtpAuthModal: Exception during OTP send", error);
-      console.error("PhoneOtpAuthModal: Error details:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      });
       setError(error.message || "Failed to send OTP. Please try again.");
     } finally {
       setIsLoading(false);
@@ -206,36 +171,11 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
         // Save user authentication to localStorage for persistence
         dvhostingSmsService.setCurrentUser(result.user);
 
-        // Also save user to database via UserService
+        // Save user to MongoDB backend for persistence across sessions
         try {
-          const { UserService } = await import("@/services/userService");
-          const userService = UserService.getInstance();
-          await userService.saveUser({
-            phone: result.user.phone,
-            name: result.user.name || `User ${result.user.phone.slice(-4)}`,
-            email: "",
-            preferences: {
-              notifications: {
-                push: true,
-                sms: true,
-                email: true,
-                orderUpdates: true,
-                promotions: false,
-              },
-              privacy: { shareData: false, profileVisibility: "private" },
-              communication: {
-                language: "english",
-                communicationMethod: "sms",
-              },
-              theme: { darkMode: false, colorScheme: "green" },
-            },
-            addresses: [],
-            createdAt: result.user.createdAt || new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
-          console.log("✅ User saved to database after OTP verification");
+          await dvhostingSmsService.saveUserToBackend(result.user);
         } catch (userSaveError) {
-          console.warn("⚠️ Failed to save user to database:", userSaveError);
+          // Silent fail for user save to backend
         }
 
         onSuccess(result.user);
@@ -258,12 +198,9 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
   };
 
   const handleClose = () => {
-    console.log("PhoneOtpAuthModal: handleClose called");
     resetForm();
     onClose();
   };
-
-  console.log("PhoneOtpAuthModal render:", { isOpen, currentStep, isMobile });
 
   if (!isOpen) return null;
 
