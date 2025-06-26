@@ -3,9 +3,18 @@ export class DVHostingSmsService {
   private currentPhone: string = "";
   private otpStorage: Map<string, { otp: string; expiresAt: number }> =
     new Map();
+  private readonly debugMode = import.meta.env.DEV; // Only log in development
 
   constructor() {
-    console.log("✅ DVHosting SMS service initialized");
+    if (this.debugMode) {
+      console.log("✅ DVHosting SMS service initialized");
+    }
+  }
+
+  private log(...args: any[]) {
+    if (this.debugMode) {
+      console.log(...args);
+    }
   }
 
   static getInstance(): DVHostingSmsService {
