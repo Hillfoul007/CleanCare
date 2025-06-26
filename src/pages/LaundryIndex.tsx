@@ -139,10 +139,18 @@ const LaundryIndex = () => {
     latitude: number,
     longitude: number,
   ): Promise<string> => {
+    console.log(
+      `🔄 Attempting reverse geocoding for: ${latitude}, ${longitude}`,
+    );
+
     // Method 1: Try Google Maps API if available
     const googleApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     if (googleApiKey) {
       try {
+        console.log("🗺️ Trying Google Maps API...");
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const response = await fetch(
           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googleApiKey}`,
           {
@@ -150,8 +158,11 @@ const LaundryIndex = () => {
             headers: {
               Accept: "application/json",
             },
+            signal: controller.signal,
           },
         );
+
+        clearTimeout(timeoutId);
 
         if (response.ok) {
           const data = await response.json();
@@ -171,22 +182,26 @@ const LaundryIndex = () => {
             );
 
             if (cityComponent) {
-              return stateComponent &&
+              const location =
+                stateComponent &&
                 cityComponent.long_name !== stateComponent.long_name
-                ? `${cityComponent.long_name}, ${stateComponent.long_name}`
-                : cityComponent.long_name;
+                  ? `${cityComponent.long_name}, ${stateComponent.long_name}`
+                  : cityComponent.long_name;
+              console.log("✅ Google Maps success:", location);
+              return location;
             }
           }
         }
       } catch (error) {
-        console.log("Google Maps geocoding failed:", error);
+        console.log("❌ Google Maps geocoding failed:", error);
       }
     }
 
     // Method 2: Try OpenStreetMap with better error handling
     try {
+      console.log("🌍 Trying OpenStreetMap API...");
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // Longer timeout for OSM
 
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=12&addressdetails=1`,
@@ -194,7 +209,7 @@ const LaundryIndex = () => {
           method: "GET",
           headers: {
             Accept: "application/json",
-            "User-Agent": "CleanCare-App",
+            "User-Agent": "CleanCare-App/1.0",
           },
           signal: controller.signal,
         },
@@ -215,14 +230,18 @@ const LaundryIndex = () => {
           const state = data.address.state;
 
           if (city) {
-            return state && city !== state ? `${city}, ${state}` : city;
+            const location =
+              state && city !== state ? `${city}, ${state}` : city;
+            console.log("✅ OpenStreetMap success:", location);
+            return location;
           } else if (state) {
+            console.log("✅ OpenStreetMap success (state only):", state);
             return state;
           }
         }
       }
     } catch (error) {
-      console.log("OpenStreetMap geocoding failed:", error);
+      console.log("❌ OpenStreetMap geocoding failed:", error);
     }
 
     // Method 3: Fallback based on approximate coordinates (India regions)
