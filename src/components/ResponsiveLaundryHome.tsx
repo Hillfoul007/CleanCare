@@ -853,22 +853,28 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
         </div>
 
         {/* Floating Cart Button - Desktop */}
-        {getCartItemCount() > 0 && (
-          <div className="fixed bottom-8 right-8 z-50">
-            <Button
-              onClick={onViewCart}
-              className="bg-green-600 hover:bg-green-700 text-white rounded-2xl py-4 px-6 flex items-center gap-3 shadow-lg hover:shadow-xl transition-all"
-            >
-              <ShoppingBag className="h-5 w-5" />
-              <div>
-                <div className="font-semibold">
-                  {getCartItemCount()} item{getCartItemCount() > 1 ? "s" : ""}
-                </div>
-                <div className="text-sm opacity-90">₹{getCartTotal()}</div>
+        <div className="fixed bottom-8 right-8 z-50">
+          <Button
+            onClick={onViewCart}
+            className={`text-white rounded-2xl py-4 px-6 flex items-center gap-3 shadow-lg hover:shadow-xl transition-all ${
+              getCartItemCount() > 0
+                ? "bg-green-600 hover:bg-green-700"
+                : "bg-gray-600 hover:bg-gray-700"
+            }`}
+          >
+            <ShoppingBag className="h-5 w-5" />
+            <div>
+              <div className="font-semibold">
+                {getCartItemCount() > 0
+                  ? `${getCartItemCount()} item${getCartItemCount() > 1 ? "s" : ""}`
+                  : "Cart Empty"}
               </div>
-            </Button>
-          </div>
-        )}
+              <div className="text-sm opacity-90">
+                {getCartItemCount() > 0 ? `₹${getCartTotal()}` : "₹0"}
+              </div>
+            </div>
+          </Button>
+        </div>
 
         {/* Authentication Modal */}
         {console.log(
