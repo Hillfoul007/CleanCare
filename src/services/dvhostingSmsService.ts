@@ -522,7 +522,7 @@ export class DVHostingSmsService {
 
         try {
           const result = JSON.parse(responseText);
-          console.log("✅ SMS OTP verification result:", result);
+          this.log("✅ SMS OTP verification result:", result);
 
           if (result.success) {
             return {
