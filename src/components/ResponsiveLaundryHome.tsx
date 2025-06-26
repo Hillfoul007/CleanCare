@@ -440,7 +440,7 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
           {getFilteredServices().length === 0 ? (
             <EmptyStateCard />
           ) : (
-            <div className="grid grid-cols-1 gap-4 pb-20">
+            <div className="grid grid-cols-2 gap-3 pb-20">
               {getFilteredServices().map((service) => {
                 const quantity = cart[service.id] || 0;
 
@@ -552,7 +552,6 @@ const ResponsiveLaundryHome: React.FC<ResponsiveLaundryHomeProps> = ({
             </Button>
           </div>
         )}
-
         {/* Empty State */}
         {!getPopularServices().length && (
           <div className="text-center py-8">
