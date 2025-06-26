@@ -39,11 +39,28 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
   mode = "edit",
 }) => {
   const [formData, setFormData] = useState({
-    scheduled_date: booking?.scheduled_date
-      ? new Date(booking.scheduled_date).toISOString().split("T")[0]
-      : "",
-    scheduled_time: booking?.scheduled_time || "",
-    address: booking?.address || "",
+    scheduled_date:
+      booking?.scheduled_date || booking?.pickupDate
+        ? new Date(booking.scheduled_date || booking.pickupDate)
+            .toISOString()
+            .split("T")[0]
+        : "",
+    scheduled_time: booking?.scheduled_time || booking?.pickupTime || "",
+    address:
+      typeof booking?.address === "object" && booking?.address !== null
+        ? booking.address.fullAddress ||
+          [
+            booking.address.flatNo,
+            booking.address.street,
+            booking.address.landmark,
+            booking.address.village,
+            booking.address.city,
+            booking.address.pincode,
+          ]
+            .filter(Boolean)
+            .join(", ") ||
+          "Address not provided"
+        : booking?.address || "",
     additional_details: booking?.additional_details || "",
   });
 
