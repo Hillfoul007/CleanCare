@@ -48,7 +48,7 @@ export class DVHostingSmsService {
 
       // In hosted environments, skip backend API and use direct/simulation mode
       if (isHostedEnv) {
-        console.log(
+        this.log(
           "DVHosting SMS: Hosted environment detected, using direct API call",
         );
         return await this.sendDirectDVHostingOTP(cleanPhone);
