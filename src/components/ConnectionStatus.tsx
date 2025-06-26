@@ -39,25 +39,28 @@ const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
     };
   }, []);
 
-  const checkBackendStatus = async () => {
-    try {
-      setBackendStatus("checking");
+ const checkBackendStatus = async () => {
+  try {
+    setBackendStatus("checking");
 
-      // Quick health check
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-      const response = await fetch("/api/health", {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL}/health`,
+      {
         signal: controller.signal,
         method: "GET",
-      });
+      }
+    );
 
-      clearTimeout(timeoutId);
-      setBackendStatus(response.ok ? "online" : "offline");
-    } catch (error) {
-      setBackendStatus("offline");
-    }
-  };
+    clearTimeout(timeoutId);
+    setBackendStatus(response.ok ? "online" : "offline");
+  } catch (error) {
+    setBackendStatus("offline");
+  }
+};
+
 
   // Don't show anything if everything is working normally
   if (isOnline && backendStatus === "online") {
