@@ -161,6 +161,23 @@ export class BookingService {
   }
 
   /**
+   * Get current user's bookings (with automatic user ID resolution)
+   */
+  async getCurrentUserBookings(): Promise<BookingResponse> {
+    try {
+      const userId = await this.getCurrentUserIdForBooking();
+      return this.getUserBookings(userId);
+    } catch (error) {
+      console.error("Failed to get current user bookings:", error);
+      return {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to get bookings",
+      };
+    }
+  }
+
+  /**
    * Get user bookings
    */
   async getUserBookings(userId: string): Promise<BookingResponse> {
