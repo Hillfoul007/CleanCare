@@ -87,17 +87,42 @@ const LaundryIndex = () => {
           // Store coordinates for later use
           console.log(`📍 Location coordinates: ${latitude}, ${longitude}`);
 
-          // Try to get readable address with multiple fallbacks
-          let displayLocation = await getReverseGeocodedLocation(
-            latitude,
-            longitude,
-          );
+          // Set coordinates immediately for a quick response
+          setCurrentLocation(`${latitude.toFixed(2)}, ${longitude.toFixed(2)}`);
 
-          setCurrentLocation(displayLocation);
+          // Try to get readable address with multiple fallbacks
+          try {
+            const displayLocation = await getReverseGeocodedLocation(
+              latitude,
+              longitude,
+            );
+
+            if (displayLocation && displayLocation.trim()) {
+              setCurrentLocation(displayLocation);
+              console.log("🎯 Final location set:", displayLocation);
+            } else {
+              // If no location found, use coordinate-based fallback
+              const fallbackLocation = getCoordinateBasedLocation(
+                latitude,
+                longitude,
+              );
+              setCurrentLocation(fallbackLocation);
+              console.log("🔄 Using coordinate fallback:", fallbackLocation);
+            }
+          } catch (geocodingError) {
+            console.error("❌ All geocoding methods failed:", geocodingError);
+            // Use coordinate-based fallback when geocoding fails
+            const fallbackLocation = getCoordinateBasedLocation(
+              latitude,
+              longitude,
+            );
+            setCurrentLocation(fallbackLocation);
+            console.log("🆘 Emergency fallback:", fallbackLocation);
+          }
         } catch (error) {
-          console.error("Geocoding error:", error);
+          console.error("❌ Position processing error:", error);
           // Fallback to a generic location
-          setCurrentLocation("India");
+          setCurrentLocation("Your Location");
         }
       },
       (error) => {
