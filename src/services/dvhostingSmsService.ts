@@ -58,9 +58,9 @@ export class DVHostingSmsService {
       const apiBaseUrl =
         import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 
-      console.log("DVHosting SMS: Local environment, trying backend API:", {
+      this.log("DVHosting SMS: Local environment, trying backend API:", {
         apiBaseUrl,
-        finalUrl: `/api/auth/send-otp`,
+        endpoint: "/api/otp/send",
       });
 
       // Call backend API for local development
