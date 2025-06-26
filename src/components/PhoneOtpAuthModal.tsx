@@ -72,25 +72,7 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [isMobile, setIsMobile] = React.useState(() => {
-    if (typeof window !== "undefined") {
-      return window.innerWidth < 768;
-    }
-    return false;
-  });
-
-  // Simple and reliable mobile detection
-  React.useEffect(() => {
-    const checkMobile = () => {
-      const width = window.innerWidth;
-      const mobile = width < 768;
-      setIsMobile(mobile);
-    };
-
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const isMobile = useIsMobile();
 
   const [formData, setFormData] = useState({
     phone: "",
