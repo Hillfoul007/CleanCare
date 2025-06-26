@@ -40,7 +40,7 @@ export class DVHostingSmsService {
         window.location.hostname.includes("fly.dev") ||
         document.querySelector("[data-loc]") !== null;
 
-      console.log("DVHosting SMS: Environment detection:", {
+      this.log("DVHosting SMS: Environment detection:", {
         isHostedEnv,
         hostname: window.location.hostname,
         hasDataLoc: !!document.querySelector("[data-loc]"),
