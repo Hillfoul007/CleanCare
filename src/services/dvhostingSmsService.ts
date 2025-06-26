@@ -387,26 +387,36 @@ export class DVHostingSmsService {
         }
 
         if (storedData.otp === otp) {
-          console.log("✅ SMS OTP verified successfully (hosted environment)");
+          this.log("✅ SMS OTP verified successfully (hosted environment)");
           this.otpStorage.delete(cleanPhone);
           this.currentPhone = "";
 
-          const mockUser = {
-            id: `user_${cleanPhone}`,
-            phone: cleanPhone,
-            name:
-              name && name.trim()
-                ? name.trim()
-                : `User ${cleanPhone.slice(-4)}`,
-            isVerified: true,
-            createdAt: new Date().toISOString(),
-          };
+          // Try to restore user from backend first
+          let user = await this.restoreUserFromBackend(cleanPhone);
+
+          if (!user) {
+            // Create new user if not found in backend
+            user = {
+              id: `user_${cleanPhone}`,
+              phone: cleanPhone,
+              name:
+                name && name.trim()
+                  ? name.trim()
+                  : `User ${cleanPhone.slice(-4)}`,
+              isVerified: true,
+              createdAt: new Date().toISOString(),
+            };
+
+            // Save new user to backend
+            await this.saveUserToBackend(user);
+          }
 
           return {
             success: true,
-            user: mockUser,
+            user: user,
             message: "OTP verified successfully",
           };
+        }
         } else {
           console.log("❌ Invalid SMS OTP (hosted environment)");
           return {
