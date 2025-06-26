@@ -78,32 +78,16 @@ const sendSMS = async (phone, otp) => {
   if (!apiKey) return { success: true, message: "Simulation mode" };
 
   const url = `https://dvhosting.in/api-sms-v4.php?authorization=${apiKey}&route=otp&variables_values=${otp}&numbers=${phone}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  if (!text || text.trim() === "") {
+    return { success: false, error: "Empty response from DVHosting" };
+  }
   try {
-    const res = await fetch(url);
-    const contentType = res.headers.get("content-type");
-    const text = await res.text();
-
-    console.log("DVHosting SMS: Response status:", res.status);
-    console.log("DVHosting SMS: Content-Type:", contentType);
-    console.log("DVHosting SMS: Raw response:", text);
-
-    if (!text || text.trim() === "") {
-      return { success: false, error: "Empty response from DVHosting" };
-    }
-
-    if (contentType && contentType.includes("application/json")) {
-      const json = JSON.parse(text);
-      return json.return || json.success
-        ? { success: true, message: "OTP sent" }
-        : { success: false, error: json.message };
-    }
-
-    return /success/i.test(text)
-      ? { success: true, message: "OTP sent" }
-      : { success: false, error: text };
-  } catch (error) {
-    console.error("DVHosting SMS error:", error.message);
-    return { success: false, error: error.message };
+    const json = JSON.parse(text);
+    return json.return || json.success ? { success: true } : { success: false, error: json.message };
+  } catch {
+    return /success/i.test(text) ? { success: true } : { success: false, error: text };
   }
 };
 
@@ -122,8 +106,13 @@ router.post("/send-otp", validateRequest(["phone"]), async (req, res) => {
   otpManager.store(phone, otp);
   const sms = await sendSMS(phone, otp);
   if (!sms.success) return res.status(500).json({ success: false, message: sms.error });
+
   res.setHeader("Content-Type", "application/json");
-  res.status(200).json({ success: true, message: "OTP sent", data: { phone, expiresIn: 300 } });
+  return res.status(200).json({
+    success: true,
+    message: "OTP sent successfully",
+    data: { phone, expiresIn: 300 },
+  });
 });
 
 router.post("/verify-otp", validateRequest(["phone", "otp"]), async (req, res) => {
