@@ -332,58 +332,9 @@ const LaundryIndex = () => {
       console.log("❌ OpenStreetMap geocoding failed:", error);
     }
 
-    // Method 3: Fallback based on approximate coordinates (India regions)
-    if (latitude >= 8 && latitude <= 37 && longitude >= 68 && longitude <= 97) {
-      // Rough approximations for major Indian cities
-      if (
-        latitude >= 28.4 &&
-        latitude <= 28.8 &&
-        longitude >= 76.8 &&
-        longitude <= 77.3
-      ) {
-        return "Delhi";
-      } else if (
-        latitude >= 18.8 &&
-        latitude <= 19.3 &&
-        longitude >= 72.7 &&
-        longitude <= 73.0
-      ) {
-        return "Mumbai";
-      } else if (
-        latitude >= 12.8 &&
-        latitude <= 13.1 &&
-        longitude >= 77.4 &&
-        longitude <= 77.8
-      ) {
-        return "Bangalore";
-      } else if (
-        latitude >= 22.4 &&
-        latitude <= 22.7 &&
-        longitude >= 88.2 &&
-        longitude <= 88.5
-      ) {
-        return "Kolkata";
-      } else if (
-        latitude >= 17.2 &&
-        latitude <= 17.6 &&
-        longitude >= 78.2 &&
-        longitude <= 78.7
-      ) {
-        return "Hyderabad";
-      } else if (
-        latitude >= 13.0 &&
-        latitude <= 13.2 &&
-        longitude >= 80.1 &&
-        longitude <= 80.3
-      ) {
-        return "Chennai";
-      } else {
-        return "India"; // Generic fallback for India
-      }
-    }
-
-    // Final fallback
-    return "Location detected";
+    // Method 3: Use coordinate-based fallback
+    console.log("🔄 Using coordinate-based location detection...");
+    return getCoordinateBasedLocation(latitude, longitude);
   };
 
   const handleLoginSuccess = (user: any) => {
