@@ -416,7 +416,6 @@ export class DVHostingSmsService {
             user: user,
             message: "OTP verified successfully",
           };
-        }
         } else {
           console.log("❌ Invalid SMS OTP (hosted environment)");
           return {
