@@ -787,6 +787,34 @@ export class DVHostingSmsService {
       return null;
     }
   }
+
+  /**
+   * Restore user session from backend if available
+   * Call this on app startup to restore user data after logout
+   */
+  async restoreSession(): Promise<boolean> {
+    try {
+      const localUser = this.getCurrentUser();
+      if (!localUser || !localUser.phone) {
+        return false;
+      }
+
+      // Try to get fresh user data from backend
+      const backendUser = await this.restoreUserFromBackend(localUser.phone);
+      if (backendUser) {
+        // Update local storage with fresh backend data
+        this.setCurrentUser(backendUser);
+        this.log("✅ Session restored from backend");
+        return true;
+      }
+
+      this.log("ℹ️ Session restore: using local data");
+      return true;
+    } catch (error) {
+      this.log("⚠️ Session restore failed:", error);
+      return false;
+    }
+  }
 }
 
 export default DVHostingSmsService;
