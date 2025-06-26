@@ -55,11 +55,40 @@ export class BookingService {
     try {
       console.log("📝 Creating new booking:", bookingData);
 
+      // Resolve MongoDB user ID if needed
+      let resolvedUserId = bookingData.userId;
+
+      // If userId looks like a phone number, try to get the MongoDB user ID
+      if (
+        resolvedUserId &&
+        resolvedUserId.length === 10 &&
+        /^\d+$/.test(resolvedUserId)
+      ) {
+        try {
+          const response = await fetch(`/api/auth/get-user-by-phone`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone: resolvedUserId }),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            if (result.user && result.user._id) {
+              resolvedUserId = result.user._id;
+              console.log("✅ Resolved user ID from phone:", resolvedUserId);
+            }
+          }
+        } catch (error) {
+          console.warn("⚠️ Failed to resolve user ID:", error);
+        }
+      }
+
       // Generate booking ID
       const bookingId = `booking_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
       const booking: BookingDetails = {
         ...bookingData,
+        userId: resolvedUserId, // Use resolved user ID
         id: bookingId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
