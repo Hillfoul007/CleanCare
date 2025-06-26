@@ -684,9 +684,85 @@ export class DVHostingSmsService {
       localStorage.removeItem("current_user");
       localStorage.removeItem("cleancare_auth_token");
       this.currentPhone = "";
-      console.log("✅ User logged out successfully");
+      this.log("✅ User logged out successfully");
     } catch (error) {
       console.error("Error during logout:", error);
+    }
+  }
+
+  /**
+   * Save user to MongoDB backend for persistence across sessions
+   */
+  async saveUserToBackend(user: any): Promise<boolean> {
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
+
+      // Prepare user data for backend
+      const userData = {
+        phone: user.phone,
+        full_name: user.name || `User ${user.phone.slice(-4)}`,
+        email: user.email || "",
+        user_type: "customer",
+        is_verified: true,
+        phone_verified: true,
+        preferences: user.preferences || {},
+      };
+
+      this.log("📤 Saving user to backend:", userData);
+
+      const response = await fetch(`${apiBaseUrl}/auth/save-user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("cleancare_auth_token")}`,
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        this.log("✅ User saved to backend successfully");
+        return true;
+      } else {
+        this.log("⚠️ Backend user save failed:", response.status);
+        return false;
+      }
+    } catch (error) {
+      this.log("⚠️ Backend user save error:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Restore user session from backend on login
+   */
+  async restoreUserFromBackend(phone: string): Promise<any | null> {
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "/api";
+
+      this.log("🔄 Restoring user from backend:", phone);
+
+      const response = await fetch(`${apiBaseUrl}/auth/get-user-by-phone`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.user) {
+          this.log("✅ User restored from backend");
+          return result.user;
+        }
+      }
+
+      this.log("⚠️ User not found in backend");
+      return null;
+    } catch (error) {
+      this.log("⚠️ Backend user restore error:", error);
+      return null;
     }
   }
 }
