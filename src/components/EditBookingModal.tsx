@@ -198,7 +198,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                 )}
               </div>
               <p className="text-blue-900 font-semibold mt-2">
-                Total: ${totalPrice + 5} (includes $5 delivery)
+                Total: ₹{totalPrice + 5} (includes ₹5 delivery)
               </p>
             </div>
 
