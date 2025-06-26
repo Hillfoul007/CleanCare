@@ -55,7 +55,19 @@ const ServiceEditor: React.FC<ServiceEditorProps> = ({
 
   // Parse selected services into ServiceItem format
   useEffect(() => {
-    const parsedServices = selectedServices.map((serviceStr, index) => {
+    const parsedServices = selectedServices.map((service, index) => {
+      // Handle both string and object formats
+      if (typeof service === "object" && service !== null) {
+        // Service is already an object with name, quantity, price
+        return {
+          name: service.name || service.service || "Unknown Service",
+          quantity: service.quantity || 1,
+          price: service.price || 35,
+        };
+      }
+
+      // Handle string format
+      const serviceStr = String(service);
       const match = serviceStr.match(/^(.+?)(?:\s*\(x(\d+)\))?$/);
       if (match) {
         const name = match[1].trim();
