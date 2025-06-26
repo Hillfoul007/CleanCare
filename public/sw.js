@@ -1,10 +1,5 @@
 const CACHE_NAME = "cleancare-v2";
-const urlsToCache = [
-  "/",
-  "/static/js/bundle.js",
-  "/static/css/main.css",
-  "/manifest.json",
-];
+const urlsToCache = ["/", "/manifest.json"];
 
 // Install service worker
 self.addEventListener("install", (event) => {
@@ -36,6 +31,11 @@ self.addEventListener("activate", (event) => {
 
 // Fetch event
 self.addEventListener("fetch", (event) => {
+  // Skip chrome-extension requests and other non-http requests
+  if (!event.request.url.startsWith("http")) {
+    return;
+  }
+
   // Don't cache API requests
   if (event.request.url.includes("/api/")) {
     event.respondWith(fetch(event.request));
@@ -45,7 +45,16 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
       // Return cached version or fetch from network
-      return response || fetch(event.request);
+      return (
+        response ||
+        fetch(event.request).catch(() => {
+          // Return a default response for failed fetches
+          return new Response("Resource not available", {
+            status: 503,
+            statusText: "Service Unavailable",
+          });
+        })
+      );
     }),
   );
 });

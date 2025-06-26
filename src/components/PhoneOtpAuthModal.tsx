@@ -85,11 +85,6 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
       const width = window.innerWidth;
       const mobile = width < 768;
       setIsMobile(mobile);
-      console.log("PhoneOtpAuthModal mobile detection:", {
-        width,
-        mobile,
-        userAgent: navigator.userAgent.includes("Mobile"),
-      });
     };
 
     checkMobile();
@@ -145,32 +140,21 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
     setIsLoading(true);
     setError("");
 
-    console.log("PhoneOtpAuthModal: Sending OTP to", formData.phone);
-
     try {
       const result = await dvhostingSmsService.sendSmsOTP(
         formData.phone,
         formData.name?.trim() || `User ${formData.phone.slice(-4)}`,
       );
 
-      console.log("PhoneOtpAuthModal: OTP send result", result);
-
       if (result.success) {
         setSuccess(result.message || "OTP sent to your phone!");
         setCurrentStep("otp");
-        console.log("PhoneOtpAuthModal: Switched to OTP step");
       } else {
         setError(result.error || "Failed to send OTP");
-        console.error("PhoneOtpAuthModal: OTP send failed", result.error);
       }
     } catch (error: any) {
-      console.error("PhoneOtpAuthModal: Exception during OTP send", error);
-      console.error("PhoneOtpAuthModal: Error details:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      });
       setError(error.message || "Failed to send OTP. Please try again.");
+    }
     } finally {
       setIsLoading(false);
     }
@@ -258,12 +242,11 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
   };
 
   const handleClose = () => {
-    console.log("PhoneOtpAuthModal: handleClose called");
     resetForm();
     onClose();
   };
 
-  console.log("PhoneOtpAuthModal render:", { isOpen, currentStep, isMobile });
+
 
   if (!isOpen) return null;
 
