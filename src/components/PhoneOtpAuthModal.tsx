@@ -216,9 +216,8 @@ const PhoneOtpAuthModal: React.FC<PhoneOtpAuthModalProps> = ({
             createdAt: result.user.createdAt || new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           });
-          console.log("✅ User saved to database after OTP verification");
         } catch (userSaveError) {
-          console.warn("⚠️ Failed to save user to database:", userSaveError);
+          // Silent fail for user save
         }
 
         onSuccess(result.user);
