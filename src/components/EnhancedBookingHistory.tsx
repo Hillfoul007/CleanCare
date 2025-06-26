@@ -627,7 +627,21 @@ const EnhancedBookingHistory: React.FC<EnhancedBookingHistoryProps> = ({
                             Service Address
                           </p>
                           <p className="text-sm text-gray-600 leading-relaxed">
-                            {booking.address || "Address not provided"}
+                            {typeof booking.address === "object" &&
+                            booking.address !== null
+                              ? booking.address.fullAddress ||
+                                [
+                                  booking.address.flatNo,
+                                  booking.address.street,
+                                  booking.address.landmark,
+                                  booking.address.village,
+                                  booking.address.city,
+                                  booking.address.pincode,
+                                ]
+                                  .filter(Boolean)
+                                  .join(", ") ||
+                                "Address not provided"
+                              : booking.address || "Address not provided"}
                           </p>
                         </div>
                       </div>
