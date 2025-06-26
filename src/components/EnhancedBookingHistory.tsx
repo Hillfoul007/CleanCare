@@ -85,10 +85,10 @@ const EnhancedBookingHistory: React.FC<EnhancedBookingHistoryProps> = ({
     try {
       setLoading(true);
       const bookingService = BookingService.getInstance();
-      const userId = currentUser.id || currentUser._id || currentUser.phone;
 
-      console.log("Loading bookings for user:", userId);
-      const response = await bookingService.getUserBookings(userId);
+      console.log("Loading bookings for current user...");
+      // Use the new method that automatically handles user ID resolution
+      const response = await bookingService.getCurrentUserBookings();
 
       if (response.success && response.bookings) {
         console.log("Bookings loaded successfully:", response.bookings.length);
