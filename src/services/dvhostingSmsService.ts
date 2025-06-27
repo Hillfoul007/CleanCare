@@ -1,3 +1,5 @@
+const apiBaseUrl =
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 export class DVHostingSmsService {
   private static instance: DVHostingSmsService;
   private currentPhone: string = "";
@@ -24,10 +26,13 @@ export class DVHostingSmsService {
     return DVHostingSmsService.instance;
   }
 
+  private cleanPhone(p: string): string {
+    return p ? p.replace(/\D/g, "") : "";
+  }
+
   async sendOTP(phoneNumber: string): Promise<boolean> {
     try {
-      // Clean phone number (remove +91 if present)
-      const cleanPhone = phoneNumber.replace(/^\+91/, "");
+      const cleanPhone = this.cleanPhone(phoneNumber);
 
       // Validate Indian phone number
       if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
@@ -54,17 +59,16 @@ export class DVHostingSmsService {
         return await this.sendDirectDVHostingOTP(cleanPhone);
       }
 
-      // For local development, try backend API first
-      const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
-
+      // For local development, try backend API
+      
+        console.log(apiBaseUrl)
       this.log("DVHosting SMS: Local environment, trying backend API:", {
         apiBaseUrl,
         endpoint: "/api/otp/send",
       });
-
+      console.log(`${apiBaseUrl}/api/auth/send-otp?t=${Date.now()}`)
       // Call backend API for local development
-      const response = await fetch(`/api/auth/send-otp?t=${Date.now()}`, {
+      const response = await fetch(`${apiBaseUrl}/api/auth/send-otp?t=${Date.now()}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,8 +163,9 @@ export class DVHostingSmsService {
         }
       } else {
         let errorMessage = `HTTP ${response.status}`;
+        let errorText = "";
         try {
-          const errorText = await response.text();
+          errorText = await response.text();
           console.log(
             "DVHosting SMS: Error response:",
             errorText.substring(0, 200),
@@ -200,7 +205,7 @@ export class DVHostingSmsService {
 
   async verifyOTP(phoneNumber: string, otp: string): Promise<boolean> {
     try {
-      const cleanPhone = phoneNumber.replace(/^\+91/, "");
+      const cleanPhone = this.cleanPhone(phoneNumber);
 
       // Detect hosted environment
       const isHostedEnv =
@@ -238,7 +243,7 @@ export class DVHostingSmsService {
       }
 
       // For local development, try backend API
-      const response = await fetch(`/api/auth/verify-otp?t=${Date.now()}`, {
+      const response = await fetch(`${apiBaseUrl}/api/auth/verify-otp?t=${Date.now()}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -347,7 +352,7 @@ export class DVHostingSmsService {
     error?: string;
   }> {
     try {
-      const cleanPhone = phoneNumber.replace(/^\+91/, "");
+      const cleanPhone = this.cleanPhone(phoneNumber);
 
       // Detect hosted environment
       const isHostedEnv =
@@ -427,7 +432,7 @@ export class DVHostingSmsService {
       }
 
       // For local development, try backend API
-      const response = await fetch(`/api/auth/verify-otp?t=${Date.now()}`, {
+      const response = await fetch(`${apiBaseUrl}/api/auth/verify-otp?t=${Date.now()}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -438,8 +443,7 @@ export class DVHostingSmsService {
         body: JSON.stringify({
           phone: cleanPhone,
           otp: otp,
-          name:
-            name && name.trim() ? name.trim() : `User ${cleanPhone.slice(-4)}`,
+          name: name && name.trim() ? name.trim() : `User ${cleanPhone.slice(-4)}`,
         }),
       }).catch((error) => {
         // Handle fetch errors in local development
@@ -506,77 +510,42 @@ export class DVHostingSmsService {
       }
 
       if (response.ok) {
-        // Get response text first to inspect it
+        // Read as text, then try to parse as JSON
         const responseText = await response.text();
-        console.log(
-          "DVHosting SMS: Verification response:",
-          responseText.substring(0, 300),
-        );
-
-        // Check if response looks like JSON
-        if (
-          !responseText.trim().startsWith("{") &&
-          !responseText.trim().startsWith("[")
-        ) {
-          console.error(
-            "❌ Expected JSON but got non-JSON content:",
-            responseText.substring(0, 200),
-          );
+        let result: any = {};
+        try {
+          result = JSON.parse(responseText);
+        } catch {
+          // Not JSON, treat as error
           return {
             success: false,
-            error: "Invalid response from server",
-            message: "Please try again",
+            error: "Invalid server response",
+            message: responseText,
           };
         }
-
-        try {
-          const result = JSON.parse(responseText);
-          this.log("✅ SMS OTP verification result:", result);
-
-          if (result.success) {
-            return {
-              success: true,
-              user: result.user,
-              message: result.message || "OTP verified successfully",
-            };
-          } else {
-            return {
-              success: false,
-              error: result.error || "Invalid OTP",
-              message: result.message || "Please check your OTP and try again",
-            };
-          }
-        } catch (parseError) {
-          console.error(
-            "❌ Failed to parse verification response:",
-            parseError,
-            "Raw text:",
-            responseText.substring(0, 200),
-          );
+        if (result.success) {
+          return { success: true, user: result.data?.user, message: result.message };
+        } else {
           return {
             success: false,
-            error: "Invalid response format",
-            message: "Please try again",
+            error: result.error || "Verification failed",
+            message: result.message || "Verification failed",
           };
         }
       } else {
+        // Only read the body ONCE
+        const errorText = await response.text();
+        let errorData: any = {};
         try {
-          const errorData = await response.json();
-          console.error("❌ Backend API error:", response.status, errorData);
-          return {
-            success: false,
-            error: errorData.error || `HTTP ${response.status}`,
-            message: errorData.message || "Verification failed",
-          };
-        } catch (parseError) {
-          const errorText = await response.text();
-          console.error("❌ Backend HTTP error:", response.status, errorText);
-          return {
-            success: false,
-            error: `HTTP ${response.status}`,
-            message: "Verification failed",
-          };
+          errorData = JSON.parse(errorText);
+        } catch {
+          // Not JSON, keep as text
         }
+        return {
+          success: false,
+          error: errorData.error || `HTTP ${response.status}`,
+          message: errorData.message || errorText || "Verification failed",
+        };
       }
     } catch (error) {
       console.error("❌ SMS OTP verification error:", error);
